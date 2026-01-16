@@ -16,3 +16,30 @@ Use `@/openspec/AGENTS.md` to learn:
 Keep this managed block so 'openspec update' can refresh the instructions.
 
 <!-- OPENSPEC:END -->
+
+---
+
+## Build Environment
+
+**This project uses WSL (Windows Subsystem for Linux) for all build and test commands.**
+
+### Running Commands
+
+Use `wsl` prefix for all Maven/Java commands:
+
+```powershell
+# Run tests
+wsl mvn test -Dtest=TestClassName
+
+# Build project
+wsl mvn clean compile
+
+# Run all tests
+wsl mvn test
+```
+
+### Why WSL?
+
+- Java 25 and Maven are installed in WSL
+- Consistent Linux-based build environment
+- Matches CI/CD environment
