@@ -1,0 +1,22 @@
+# Agent
+.agent/
+
+# Java/Maven
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+.factorypath
+
+# OS Specific
+.DS_Store
+Thumbs.db
