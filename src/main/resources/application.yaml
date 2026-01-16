@@ -1,0 +1,56 @@
+# Runbook-Synthesizer Configuration
+# Helidon SE 4.x Configuration
+
+server:
+  port: 8080
+  host: 0.0.0.0
+
+# Health and Observability
+server.features:
+  observe:
+    observers:
+      health:
+        enabled: true
+
+# Logging Configuration
+logging:
+  level: INFO
+# --------------------------------------------------------
+# Future Configuration Sections (Placeholder)
+# --------------------------------------------------------
+
+# llm:
+#   provider: oci-genai  # oci-genai, openai, ollama
+#   oci-genai:
+#     compartmentId: ${OCI_COMPARTMENT_ID}
+#     modelId: cohere.command-r-plus
+#     embeddingModelId: cohere.embed-english-v3.0
+#   openai:
+#     apiKey: ${OPENAI_API_KEY}
+#     model: gpt-4-turbo
+#   ollama:
+#     baseUrl: http://localhost:11434
+#     model: llama3
+
+# oci:
+#   tenancy: ${OCI_TENANCY_OCID}
+#   user: ${OCI_USER_OCID}
+#   region: ${OCI_REGION}
+#   fingerprint: ${OCI_FINGERPRINT}
+#   keyFile: ${OCI_KEY_FILE}
+
+# output:
+#   webhooks:
+#     - name: slack-oncall
+#       type: slack
+#       url: ${SLACK_WEBHOOK_URL}
+#       enabled: true
+#       filter:
+#         severities: [CRITICAL, WARNING]
+#     - name: pagerduty-incidents
+#       type: pagerduty
+#       url: https://events.pagerduty.com/v2/enqueue
+#       routingKey: ${PD_ROUTING_KEY}
+#       enabled: true
+#       filter:
+#         severities: [CRITICAL]
