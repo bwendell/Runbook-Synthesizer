@@ -8,7 +8,7 @@ import java.util.Map;
  * Configuration record for a webhook destination.
  *
  * <p>Contains all settings needed to create and configure a webhook destination including URL,
- * authentication headers, filtering rules, and enabled status.
+ * authentication headers, filtering rules, retry settings, and enabled status.
  *
  * @param name unique identifier for this webhook destination
  * @param type the type of destination (e.g., "slack", "pagerduty", "generic")
@@ -16,6 +16,8 @@ import java.util.Map;
  * @param enabled whether this webhook is active
  * @param filter filtering rules for which checklists to send
  * @param headers HTTP headers to include in requests
+ * @param retryCount number of retry attempts for failed requests (default: 3)
+ * @param retryDelayMs initial delay in milliseconds between retries (default: 1000ms)
  */
 public record WebhookConfig(
     String name,
@@ -23,9 +25,17 @@ public record WebhookConfig(
     String url,
     boolean enabled,
     WebhookFilter filter,
-    Map<String, String> headers) {
+    Map<String, String> headers,
+    int retryCount,
+    int retryDelayMs) {
 
-  /** Compact constructor with defensive copy for headers. */
+  /** Default number of retry attempts. */
+  public static final int DEFAULT_RETRY_COUNT = 3;
+
+  /** Default initial delay in milliseconds between retries. */
+  public static final int DEFAULT_RETRY_DELAY_MS = 1000;
+
+  /** Compact constructor with defensive copy for headers and retry defaults. */
   public WebhookConfig {
     headers = headers != null ? Map.copyOf(headers) : Map.of();
   }
@@ -47,6 +57,8 @@ public record WebhookConfig(
     private boolean enabled = true;
     private WebhookFilter filter;
     private Map<String, String> headers = Map.of();
+    private int retryCount = DEFAULT_RETRY_COUNT;
+    private int retryDelayMs = DEFAULT_RETRY_DELAY_MS;
 
     private Builder() {}
 
@@ -117,6 +129,28 @@ public record WebhookConfig(
     }
 
     /**
+     * Sets the number of retry attempts.
+     *
+     * @param retryCount number of retries (must be >= 0)
+     * @return this builder
+     */
+    public Builder retryCount(int retryCount) {
+      this.retryCount = retryCount;
+      return this;
+    }
+
+    /**
+     * Sets the initial delay between retries in milliseconds.
+     *
+     * @param retryDelayMs delay in milliseconds (must be > 0)
+     * @return this builder
+     */
+    public Builder retryDelayMs(int retryDelayMs) {
+      this.retryDelayMs = retryDelayMs;
+      return this;
+    }
+
+    /**
      * Builds the WebhookConfig with validation.
      *
      * @return the constructed WebhookConfig
@@ -131,6 +165,12 @@ public record WebhookConfig(
       }
       if (type == null || type.isBlank()) {
         throw new IllegalArgumentException("WebhookConfig type must be non-empty");
+      }
+      if (retryCount < 0) {
+        throw new IllegalArgumentException("WebhookConfig retryCount must be >= 0");
+      }
+      if (retryDelayMs <= 0) {
+        throw new IllegalArgumentException("WebhookConfig retryDelayMs must be > 0");
       }
 
       // Validate URL format
@@ -147,7 +187,8 @@ public record WebhookConfig(
       // Default filter to allowAll if not set
       WebhookFilter effectiveFilter = filter != null ? filter : WebhookFilter.allowAll();
 
-      return new WebhookConfig(name, type, url, enabled, effectiveFilter, headers);
+      return new WebhookConfig(
+          name, type, url, enabled, effectiveFilter, headers, retryCount, retryDelayMs);
     }
   }
 }

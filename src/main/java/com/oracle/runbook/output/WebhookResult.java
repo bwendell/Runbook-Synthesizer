@@ -47,9 +47,22 @@ public record WebhookResult(
    *
    * @param destinationName the webhook destination name
    * @param errorMessage the error message
-   * @return a failed WebhookResult with current timestamp
+   * @return a failed WebhookResult with current timestamp and status code 0
    */
   public static WebhookResult failure(String destinationName, String errorMessage) {
     return new WebhookResult(destinationName, false, 0, Optional.of(errorMessage), Instant.now());
+  }
+
+  /**
+   * Factory method for a failed result with HTTP status code.
+   *
+   * @param destinationName the webhook destination name
+   * @param statusCode the HTTP status code (e.g., 500 for server error)
+   * @param errorMessage the error message
+   * @return a failed WebhookResult with current timestamp and status code
+   */
+  public static WebhookResult failure(String destinationName, int statusCode, String errorMessage) {
+    return new WebhookResult(
+        destinationName, false, statusCode, Optional.of(errorMessage), Instant.now());
   }
 }

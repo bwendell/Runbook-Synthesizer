@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 class WebhookConfigTest {
 
   @Test
-  @DisplayName("record has name, type, url, enabled, filter, headers fields")
+  @DisplayName("record has name, type, url, enabled, filter, headers, retry fields")
   void recordHasRequiredFields() {
     // Arrange
     WebhookFilter filter = WebhookFilter.allowAll();
@@ -21,7 +21,14 @@ class WebhookConfigTest {
     // Act
     WebhookConfig config =
         new WebhookConfig(
-            "slack-oncall", "slack", "https://hooks.slack.com/test", true, filter, headers);
+            "slack-oncall",
+            "slack",
+            "https://hooks.slack.com/test",
+            true,
+            filter,
+            headers,
+            3,
+            1000);
 
     // Assert
     assertEquals("slack-oncall", config.name());
@@ -30,6 +37,8 @@ class WebhookConfigTest {
     assertTrue(config.enabled());
     assertEquals(filter, config.filter());
     assertEquals(headers, config.headers());
+    assertEquals(3, config.retryCount());
+    assertEquals(1000, config.retryDelayMs());
   }
 
   @Test

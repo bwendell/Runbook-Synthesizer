@@ -82,7 +82,9 @@ public class GenericWebhookDestination implements WebhookDestination {
           return WebhookResult.success(config.name(), statusCode);
         } else {
           return WebhookResult.failure(
-              config.name(), "HTTP " + statusCode + ": " + response.status().reasonPhrase());
+              config.name(),
+              statusCode,
+              "HTTP " + statusCode + ": " + response.status().reasonPhrase());
         }
       }
     } catch (JsonProcessingException e) {
