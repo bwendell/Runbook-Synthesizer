@@ -1,0 +1,28 @@
+{
+  "id": "ocid1.instance.oc1.iad.example",
+  "compartmentId": "ocid1.compartment.oc1..example",
+  "displayName": "my-compute-instance",
+  "shape": "VM.Standard2.4",
+  "availabilityDomain": "AD-1",
+  "lifecycleState": "RUNNING",
+  "region": "us-ashburn-1",
+  "freeformTags": {
+    "Environment": "production",
+    "Team": "platform-engineering",
+    "Application": "runbook-synthesizer"
+  },
+  "definedTags": {
+    "Oracle-Tags": {
+      "CreatedBy": "oracleidentitycloudservice/user@example.com",
+      "CreatedOn": "2024-01-01T00:00:00.000Z"
+    },
+    "Billing": {
+      "CostCenter": "CC-12345",
+      "Project": "observability"
+    }
+  },
+  "metadata": {
+    "ssh_authorized_keys": "ssh-rsa AAAA..."
+  },
+  "timeCreated": "2024-01-01T00:00:00.000Z"
+}

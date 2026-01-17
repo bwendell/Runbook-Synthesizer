@@ -1,0 +1,44 @@
+{
+  "items": [
+    {
+      "name": "CpuUtilization",
+      "namespace": "oci_computeagent",
+      "compartmentId": "ocid1.compartment.oc1..example",
+      "resourceGroup": null,
+      "dimensions": {
+        "resourceId": "ocid1.instance.oc1..example"
+      },
+      "metadata": {
+        "unit": "percent"
+      },
+      "aggregatedDatapoints": [
+        {
+          "timestamp": "2024-01-16T12:00:00.000Z",
+          "value": 42.5
+        },
+        {
+          "timestamp": "2024-01-16T12:05:00.000Z",
+          "value": 51.2
+        }
+      ]
+    },
+    {
+      "name": "MemoryUtilization",
+      "namespace": "oci_computeagent",
+      "compartmentId": "ocid1.compartment.oc1..example",
+      "resourceGroup": null,
+      "dimensions": {
+        "resourceId": "ocid1.instance.oc1..example"
+      },
+      "metadata": {
+        "unit": "percent"
+      },
+      "aggregatedDatapoints": [
+        {
+          "timestamp": "2024-01-16T12:00:00.000Z",
+          "value": 78.3
+        }
+      ]
+    }
+  ]
+}
