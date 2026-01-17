@@ -39,18 +39,31 @@ logging:
 #   fingerprint: ${OCI_FINGERPRINT}
 #   keyFile: ${OCI_KEY_FILE}
 
-# output:
-#   webhooks:
-#     - name: slack-oncall
-#       type: slack
-#       url: ${SLACK_WEBHOOK_URL}
-#       enabled: true
-#       filter:
-#         severities: [CRITICAL, WARNING]
-#     - name: pagerduty-incidents
-#       type: pagerduty
-#       url: https://events.pagerduty.com/v2/enqueue
-#       routingKey: ${PD_ROUTING_KEY}
-#       enabled: true
-#       filter:
-#         severities: [CRITICAL]
+# Output Webhooks Configuration
+output:
+  webhooks:
+    # Example Generic Webhook (disabled by default)
+    - name: example-generic
+      type: generic
+      url: ${WEBHOOK_URL:http://localhost:8888/webhook}
+      enabled: false
+      headers:
+        Authorization: Bearer ${WEBHOOK_TOKEN:example-token}
+
+    # Slack Webhook (v1.1 - stub only)
+    # - name: slack-oncall
+    #   type: slack
+    #   url: ${SLACK_WEBHOOK_URL}
+    #   enabled: true
+    #   filter:
+    #     severities: [CRITICAL, WARNING]
+
+    # PagerDuty (v1.1 - stub only)
+    # - name: pagerduty-incidents
+    #   type: pagerduty
+    #   url: https://events.pagerduty.com/v2/enqueue
+    #   enabled: true
+    #   headers:
+    #     X-Routing-Key: ${PD_ROUTING_KEY}
+    #   filter:
+    #     severities: [CRITICAL]
