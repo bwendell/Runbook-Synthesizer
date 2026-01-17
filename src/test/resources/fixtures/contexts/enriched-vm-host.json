@@ -1,0 +1,72 @@
+{
+  "alert": {
+    "id": "alert-memory-001",
+    "title": "High Memory Usage Alert",
+    "message": "Memory usage on host has exceeded 85% threshold",
+    "severity": "WARNING",
+    "sourceService": "oci-monitoring",
+    "dimensions": {
+      "compartmentId": "ocid1.compartment.oc1..example",
+      "resourceId": "ocid1.instance.oc1.iad.example",
+      "region": "us-ashburn-1"
+    },
+    "labels": {
+      "environment": "production",
+      "service": "api-gateway"
+    },
+    "timestamp": "2026-01-17T20:00:00Z",
+    "rawPayload": "{\"type\":\"oci.monitoring.alarm.state.changed\"}"
+  },
+  "resource": {
+    "ocid": "ocid1.instance.oc1.iad.example",
+    "displayName": "api-gateway-prod-01",
+    "compartmentId": "ocid1.compartment.oc1..example",
+    "shape": "VM.Standard.E4.Flex",
+    "availabilityDomain": "AD-1",
+    "freeformTags": {
+      "Environment": "production",
+      "Team": "platform"
+    },
+    "definedTags": {}
+  },
+  "recentMetrics": [
+    {
+      "metricName": "MemoryUtilization",
+      "namespace": "oci_computeagent",
+      "value": 87.5,
+      "unit": "percent",
+      "timestamp": "2026-01-17T19:55:00Z"
+    },
+    {
+      "metricName": "CpuUtilization",
+      "namespace": "oci_computeagent",
+      "value": 45.2,
+      "unit": "percent",
+      "timestamp": "2026-01-17T19:55:00Z"
+    }
+  ],
+  "recentLogs": [
+    {
+      "id": "log-001",
+      "timestamp": "2026-01-17T19:58:00Z",
+      "level": "WARN",
+      "message": "Memory pressure detected, GC running frequently",
+      "metadata": {
+        "source": "jvm-agent"
+      }
+    },
+    {
+      "id": "log-002",
+      "timestamp": "2026-01-17T19:59:00Z",
+      "level": "ERROR",
+      "message": "OutOfMemoryError in request handler thread",
+      "metadata": {
+        "source": "application"
+      }
+    }
+  ],
+  "customProperties": {
+    "gpuEnabled": false,
+    "clusterMember": true
+  }
+}

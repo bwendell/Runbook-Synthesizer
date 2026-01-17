@@ -1,0 +1,27 @@
+{
+  "type": "com.oraclecloud.monitoring.alarmstatechange",
+  "source": "MonitoringService",
+  "specversion": "1.0",
+  "id": "unique-event-id-12345",
+  "time": "2026-01-17T20:00:00.000Z",
+  "subject": "ocid1.alarm.oc1.iad.example",
+  "data": {
+    "alarmName": "High CPU Usage Alarm",
+    "alarmId": "ocid1.alarm.oc1.iad.example",
+    "compartmentId": "ocid1.compartment.oc1..example",
+    "severity": "CRITICAL",
+    "previousState": "OK",
+    "currentState": "FIRING",
+    "triggerTime": "2026-01-17T20:00:00.000Z",
+    "body": "CPU usage has exceeded 90% threshold for the past 5 minutes.",
+    "dimensions": {
+      "resourceId": "ocid1.instance.oc1.iad.example",
+      "availabilityDomain": "AD-1",
+      "faultDomain": "FAULT-DOMAIN-1"
+    },
+    "message": {
+      "title": "High CPU Usage",
+      "body": "Immediate investigation required. Host is experiencing high CPU load."
+    }
+  }
+}
