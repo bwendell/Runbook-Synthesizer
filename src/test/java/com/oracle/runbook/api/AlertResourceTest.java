@@ -30,15 +30,15 @@ class AlertResourceTest {
   void testPostAlert_ValidRequest_ReturnsChecklist() {
     String validRequest =
         """
-                {
-                  "title": "High CPU Usage",
-                  "message": "CPU utilization is above 95%",
-                  "severity": "CRITICAL",
-                  "sourceService": "oci-monitoring",
-                  "dimensions": {"compartmentId": "test"},
-                  "labels": {}
-                }
-                """;
+        {
+          "title": "High CPU Usage",
+          "message": "CPU utilization is above 95%",
+          "severity": "CRITICAL",
+          "sourceService": "oci-monitoring",
+          "dimensions": {"compartmentId": "test"},
+          "labels": {}
+        }
+        """;
 
     try (Http1ClientResponse response =
         client
@@ -57,11 +57,11 @@ class AlertResourceTest {
   void testPostAlert_MissingTitle_ReturnsBadRequest() {
     String invalidRequest =
         """
-                {
-                  "message": "test message",
-                  "severity": "CRITICAL"
-                }
-                """;
+        {
+          "message": "test message",
+          "severity": "CRITICAL"
+        }
+        """;
 
     try (Http1ClientResponse response =
         client
@@ -78,12 +78,12 @@ class AlertResourceTest {
   void testPostAlert_InvalidSeverity_ReturnsBadRequest() {
     String invalidRequest =
         """
-                {
-                  "title": "Test Alert",
-                  "message": "test message",
-                  "severity": "INVALID_SEVERITY"
-                }
-                """;
+        {
+          "title": "Test Alert",
+          "message": "test message",
+          "severity": "INVALID_SEVERITY"
+        }
+        """;
 
     try (Http1ClientResponse response =
         client
