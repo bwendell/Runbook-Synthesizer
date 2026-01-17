@@ -1,5 +1,9 @@
 package com.oracle.runbook;
 
+import com.oracle.runbook.api.AlertResource;
+import com.oracle.runbook.api.HealthResource;
+import com.oracle.runbook.api.RunbookResource;
+import com.oracle.runbook.api.WebhookResource;
 import io.helidon.config.Config;
 import io.helidon.webserver.WebServer;
 import io.helidon.webserver.http.HttpRouting;
@@ -47,7 +51,8 @@ public class RunbookSynthesizerApp {
 
     LOGGER.info(
         () -> String.format("Runbook-Synthesizer started on http://localhost:%d", server.port()));
-    LOGGER.info("Health endpoint available at /observe/health");
+    LOGGER.info(
+        "API endpoints: /api/v1/health, /api/v1/alerts, /api/v1/webhooks, /api/v1/runbooks");
   }
 
   /**
@@ -56,7 +61,13 @@ public class RunbookSynthesizerApp {
    * @param routing the routing builder
    */
   private static void configureRouting(HttpRouting.Builder routing) {
+    // Root endpoint
     routing.get("/", (req, res) -> res.send("Runbook-Synthesizer is running"));
-    routing.get("/health", (req, res) -> res.send("{\"status\":\"UP\"}"));
+
+    // API v1 endpoints
+    routing.register("/api/v1/health", new HealthResource());
+    routing.register("/api/v1/alerts", new AlertResource());
+    routing.register("/api/v1/webhooks", new WebhookResource());
+    routing.register("/api/v1/runbooks", new RunbookResource());
   }
 }
