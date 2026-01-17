@@ -184,17 +184,29 @@
                 <artifactId>spotless-maven-plugin</artifactId>
                 <version>2.41.0</version>
                 <configuration>
+                    <lineEndings>UNIX</lineEndings>
                     <java>
-                        <eclipse/>
+                        <googleJavaFormat>
+                            <version>1.33.0</version>
+                            <style>GOOGLE</style>
+                        </googleJavaFormat>
                         <removeUnusedImports/>
                     </java>
                 </configuration>
                 <executions>
                     <execution>
+                        <id>spotless-apply</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>apply</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>spotless-check</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>
-                        <phase>verify</phase>
                     </execution>
                 </executions>
             </plugin>
