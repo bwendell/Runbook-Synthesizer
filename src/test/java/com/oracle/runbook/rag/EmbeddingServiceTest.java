@@ -63,13 +63,12 @@ class EmbeddingServiceTest {
 
 		@Override
 		public CompletableFuture<List<float[]>> embedBatch(List<String> texts) {
-			return CompletableFuture.completedFuture(texts.stream().map(t -> {
-				float[] embedding = new float[768];
-				for (int i = 0; i < 768; i++) {
-					embedding[i] = 0.1f;
-				}
-				return embedding;
-			}).toList());
+			return CompletableFuture.completedFuture(texts.stream().map(t -> new float[768]).toList());
+		}
+
+		@Override
+		public CompletableFuture<float[]> embedContext(com.oracle.runbook.domain.EnrichedContext context) {
+			return CompletableFuture.completedFuture(new float[768]);
 		}
 	}
 }

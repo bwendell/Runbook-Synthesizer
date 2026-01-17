@@ -80,7 +80,7 @@ public class OracleVectorStoreRepository implements VectorStoreRepository {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public List<RunbookChunk> search(float[] queryEmbedding, int topK) {
+	public List<ScoredChunk> search(float[] queryEmbedding, int topK) {
 		Objects.requireNonNull(queryEmbedding, "queryEmbedding cannot be null");
 		if (topK <= 0) {
 			throw new IllegalArgumentException("topK must be positive");
@@ -95,7 +95,7 @@ public class OracleVectorStoreRepository implements VectorStoreRepository {
 		EmbeddingSearchResult<TextSegment> result = embeddingStore.search(request);
 
 		return result.matches().stream()
-				.map(this::toRunbookChunk)
+				.map(match -> new ScoredChunk(toRunbookChunk(match), match.score()))
 				.toList();
 	}
 

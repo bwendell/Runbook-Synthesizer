@@ -116,6 +116,41 @@ class DefaultEmbeddingServiceTest {
 	}
 
 	@Test
+	@DisplayName("embedContext delegates to LlmProvider.generateEmbedding")
+	void embedContext_delegatesToLlmProvider() throws Exception {
+		// Arrange
+		float[] expectedEmbedding = new float[] { 0.7f, 0.8f, 0.9f };
+		AtomicReference<String> capturedText = new AtomicReference<>();
+		LlmProvider stubProvider = new StubLlmProvider() {
+			@Override
+			public CompletableFuture<float[]> generateEmbedding(String text) {
+				capturedText.set(text);
+				return CompletableFuture.completedFuture(expectedEmbedding);
+			}
+		};
+		DefaultEmbeddingService embeddingService = new DefaultEmbeddingService(stubProvider);
+		com.oracle.runbook.domain.Alert alert = new com.oracle.runbook.domain.Alert(
+				"alert-123", "High CPU", "CPU is at 99%", 
+				com.oracle.runbook.domain.AlertSeverity.CRITICAL, "oci-monitoring",
+				java.util.Map.of(), java.util.Map.of(), java.time.Instant.now(), "{}");
+		com.oracle.runbook.domain.ResourceMetadata resource = new com.oracle.runbook.domain.ResourceMetadata(
+				"ocid1.instance.123", "web-server-01", "compartment-123", "VM.Standard2.1",
+				"PHX-AD-1", java.util.Map.of(), java.util.Map.of());
+		com.oracle.runbook.domain.EnrichedContext context = new com.oracle.runbook.domain.EnrichedContext(
+				alert, resource, List.of(), List.of(), java.util.Map.of());
+
+		// Act
+		CompletableFuture<float[]> resultFuture = embeddingService.embedContext(context);
+		float[] result = resultFuture.get();
+
+		// Assert
+		assertNotNull(result);
+		assertArrayEquals(expectedEmbedding, result);
+		assertTrue(capturedText.get().contains("High CPU"));
+		assertTrue(capturedText.get().contains("web-server-01"));
+	}
+
+	@Test
 	@DisplayName("constructor throws NullPointerException for null provider")
 	void constructor_withNullProvider_throwsNullPointerException() {
 		// Act & Assert

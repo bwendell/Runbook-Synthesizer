@@ -74,13 +74,14 @@ class OracleVectorStoreRepositoryTest {
 		int topK = 5;
 
 		// Act
-		List<RunbookChunk> results = repository.search(queryEmbedding, topK);
+		List<ScoredChunk> results = repository.search(queryEmbedding, topK);
 
 		// Assert
 		assertNotNull(results);
 		assertEquals(1, results.size());
-		assertEquals("test-chunk-id", results.get(0).id());
-		assertEquals("Test content", results.get(0).content());
+		assertEquals("test-chunk-id", results.get(0).chunk().id());
+		assertEquals("Test content", results.get(0).chunk().content());
+		assertEquals(0.95, results.get(0).similarityScore());
 	}
 
 	@Test

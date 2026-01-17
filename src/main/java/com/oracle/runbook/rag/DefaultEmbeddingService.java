@@ -53,4 +53,28 @@ public class DefaultEmbeddingService implements EmbeddingService {
 		Objects.requireNonNull(texts, "texts cannot be null");
 		return llmProvider.generateEmbeddings(texts);
 	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws NullPointerException
+	 *             if context is null
+	 */
+	@Override
+	public CompletableFuture<float[]> embedContext(com.oracle.runbook.domain.EnrichedContext context) {
+		Objects.requireNonNull(context, "context cannot be null");
+		String query = formatContextQuery(context);
+		return llmProvider.generateEmbedding(query);
+	}
+
+	private String formatContextQuery(com.oracle.runbook.domain.EnrichedContext context) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Alert Title: ").append(context.alert().title()).append("\n");
+		sb.append("Alert Message: ").append(context.alert().message()).append("\n");
+		if (context.resource() != null) {
+			sb.append("Resource: ").append(context.resource().displayName())
+					.append(" (Shape: ").append(context.resource().shape()).append(")\n");
+		}
+		return sb.toString();
+	}
 }

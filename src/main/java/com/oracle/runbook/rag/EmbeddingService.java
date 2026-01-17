@@ -41,4 +41,15 @@ public interface EmbeddingService {
 	 *         same order as the input texts, never null
 	 */
 	CompletableFuture<List<float[]>> embedBatch(List<String> texts);
+
+	/**
+	 * Generates an embedding vector for the given enriched context.
+	 * <p>
+	 * Formats the alert and relevant metadata into a query string for embedding.
+	 *
+	 * @param context
+	 *            the enriched alert context
+	 * @return a CompletableFuture containing the embedding vector, never null
+	 */
+	CompletableFuture<float[]> embedContext(com.oracle.runbook.domain.EnrichedContext context);
 }

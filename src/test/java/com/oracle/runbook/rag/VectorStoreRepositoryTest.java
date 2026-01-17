@@ -44,7 +44,7 @@ class VectorStoreRepositoryTest {
 		int topK = 5;
 
 		// Act
-		List<RunbookChunk> results = repository.search(queryEmbedding, topK);
+		List<ScoredChunk> results = repository.search(queryEmbedding, topK);
 
 		// Assert
 		assertNotNull(results);
@@ -83,8 +83,9 @@ class VectorStoreRepositoryTest {
 		}
 
 		@Override
-		public List<RunbookChunk> search(float[] queryEmbedding, int topK) {
-			return List.of(createTestChunk("chunk-001"), createTestChunk("chunk-002"));
+		public List<ScoredChunk> search(float[] queryEmbedding, int topK) {
+			return List.of(new ScoredChunk(createTestChunk("chunk-001"), 0.9),
+					new ScoredChunk(createTestChunk("chunk-002"), 0.8));
 		}
 
 		@Override

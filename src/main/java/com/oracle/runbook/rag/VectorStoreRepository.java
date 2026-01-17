@@ -48,9 +48,10 @@ public interface VectorStoreRepository {
 	 *            the query vector to search with
 	 * @param topK
 	 *            the maximum number of results to return
-	 * @return ordered list of matching chunks (most similar first), never null
+	 * @return ordered list of matching chunks with similarity scores (most similar 
+	 *         first), never null
 	 */
-	List<RunbookChunk> search(float[] queryEmbedding, int topK);
+	List<ScoredChunk> search(float[] queryEmbedding, int topK);
 
 	/**
 	 * Deletes all chunks associated with a runbook path.
