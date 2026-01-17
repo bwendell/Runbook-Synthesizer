@@ -57,4 +57,11 @@ public interface WebhookDestination {
    * @return true if this webhook should send the checklist, false otherwise
    */
   boolean shouldSend(DynamicChecklist checklist);
+
+  /**
+   * Returns the underlying configuration for this webhook destination.
+   *
+   * @return the webhook configuration, never null
+   */
+  WebhookConfig config();
 }

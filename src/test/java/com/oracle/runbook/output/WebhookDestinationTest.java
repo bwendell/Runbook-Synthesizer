@@ -64,6 +64,24 @@ class WebhookDestinationTest {
   }
 
   @Test
+  @DisplayName("config returns the underlying WebhookConfig")
+  void config_returnsWebhookConfig() {
+    // Arrange
+    WebhookConfig config =
+        WebhookConfig.builder()
+            .name("slack-oncall")
+            .type("slack")
+            .url("https://hooks.slack.com/test")
+            .build();
+    WebhookDestination webhook = new TestWebhookDestination(config);
+
+    // Act & Assert
+    assertEquals(config, webhook.config());
+    assertEquals("slack-oncall", webhook.name());
+    assertEquals("slack", webhook.type());
+  }
+
+  @Test
   @DisplayName("WebhookResult captures HTTP response details")
   void webhookResult_capturesResponseDetails() {
     // Arrange & Act
@@ -102,27 +120,35 @@ class WebhookDestinationTest {
 
   /** Test implementation of WebhookDestination for verifying interface contract. */
   private static class TestWebhookDestination implements WebhookDestination {
-    private final String name;
-    private final String type;
+    private final WebhookConfig config;
 
     TestWebhookDestination(String name, String type) {
-      this.name = name;
-      this.type = type;
+      this.config =
+          WebhookConfig.builder().name(name).type(type).url("https://example.com/webhook").build();
+    }
+
+    TestWebhookDestination(WebhookConfig config) {
+      this.config = config;
     }
 
     @Override
     public String name() {
-      return name;
+      return config.name();
     }
 
     @Override
     public String type() {
-      return type;
+      return config.type();
+    }
+
+    @Override
+    public WebhookConfig config() {
+      return config;
     }
 
     @Override
     public CompletableFuture<WebhookResult> send(DynamicChecklist checklist) {
-      WebhookResult result = WebhookResult.success(name, 200);
+      WebhookResult result = WebhookResult.success(config.name(), 200);
       return CompletableFuture.completedFuture(result);
     }
 
