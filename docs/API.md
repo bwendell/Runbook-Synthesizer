@@ -24,6 +24,7 @@ curl http://localhost:8080/api/v1/health
 ```
 
 **Response:**
+
 ```json
 {
   "status": "UP",
@@ -55,6 +56,7 @@ curl -X POST http://localhost:8080/api/v1/alerts \
 ```
 
 **Response (200 OK):**
+
 ```json
 {
   "alertId": "550e8400-e29b-41d4-a716-446655440000",
@@ -77,6 +79,7 @@ curl -X POST http://localhost:8080/api/v1/alerts \
 ```
 
 **Error Response (400 Bad Request):**
+
 ```json
 {
   "correlationId": "uuid-string",
@@ -98,6 +101,7 @@ curl http://localhost:8080/api/v1/webhooks
 ```
 
 **Response (200 OK):**
+
 ```json
 [
   {
@@ -130,6 +134,7 @@ curl -X POST http://localhost:8080/api/v1/webhooks \
 ```
 
 **Response (201 Created):**
+
 ```json
 {
   "name": "slack-production",
@@ -158,6 +163,7 @@ curl -X POST http://localhost:8080/api/v1/runbooks/sync \
 ```
 
 **Response (202 Accepted):**
+
 ```json
 {
   "status": "STARTED",
@@ -182,4 +188,5 @@ curl -X POST http://localhost:8080/api/v1/runbooks/sync \
 ## OpenAPI Specification
 
 The full OpenAPI 3.0 specification is available at:
+
 - **File:** [`src/main/resources/META-INF/openapi.yaml`](../src/main/resources/META-INF/openapi.yaml)

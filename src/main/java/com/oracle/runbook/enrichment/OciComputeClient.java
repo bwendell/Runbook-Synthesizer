@@ -73,8 +73,8 @@ public class OciComputeClient {
   /**
    * Flattens OCI defined tags from nested map to flat map.
    *
-   * <p>OCI defined tags are structured as Map<String, Map<String, Object>>. This method flattens
-   * them to Map<String, String> with "namespace.key" format.
+   * <p>OCI defined tags are structured as {@code Map<String, Map<String, Object>>}. This method
+   * flattens them to {@code Map<String, String>} with "namespace.key" format.
    */
   private Map<String, String> flattenDefinedTags(Map<String, Map<String, Object>> definedTags) {
     if (definedTags == null || definedTags.isEmpty()) {

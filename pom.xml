@@ -22,11 +22,12 @@
 
         <!-- Dependency Versions -->
         <helidon.version>4.3.3</helidon.version>
-        <oci.sdk.version>3.77.2</oci.sdk.version>
-        <langchain4j.version>0.36.2</langchain4j.version>
-        <junit.version>5.11.3</junit.version>
-        <mockito.version>5.14.2</mockito.version>
-        <jackson.version>2.17.2</jackson.version>
+        <oci.sdk.version>3.78.0</oci.sdk.version>
+        <langchain4j.version>1.10.0</langchain4j.version>
+        <langchain4j.oracle.version>1.10.0-beta18</langchain4j.oracle.version>
+        <junit.version>6.1.0-M1</junit.version>
+        <mockito.version>5.21.0</mockito.version>
+        <jackson.version>2.20.1</jackson.version>
     </properties>
 
     <dependencyManagement>
@@ -103,7 +104,7 @@
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-oracle</artifactId>
-            <version>${langchain4j.version}</version>
+            <version>${langchain4j.oracle.version}</version>
         </dependency>
 
         <!-- OCI SDK (versions managed by BOM) -->
@@ -181,7 +182,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>3.5.4</version>
                 <configuration>
                     <argLine>--enable-preview</argLine>
                 </configuration>
@@ -191,7 +192,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.6.3</version>
                 <configuration>
                     <mainClass>com.oracle.runbook.RunbookSynthesizerApp</mainClass>
                 </configuration>
@@ -201,7 +202,7 @@
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-                <version>2.41.0</version>
+                <version>3.1.0</version>
                 <configuration>
                     <lineEndings>UNIX</lineEndings>
                     <java>
@@ -234,12 +235,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.6.0</version>
                 <dependencies>
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>10.16.0</version>
+                        <version>13.0.0</version>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -262,7 +263,7 @@
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
-                <version>3.4.4</version>
+                <version>3.5.1</version>
                 <configuration>
                     <from>
                         <image>eclipse-temurin:25-jre</image>

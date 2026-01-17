@@ -1,6 +1,11 @@
 package com.oracle.runbook.rag;
 
-import com.oracle.runbook.domain.*;
+import com.oracle.runbook.domain.ChecklistStep;
+import com.oracle.runbook.domain.DynamicChecklist;
+import com.oracle.runbook.domain.EnrichedContext;
+import com.oracle.runbook.domain.GenerationConfig;
+import com.oracle.runbook.domain.RetrievedChunk;
+import com.oracle.runbook.domain.StepPriority;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +43,9 @@ public class DefaultChecklistGenerator implements ChecklistGenerator {
     // 3. Parse Markdown checklist
     List<ChecklistStep> steps = parseMarkdownChecklist(response);
     String summary = response.split("\n")[0]; // Simple first line as summary
-    if (summary.length() > 200) summary = summary.substring(0, 197) + "...";
+    if (summary.length() > 200) {
+      summary = summary.substring(0, 197) + "...";
+    }
 
     List<String> sourceRunbooks =
         relevantChunks.stream().map(rc -> rc.chunk().runbookPath()).distinct().toList();
