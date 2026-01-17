@@ -13,40 +13,37 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Integration tests for health endpoint.
- * Uses Helidon SE 4.x testing framework.
+ * Integration tests for health endpoint. Uses Helidon SE 4.x testing framework.
  */
 @ServerTest
 class HealthEndpointTest {
 
-    private final Http1Client client;
+	private final Http1Client client;
 
-    HealthEndpointTest(Http1Client client) {
-        this.client = client;
-    }
+	HealthEndpointTest(Http1Client client) {
+		this.client = client;
+	}
 
-    @SetUpRoute
-    static void routing(HttpRouting.Builder routing) {
-        // Add a simple health check route for testing
-        routing.get("/health", (req, res) -> res.send("{\"status\":\"UP\"}"));
-    }
+	@SetUpRoute
+	static void routing(HttpRouting.Builder routing) {
+		// Add a simple health check route for testing
+		routing.get("/health", (req, res) -> res.send("{\"status\":\"UP\"}"));
+	}
 
-    @Test
-    @DisplayName("Health endpoint returns 200 OK")
-    void healthEndpointReturns200() {
-        try (Http1ClientResponse response = client.get("/health").request()) {
-            assertEquals(Status.OK_200, response.status(), 
-                "Health endpoint should return 200 OK");
-        }
-    }
+	@Test
+	@DisplayName("Health endpoint returns 200 OK")
+	void healthEndpointReturns200() {
+		try (Http1ClientResponse response = client.get("/health").request()) {
+			assertEquals(Status.OK_200, response.status(), "Health endpoint should return 200 OK");
+		}
+	}
 
-    @Test
-    @DisplayName("Health endpoint returns UP status")
-    void healthEndpointReturnsUpStatus() {
-        try (Http1ClientResponse response = client.get("/health").request()) {
-            String body = response.as(String.class);
-            assertTrue(body.contains("UP"), 
-                "Health response should contain UP status");
-        }
-    }
+	@Test
+	@DisplayName("Health endpoint returns UP status")
+	void healthEndpointReturnsUpStatus() {
+		try (Http1ClientResponse response = client.get("/health").request()) {
+			String body = response.as(String.class);
+			assertTrue(body.contains("UP"), "Health response should contain UP status");
+		}
+	}
 }

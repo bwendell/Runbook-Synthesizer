@@ -5,6 +5,7 @@
  * context-aware troubleshooting guides by leveraging RAG (Retrieval Augmented
  * Generation) with real-time infrastructure state.
  *
- * @see <a href="https://github.com/oracle/runbook-synthesizer">GitHub Repository</a>
+ * @see <a href="https://github.com/oracle/runbook-synthesizer">GitHub
+ *      Repository</a>
  */
 package com.oracle.runbook;
