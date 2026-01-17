@@ -7,7 +7,6 @@ import com.oracle.runbook.domain.DynamicChecklist;
 import com.oracle.runbook.domain.StepPriority;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -68,18 +67,16 @@ class WebhookDestinationTest {
   @DisplayName("WebhookResult captures HTTP response details")
   void webhookResult_capturesResponseDetails() {
     // Arrange & Act
-    WebhookResult successResult = new WebhookResult(true, 200, "{\"ok\":true}", Optional.empty());
-    WebhookResult failResult =
-        new WebhookResult(false, 500, "", Optional.of("Internal server error"));
+    WebhookResult successResult = WebhookResult.success("test-webhook", 200);
+    WebhookResult failResult = WebhookResult.failure("test-webhook", "Internal server error");
 
     // Assert
     assertTrue(successResult.success());
     assertEquals(200, successResult.statusCode());
-    assertEquals("{\"ok\":true}", successResult.responseBody());
     assertTrue(successResult.errorMessage().isEmpty());
+    assertEquals("test-webhook", successResult.destinationName());
 
     assertFalse(failResult.success());
-    assertEquals(500, failResult.statusCode());
     assertTrue(failResult.errorMessage().isPresent());
     assertEquals("Internal server error", failResult.errorMessage().get());
   }
@@ -125,7 +122,7 @@ class WebhookDestinationTest {
 
     @Override
     public CompletableFuture<WebhookResult> send(DynamicChecklist checklist) {
-      WebhookResult result = new WebhookResult(true, 200, "{\"ok\":true}", Optional.empty());
+      WebhookResult result = WebhookResult.success(name, 200);
       return CompletableFuture.completedFuture(result);
     }
 
