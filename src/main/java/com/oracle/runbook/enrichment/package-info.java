@@ -15,6 +15,14 @@
  *   <li>{@link com.oracle.runbook.enrichment.LogSourceAdapter} - Fetches logs from log aggregation sources</li>
  *   <li>{@link com.oracle.runbook.enrichment.ContextEnrichmentService} - Orchestrates enrichment with all sources</li>
  * </ul>
+ * 
+ * <h2>OCI SDK Adapters</h2>
+ * <ul>
+ *   <li>{@link com.oracle.runbook.enrichment.OciMonitoringAdapter} - OCI Monitoring API implementation</li>
+ *   <li>{@link com.oracle.runbook.enrichment.OciLoggingAdapter} - OCI Logging Search API implementation</li>
+ *   <li>{@link com.oracle.runbook.enrichment.OciComputeClient} - OCI Compute instance metadata retrieval</li>
+ * </ul>
  */
 package com.oracle.runbook.enrichment;
+
 
