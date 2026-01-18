@@ -414,5 +414,44 @@
                 </plugins>
             </build>
         </profile>
+        
+        <!-- E2E Containers Profile - Runs container-based tests with Testcontainers -->
+        <profile>
+            <id>e2e-containers</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>3.5.4</version>
+                        <configuration>
+                            <argLine>--enable-preview</argLine>
+                            <!-- Include only integration tests -->
+                            <includes>
+                                <include>**/*IT.java</include>
+                            </includes>
+                            <!-- Enable container tests via system property -->
+                            <systemPropertyVariables>
+                                <test.use.containers>true</test.use.containers>
+                            </systemPropertyVariables>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>integration-test</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>verify</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

@@ -47,6 +47,21 @@ curl http://localhost:8080/health
 # Expected: {"status":"UP"}
 ```
 
+### Testing
+
+```powershell
+# Run unit tests only
+.\mvnw.cmd test --batch-mode
+
+# Run unit + integration tests (no Docker required)
+.\mvnw.cmd verify --batch-mode
+
+# Run container E2E tests (requires Docker)
+.\mvnw.cmd verify -Dtest.use.containers=true --batch-mode
+```
+
+See [E2E Testing Guidelines](docs/E2E_TESTING_GUIDELINES.md) for detailed testing documentation.
+
 ## Tech Stack
 
 | Component | Technology |
@@ -61,6 +76,7 @@ curl http://localhost:8080/health
 
 - [Architecture](docs/ARCHITECTURE.md) - System design and component overview
 - [Design](docs/DESIGN.md) - Detailed technical design document
+- [E2E Testing Guidelines](docs/E2E_TESTING_GUIDELINES.md) - Container-based E2E testing with Testcontainers
 - [Contributing](CONTRIBUTING.md) - How to contribute
 
 ## License
