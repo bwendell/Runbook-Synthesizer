@@ -1,7 +1,10 @@
 package com.oracle.runbook.enrichment;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
+import com.oracle.bmc.loggingsearch.LogSearchClient;
 import com.oracle.runbook.config.OciConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,16 +13,16 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link OciLoggingAdapter}.
  *
  * <p>Note: Full integration testing with OCI SDK requires live credentials. These unit tests verify
- * the adapter implements the interface contract.
+ * the adapter's public API contract via behavioral tests.
  */
 class OciLoggingAdapterTest {
 
   @Test
   @DisplayName("OciLoggingAdapter should implement LogSourceAdapter")
   void testImplementsLogSourceAdapter() {
-    assertTrue(
-        LogSourceAdapter.class.isAssignableFrom(OciLoggingAdapter.class),
-        "OciLoggingAdapter should implement LogSourceAdapter");
+    assertThat(LogSourceAdapter.class.isAssignableFrom(OciLoggingAdapter.class))
+        .as("OciLoggingAdapter should implement LogSourceAdapter")
+        .isTrue();
   }
 
   @Test
@@ -29,36 +32,30 @@ class OciLoggingAdapterTest {
         new OciConfig(
             "ocid1.compartment.oc1..test", null, null, null, null, null, null, null, null);
 
-    assertThrows(NullPointerException.class, () -> new OciLoggingAdapter(null, config));
+    assertThatThrownBy(() -> new OciLoggingAdapter(null, config))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   @DisplayName("OciLoggingAdapter constructor should reject null config")
   void testConstructorRejectsNullConfig() {
-    assertThrows(NullPointerException.class, () -> new OciLoggingAdapter(null, null));
+    assertThatThrownBy(() -> new OciLoggingAdapter(null, null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  @DisplayName("sourceType() should return expected identifier")
-  void testSourceTypeContract() {
-    try {
-      var method = OciLoggingAdapter.class.getMethod("sourceType");
-      assertEquals(String.class, method.getReturnType());
-    } catch (NoSuchMethodException e) {
-      fail("sourceType() method should exist");
-    }
-  }
+  @DisplayName("sourceType() returns 'oci-logging'")
+  void sourceType_ReturnsOciLogging() {
+    // Create a mock client to construct the adapter
+    LogSearchClient mockClient = mock(LogSearchClient.class);
+    OciConfig config =
+        new OciConfig(
+            "ocid1.compartment.oc1..test", null, null, null, null, null, null, null, null);
 
-  @Test
-  @DisplayName("fetchLogs should be accessible via interface contract")
-  void testFetchLogsContract() {
-    try {
-      var method =
-          OciLoggingAdapter.class.getMethod(
-              "fetchLogs", String.class, java.time.Duration.class, String.class);
-      assertNotNull(method.getGenericReturnType());
-    } catch (NoSuchMethodException e) {
-      fail("fetchLogs(String, Duration, String) method should exist");
-    }
+    OciLoggingAdapter adapter = new OciLoggingAdapter(mockClient, config);
+
+    assertThat(adapter.sourceType())
+        .as("sourceType should return the expected identifier")
+        .isEqualTo("oci-logging");
   }
 }

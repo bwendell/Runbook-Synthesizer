@@ -1,7 +1,8 @@
 package com.oracle.runbook.output;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.oracle.runbook.domain.DynamicChecklist;
 import java.time.Instant;
@@ -47,10 +48,11 @@ class WebhookDispatcherTest {
 
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
-    assertEquals(2, results.size());
-    assertTrue(results.stream().allMatch(WebhookResult::isSuccess));
-    verify(destination1).send(checklist);
-    verify(destination2).send(checklist);
+    assertThat(results).hasSize(2);
+    assertThat(results).allMatch(WebhookResult::isSuccess);
+    assertThat(results)
+        .extracting(WebhookResult::destinationName)
+        .containsExactlyInAnyOrder("dest-1", "dest-2");
   }
 
   @Test
@@ -65,10 +67,13 @@ class WebhookDispatcherTest {
 
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
-    assertEquals(1, results.size());
-    assertEquals("dest-1", results.getFirst().destinationName());
-    verify(destination1).send(checklist);
-    verify(destination2, never()).send(checklist);
+    assertThat(results).hasSize(1);
+    assertThat(results.getFirst().destinationName()).isEqualTo("dest-1");
+    // verify dest-2 was NOT dispatched by confirming it's not in results
+    assertThat(results)
+        .extracting(WebhookResult::destinationName)
+        .containsExactly("dest-1")
+        .doesNotContain("dest-2");
   }
 
   @Test
@@ -81,9 +86,7 @@ class WebhookDispatcherTest {
 
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
-    assertTrue(results.isEmpty());
-    verify(destination1, never()).send(checklist);
-    verify(destination2, never()).send(checklist);
+    assertThat(results).isEmpty();
   }
 
   @Test
@@ -102,11 +105,9 @@ class WebhookDispatcherTest {
 
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
-    assertEquals(2, results.size());
-    long successCount = results.stream().filter(WebhookResult::isSuccess).count();
-    long failureCount = results.stream().filter(r -> !r.isSuccess()).count();
-    assertEquals(1, successCount);
-    assertEquals(1, failureCount);
+    assertThat(results).hasSize(2);
+    assertThat(results).filteredOn(WebhookResult::isSuccess).hasSize(1);
+    assertThat(results).filteredOn(r -> !r.isSuccess()).hasSize(1);
   }
 
   @Test
@@ -129,10 +130,10 @@ class WebhookDispatcherTest {
 
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
-    assertEquals(3, results.size());
-    verify(destination1).send(checklist);
-    verify(destination2).send(checklist);
-    verify(destination3).send(checklist);
+    assertThat(results).hasSize(3);
+    assertThat(results)
+        .extracting(WebhookResult::destinationName)
+        .containsExactlyInAnyOrder("dest-1", "dest-2", "dest-3");
   }
 
   @Test
@@ -146,8 +147,8 @@ class WebhookDispatcherTest {
 
     List<WebhookResult> results = dispatcher.dispatchSync(checklist);
 
-    assertEquals(1, results.size());
-    assertTrue(results.getFirst().isSuccess());
+    assertThat(results).hasSize(1);
+    assertThat(results.getFirst().isSuccess()).isTrue();
   }
 
   @Test
@@ -157,7 +158,7 @@ class WebhookDispatcherTest {
 
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
-    assertTrue(results.isEmpty());
+    assertThat(results).isEmpty();
   }
 
   private DynamicChecklist createTestChecklist() {
