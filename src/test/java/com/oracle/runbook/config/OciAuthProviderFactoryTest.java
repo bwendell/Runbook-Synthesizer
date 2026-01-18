@@ -1,6 +1,8 @@
 package com.oracle.runbook.config;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oracle.bmc.auth.AuthenticationDetailsProvider;
 import com.oracle.bmc.auth.BasicAuthenticationDetailsProvider;
@@ -46,11 +48,12 @@ class OciAuthProviderFactoryTest {
             null);
 
     // Test: Factory should not throw for valid config
-    assertDoesNotThrow(
-        () -> {
-          BasicAuthenticationDetailsProvider provider = OciAuthProviderFactory.create(config);
-          assertNotNull(provider);
-        });
+    assertThatCode(
+            () -> {
+              BasicAuthenticationDetailsProvider provider = OciAuthProviderFactory.create(config);
+              assertThat(provider).isNotNull();
+            })
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -68,13 +71,15 @@ class OciAuthProviderFactoryTest {
             null,
             null);
 
-    assertThrows(IllegalStateException.class, () -> OciAuthProviderFactory.create(config));
+    assertThatThrownBy(() -> OciAuthProviderFactory.create(config))
+        .isInstanceOf(IllegalStateException.class);
   }
 
   @Test
   @DisplayName("Should throw when config is null")
   void shouldThrowWhenConfigIsNull() {
-    assertThrows(NullPointerException.class, () -> OciAuthProviderFactory.create(null));
+    assertThatThrownBy(() -> OciAuthProviderFactory.create(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -94,11 +99,12 @@ class OciAuthProviderFactoryTest {
             null);
 
     // Test: Factory should create SimpleAuthenticationDetailsProvider
-    assertDoesNotThrow(
-        () -> {
-          BasicAuthenticationDetailsProvider provider = OciAuthProviderFactory.create(config);
-          assertNotNull(provider);
-        });
+    assertThatCode(
+            () -> {
+              BasicAuthenticationDetailsProvider provider = OciAuthProviderFactory.create(config);
+              assertThat(provider).isNotNull();
+            })
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -133,13 +139,13 @@ class OciAuthProviderFactoryTest {
 
     // Test: Factory should still succeed (but using env-based provider)
     BasicAuthenticationDetailsProvider provider = OciAuthProviderFactory.create(config);
-    assertNotNull(provider);
+    assertThat(provider).isNotNull();
     // The provider should have the env var user ID
     // Cast to AuthenticationDetailsProvider to access getUserId()
     AuthenticationDetailsProvider authProvider = (AuthenticationDetailsProvider) provider;
-    assertTrue(
-        authProvider.getUserId().contains("fromenv"),
-        "Should use env var user ID, not config file");
+    assertThat(authProvider.getUserId())
+        .as("Should use env var user ID, not config file")
+        .contains("fromenv");
   }
 
   @Test
@@ -173,12 +179,12 @@ class OciAuthProviderFactoryTest {
             null);
 
     BasicAuthenticationDetailsProvider provider = OciAuthProviderFactory.create(config);
-    assertNotNull(provider);
+    assertThat(provider).isNotNull();
     // Cast to AuthenticationDetailsProvider to access getUserId()
     AuthenticationDetailsProvider authProvider = (AuthenticationDetailsProvider) provider;
-    assertTrue(
-        authProvider.getUserId().contains("fromconfigfile"),
-        "Should fallback to config file user ID");
+    assertThat(authProvider.getUserId())
+        .as("Should fallback to config file user ID")
+        .contains("fromconfigfile");
   }
 
   /** Creates a mock RSA private key file for testing. */

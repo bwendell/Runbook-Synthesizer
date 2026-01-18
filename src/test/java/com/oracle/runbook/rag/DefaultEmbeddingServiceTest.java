@@ -1,6 +1,7 @@
 package com.oracle.runbook.rag;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oracle.runbook.domain.GenerationConfig;
 import java.util.List;
@@ -34,9 +35,9 @@ class DefaultEmbeddingServiceTest {
     float[] result = resultFuture.get();
 
     // Assert
-    assertNotNull(result);
-    assertArrayEquals(expectedEmbedding, result);
-    assertEquals(text, capturedText.get());
+    assertThat(result).isNotNull();
+    assertThat(result).containsExactly(expectedEmbedding);
+    assertThat(capturedText.get()).isEqualTo(text);
   }
 
   @Test
@@ -62,10 +63,10 @@ class DefaultEmbeddingServiceTest {
     List<float[]> result = resultFuture.get();
 
     // Assert
-    assertNotNull(result);
-    assertEquals(3, result.size());
-    assertArrayEquals(expectedEmbeddings.get(0), result.get(0));
-    assertEquals(texts, capturedTexts.get());
+    assertThat(result).isNotNull();
+    assertThat(result).hasSize(3);
+    assertThat(result.get(0)).containsExactly(expectedEmbeddings.get(0));
+    assertThat(capturedTexts.get()).isEqualTo(texts);
   }
 
   @Test
@@ -76,7 +77,7 @@ class DefaultEmbeddingServiceTest {
     DefaultEmbeddingService embeddingService = new DefaultEmbeddingService(stubProvider);
 
     // Act & Assert
-    assertThrows(NullPointerException.class, () -> embeddingService.embed(null));
+    assertThatThrownBy(() -> embeddingService.embed(null)).isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -87,7 +88,8 @@ class DefaultEmbeddingServiceTest {
     DefaultEmbeddingService embeddingService = new DefaultEmbeddingService(stubProvider);
 
     // Act & Assert
-    assertThrows(NullPointerException.class, () -> embeddingService.embedBatch(null));
+    assertThatThrownBy(() -> embeddingService.embedBatch(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -108,8 +110,7 @@ class DefaultEmbeddingServiceTest {
     List<float[]> result = resultFuture.get();
 
     // Assert
-    assertNotNull(result);
-    assertTrue(result.isEmpty());
+    assertThat(result).isNotNull().isEmpty();
   }
 
   @Test
@@ -156,17 +157,18 @@ class DefaultEmbeddingServiceTest {
     float[] result = resultFuture.get();
 
     // Assert
-    assertNotNull(result);
-    assertArrayEquals(expectedEmbedding, result);
-    assertTrue(capturedText.get().contains("High CPU"));
-    assertTrue(capturedText.get().contains("web-server-01"));
+    assertThat(result).isNotNull();
+    assertThat(result).containsExactly(expectedEmbedding);
+    assertThat(capturedText.get()).contains("High CPU");
+    assertThat(capturedText.get()).contains("web-server-01");
   }
 
   @Test
   @DisplayName("constructor throws NullPointerException for null provider")
   void constructor_withNullProvider_throwsNullPointerException() {
     // Act & Assert
-    assertThrows(NullPointerException.class, () -> new DefaultEmbeddingService(null));
+    assertThatThrownBy(() -> new DefaultEmbeddingService(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   /** Stub implementation of LlmProvider for testing. */

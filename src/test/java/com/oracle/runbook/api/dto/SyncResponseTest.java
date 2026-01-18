@@ -1,6 +1,6 @@
 package com.oracle.runbook.api.dto;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -12,18 +12,18 @@ class SyncResponseTest {
   void testCreation_Started() {
     var response = new SyncResponse(SyncResponse.SyncStatus.STARTED, 0, List.of(), "req-123");
 
-    assertEquals(SyncResponse.SyncStatus.STARTED, response.status());
-    assertEquals(0, response.documentsProcessed());
-    assertTrue(response.errors().isEmpty());
-    assertEquals("req-123", response.requestId());
+    assertThat(response.status()).isEqualTo(SyncResponse.SyncStatus.STARTED);
+    assertThat(response.documentsProcessed()).isEqualTo(0);
+    assertThat(response.errors()).isEmpty();
+    assertThat(response.requestId()).isEqualTo("req-123");
   }
 
   @Test
   void testCreation_Completed() {
     var response = new SyncResponse(SyncResponse.SyncStatus.COMPLETED, 42, List.of(), "req-456");
 
-    assertEquals(SyncResponse.SyncStatus.COMPLETED, response.status());
-    assertEquals(42, response.documentsProcessed());
+    assertThat(response.status()).isEqualTo(SyncResponse.SyncStatus.COMPLETED);
+    assertThat(response.documentsProcessed()).isEqualTo(42);
   }
 
   @Test
@@ -31,15 +31,14 @@ class SyncResponseTest {
     var errors = List.of("Failed to parse doc1.md", "Doc2.md not found");
     var response = new SyncResponse(SyncResponse.SyncStatus.FAILED, 10, errors, "req-789");
 
-    assertEquals(SyncResponse.SyncStatus.FAILED, response.status());
-    assertEquals(2, response.errors().size());
+    assertThat(response.status()).isEqualTo(SyncResponse.SyncStatus.FAILED);
+    assertThat(response.errors()).hasSize(2);
   }
 
   @Test
   void testNullErrors_DefaultsToEmptyList() {
     var response = new SyncResponse(SyncResponse.SyncStatus.STARTED, 0, null, "req-000");
 
-    assertNotNull(response.errors());
-    assertTrue(response.errors().isEmpty());
+    assertThat(response.errors()).isNotNull().isEmpty();
   }
 }

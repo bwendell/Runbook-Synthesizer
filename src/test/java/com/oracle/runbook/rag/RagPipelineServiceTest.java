@@ -1,6 +1,6 @@
 package com.oracle.runbook.rag;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
 import com.oracle.runbook.enrichment.ContextEnrichmentService;
@@ -47,11 +47,11 @@ class RagPipelineServiceTest {
     DynamicChecklist actualChecklist = future.get();
 
     // Assert
-    assertNotNull(actualChecklist);
-    assertEquals(expectedChecklist.alertId(), actualChecklist.alertId());
-    assertTrue(enrichmentService.called);
-    assertTrue(retriever.called);
-    assertTrue(generator.called);
+    assertThat(actualChecklist).isNotNull();
+    assertThat(actualChecklist.alertId()).isEqualTo(expectedChecklist.alertId());
+    assertThat(enrichmentService.called).isTrue();
+    assertThat(retriever.called).isTrue();
+    assertThat(generator.called).isTrue();
   }
 
   private Alert createTestAlert() {

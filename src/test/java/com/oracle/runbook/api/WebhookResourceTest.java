@@ -1,6 +1,6 @@
 package com.oracle.runbook.api;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.helidon.http.HeaderNames;
 import io.helidon.http.Status;
@@ -29,9 +29,9 @@ class WebhookResourceTest {
   @Test
   void testGetWebhooks_ReturnsEmptyList() {
     try (Http1ClientResponse response = client.get("/api/v1/webhooks").request()) {
-      assertEquals(Status.OK_200, response.status());
+      assertThat(response.status()).isEqualTo(Status.OK_200);
       String body = response.as(String.class);
-      assertEquals("[]", body);
+      assertThat(body).isEqualTo("[]");
     }
   }
 
@@ -52,10 +52,10 @@ class WebhookResourceTest {
             .post("/api/v1/webhooks")
             .header(HeaderNames.CONTENT_TYPE, "application/json")
             .submit(validConfig)) {
-      assertEquals(Status.CREATED_201, response.status());
+      assertThat(response.status()).isEqualTo(Status.CREATED_201);
       String body = response.as(String.class);
-      assertTrue(body.contains("\"name\""), "Response should contain name");
-      assertTrue(body.contains("slack-notify"), "Response should contain the webhook name");
+      assertThat(body).as("Response should contain name").contains("\"name\"");
+      assertThat(body).as("Response should contain the webhook name").contains("slack-notify");
     }
   }
 
@@ -74,9 +74,9 @@ class WebhookResourceTest {
             .post("/api/v1/webhooks")
             .header(HeaderNames.CONTENT_TYPE, "application/json")
             .submit(invalidConfig)) {
-      assertEquals(Status.BAD_REQUEST_400, response.status());
+      assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
       String body = response.as(String.class);
-      assertTrue(body.contains("\"errorCode\""), "Response should contain errorCode");
+      assertThat(body).as("Response should contain errorCode").contains("\"errorCode\"");
     }
   }
 }

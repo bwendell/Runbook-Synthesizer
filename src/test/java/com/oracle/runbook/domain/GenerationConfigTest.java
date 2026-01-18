@@ -1,6 +1,8 @@
 package com.oracle.runbook.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -16,9 +18,9 @@ class GenerationConfigTest {
   void constructionWithValidValuesSucceeds() {
     GenerationConfig config = new GenerationConfig(0.7, 2048, Optional.of("gpt-4-turbo"));
 
-    assertEquals(0.7, config.temperature());
-    assertEquals(2048, config.maxTokens());
-    assertEquals(Optional.of("gpt-4-turbo"), config.modelOverride());
+    assertThat(config.temperature()).isEqualTo(0.7);
+    assertThat(config.maxTokens()).isEqualTo(2048);
+    assertThat(config.modelOverride()).isEqualTo(Optional.of("gpt-4-turbo"));
   }
 
   @Test
@@ -26,40 +28,43 @@ class GenerationConfigTest {
   void allowsEmptyModelOverride() {
     GenerationConfig config = new GenerationConfig(0.5, 1024, Optional.empty());
 
-    assertEquals(Optional.empty(), config.modelOverride());
+    assertThat(config.modelOverride()).isEmpty();
   }
 
   @ParameterizedTest
   @DisplayName("GenerationConfig throws for temperature outside 0.0-1.0 range")
   @ValueSource(doubles = {-0.1, -1.0, 1.1, 2.0, 100.0})
   void throwsForInvalidTemperature(double temperature) {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> new GenerationConfig(temperature, 1024, Optional.empty()));
+    assertThatThrownBy(() -> new GenerationConfig(temperature, 1024, Optional.empty()))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   @DisplayName("GenerationConfig accepts boundary temperature values")
   void acceptsBoundaryTemperatureValues() {
-    assertDoesNotThrow(() -> new GenerationConfig(0.0, 1024, Optional.empty()));
-    assertDoesNotThrow(() -> new GenerationConfig(1.0, 1024, Optional.empty()));
-    assertDoesNotThrow(() -> new GenerationConfig(0.5, 1024, Optional.empty()));
+    assertThatCode(() -> new GenerationConfig(0.0, 1024, Optional.empty()))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> new GenerationConfig(1.0, 1024, Optional.empty()))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> new GenerationConfig(0.5, 1024, Optional.empty()))
+        .doesNotThrowAnyException();
   }
 
   @ParameterizedTest
   @DisplayName("GenerationConfig throws for maxTokens <= 0")
   @ValueSource(ints = {0, -1, -100})
   void throwsForInvalidMaxTokens(int maxTokens) {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> new GenerationConfig(0.5, maxTokens, Optional.empty()));
+    assertThatThrownBy(() -> new GenerationConfig(0.5, maxTokens, Optional.empty()))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
   @DisplayName("GenerationConfig accepts valid maxTokens")
   void acceptsValidMaxTokens() {
-    assertDoesNotThrow(() -> new GenerationConfig(0.5, 1, Optional.empty()));
-    assertDoesNotThrow(() -> new GenerationConfig(0.5, 4096, Optional.empty()));
-    assertDoesNotThrow(() -> new GenerationConfig(0.5, 100000, Optional.empty()));
+    assertThatCode(() -> new GenerationConfig(0.5, 1, Optional.empty())).doesNotThrowAnyException();
+    assertThatCode(() -> new GenerationConfig(0.5, 4096, Optional.empty()))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> new GenerationConfig(0.5, 100000, Optional.empty()))
+        .doesNotThrowAnyException();
   }
 }

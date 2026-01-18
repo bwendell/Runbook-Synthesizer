@@ -1,6 +1,7 @@
 package com.oracle.runbook.api.dto;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import java.util.Map;
@@ -19,11 +20,11 @@ class ErrorResponseTest {
             Instant.now(),
             Map.of());
 
-    assertEquals("correlation-123", response.correlationId());
-    assertEquals("VALIDATION_ERROR", response.errorCode());
-    assertEquals("Request validation failed", response.message());
-    assertNotNull(response.timestamp());
-    assertTrue(response.details().isEmpty());
+    assertThat(response.correlationId()).isEqualTo("correlation-123");
+    assertThat(response.errorCode()).isEqualTo("VALIDATION_ERROR");
+    assertThat(response.message()).isEqualTo("Request validation failed");
+    assertThat(response.timestamp()).isNotNull();
+    assertThat(response.details()).isEmpty();
   }
 
   @Test
@@ -41,35 +42,31 @@ class ErrorResponseTest {
             Instant.now(),
             details);
 
-    assertEquals(2, response.details().size());
-    assertEquals("cannot be null", response.details().get("title"));
+    assertThat(response.details()).hasSize(2);
+    assertThat(response.details().get("title")).isEqualTo("cannot be null");
   }
 
   @Test
   void testNullCorrelationId_ThrowsException() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new ErrorResponse(null, "ERROR", "message", Instant.now(), Map.of()));
+    assertThatThrownBy(() -> new ErrorResponse(null, "ERROR", "message", Instant.now(), Map.of()))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void testNullErrorCode_ThrowsException() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new ErrorResponse("id", null, "message", Instant.now(), Map.of()));
+    assertThatThrownBy(() -> new ErrorResponse("id", null, "message", Instant.now(), Map.of()))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void testNullTimestamp_ThrowsException() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new ErrorResponse("id", "ERROR", "message", null, Map.of()));
+    assertThatThrownBy(() -> new ErrorResponse("id", "ERROR", "message", null, Map.of()))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void testNullDetails_DefaultsToEmptyMap() {
     var response = new ErrorResponse("id", "ERROR", "msg", Instant.now(), null);
-    assertNotNull(response.details());
-    assertTrue(response.details().isEmpty());
+    assertThat(response.details()).isNotNull().isEmpty();
   }
 }

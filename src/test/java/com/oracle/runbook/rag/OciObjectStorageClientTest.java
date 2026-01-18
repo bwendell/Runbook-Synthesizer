@@ -1,6 +1,8 @@
 package com.oracle.runbook.rag;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +14,8 @@ class OciObjectStorageClientTest {
   @Test
   @DisplayName("OciObjectStorageClient constructor should reject null client")
   void testConstructorRejectsNullClient() {
-    assertThrows(NullPointerException.class, () -> new OciObjectStorageClient(null));
+    assertThatThrownBy(() -> new OciObjectStorageClient(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -21,7 +24,7 @@ class OciObjectStorageClientTest {
     try {
       var method =
           OciObjectStorageClient.class.getMethod("listRunbooks", String.class, String.class);
-      assertTrue(method.getReturnType().equals(CompletableFuture.class));
+      assertThat(method.getReturnType()).isEqualTo(CompletableFuture.class);
     } catch (NoSuchMethodException e) {
       fail("listRunbooks(String, String) method should exist");
     }
@@ -34,7 +37,7 @@ class OciObjectStorageClientTest {
       var method =
           OciObjectStorageClient.class.getMethod(
               "getRunbookContent", String.class, String.class, String.class);
-      assertTrue(method.getReturnType().equals(CompletableFuture.class));
+      assertThat(method.getReturnType()).isEqualTo(CompletableFuture.class);
     } catch (NoSuchMethodException e) {
       fail("getRunbookContent(String, String, String) method should exist");
     }

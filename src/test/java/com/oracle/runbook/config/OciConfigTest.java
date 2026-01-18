@@ -1,6 +1,7 @@
 package com.oracle.runbook.config;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,14 +34,14 @@ class OciConfigTest {
 
       Optional<OciConfig> result = OciConfig.fromEnvironment(envVars::get);
 
-      assertTrue(result.isPresent(), "Config should be present when all vars are set");
+      assertThat(result).as("Config should be present when all vars are set").isPresent();
       OciConfig config = result.get();
-      assertEquals("ocid1.compartment.oc1..testcompartment", config.compartmentId());
-      assertEquals("us-ashburn-1", config.region());
-      assertEquals("ocid1.user.oc1..testuser", config.userId());
-      assertEquals("ocid1.tenancy.oc1..testtenancy", config.tenancyId());
-      assertEquals("aa:bb:cc:dd:ee:ff", config.fingerprint());
-      assertNotNull(config.privateKeyContent());
+      assertThat(config.compartmentId()).isEqualTo("ocid1.compartment.oc1..testcompartment");
+      assertThat(config.region()).isEqualTo("us-ashburn-1");
+      assertThat(config.userId()).isEqualTo("ocid1.user.oc1..testuser");
+      assertThat(config.tenancyId()).isEqualTo("ocid1.tenancy.oc1..testtenancy");
+      assertThat(config.fingerprint()).isEqualTo("aa:bb:cc:dd:ee:ff");
+      assertThat(config.privateKeyContent()).isNotNull();
     }
 
     @Test
@@ -57,7 +58,7 @@ class OciConfigTest {
 
       Optional<OciConfig> result = OciConfig.fromEnvironment(envVars::get);
 
-      assertTrue(result.isEmpty(), "Config should be empty when OCI_USER_ID is missing");
+      assertThat(result).as("Config should be empty when OCI_USER_ID is missing").isEmpty();
     }
 
     @Test
@@ -74,7 +75,7 @@ class OciConfigTest {
 
       Optional<OciConfig> result = OciConfig.fromEnvironment(envVars::get);
 
-      assertTrue(result.isEmpty(), "Config should be empty when OCI_COMPARTMENT_ID is missing");
+      assertThat(result).as("Config should be empty when OCI_COMPARTMENT_ID is missing").isEmpty();
     }
 
     @Test
@@ -84,7 +85,7 @@ class OciConfigTest {
 
       Optional<OciConfig> result = OciConfig.fromEnvironment(emptyEnv::get);
 
-      assertTrue(result.isEmpty(), "Config should be empty when no env vars are set");
+      assertThat(result).as("Config should be empty when no env vars are set").isEmpty();
     }
 
     @Test
@@ -100,8 +101,8 @@ class OciConfigTest {
 
       Optional<OciConfig> result = OciConfig.fromEnvironment(envVars::get);
 
-      assertTrue(result.isPresent(), "Config should be present with key file path");
-      assertEquals("/path/to/key.pem", result.get().privateKeyFilePath());
+      assertThat(result).as("Config should be present with key file path").isPresent();
+      assertThat(result.get().privateKeyFilePath()).isEqualTo("/path/to/key.pem");
     }
   }
 
@@ -120,20 +121,20 @@ class OciConfigTest {
             null,
             null);
 
-    assertEquals("ocid1.compartment.oc1..abc", config.compartmentId());
-    assertEquals("us-ashburn-1", config.region());
-    assertEquals("~/.oci/config", config.configFilePath());
-    assertEquals("DEFAULT", config.profile());
+    assertThat(config.compartmentId()).isEqualTo("ocid1.compartment.oc1..abc");
+    assertThat(config.region()).isEqualTo("us-ashburn-1");
+    assertThat(config.configFilePath()).isEqualTo("~/.oci/config");
+    assertThat(config.profile()).isEqualTo("DEFAULT");
   }
 
   @Test
   @DisplayName("OciConfig should reject null compartmentId")
   void shouldRejectNullCompartmentId() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            new OciConfig(
-                null, "us-ashburn-1", "~/.oci/config", "DEFAULT", null, null, null, null, null));
+    assertThatThrownBy(
+            () ->
+                new OciConfig(
+                    null, "us-ashburn-1", "~/.oci/config", "DEFAULT", null, null, null, null, null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -152,10 +153,10 @@ class OciConfigTest {
             null // privateKeyFilePath optional
             );
 
-    assertEquals("ocid1.compartment.oc1..abc", config.compartmentId());
-    assertNull(config.region());
-    assertNull(config.configFilePath());
-    assertNull(config.profile());
+    assertThat(config.compartmentId()).isEqualTo("ocid1.compartment.oc1..abc");
+    assertThat(config.region()).isNull();
+    assertThat(config.configFilePath()).isNull();
+    assertThat(config.profile()).isNull();
   }
 
   @Test
@@ -163,9 +164,9 @@ class OciConfigTest {
   void shouldProvideFactoryWithDefaults() {
     OciConfig config = OciConfig.withDefaults("ocid1.compartment.oc1..abc");
 
-    assertEquals("ocid1.compartment.oc1..abc", config.compartmentId());
-    assertNull(config.region());
-    assertEquals("~/.oci/config", config.configFilePath());
-    assertEquals("DEFAULT", config.profile());
+    assertThat(config.compartmentId()).isEqualTo("ocid1.compartment.oc1..abc");
+    assertThat(config.region()).isNull();
+    assertThat(config.configFilePath()).isEqualTo("~/.oci/config");
+    assertThat(config.profile()).isEqualTo("DEFAULT");
   }
 }

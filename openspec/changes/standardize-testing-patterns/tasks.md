@@ -49,7 +49,7 @@
 ## 2. Migrate Unit Tests to AssertJ
 
 ### 2.1 Migrate Domain Model Tests to AssertJ
-- [ ] **Task**: Convert all domain tests from JUnit to AssertJ assertions
+- [x] **Task**: Convert all domain tests from JUnit to AssertJ assertions
 - **Files** (13 files):
   - `domain/AlertTest.java`
   - `domain/AlertSeverityTest.java`

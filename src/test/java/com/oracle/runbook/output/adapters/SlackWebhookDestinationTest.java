@@ -1,6 +1,7 @@
 package com.oracle.runbook.output.adapters;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oracle.runbook.domain.DynamicChecklist;
 import com.oracle.runbook.output.WebhookConfig;
@@ -32,19 +33,19 @@ class SlackWebhookDestinationTest {
   @Test
   @DisplayName("name() returns configured name")
   void nameReturnsConfiguredName() {
-    assertEquals("slack-alerts", destination.name());
+    assertThat(destination.name()).isEqualTo("slack-alerts");
   }
 
   @Test
   @DisplayName("type() returns 'slack'")
   void typeReturnsSlack() {
-    assertEquals("slack", destination.type());
+    assertThat(destination.type()).isEqualTo("slack");
   }
 
   @Test
   @DisplayName("config() returns the original configuration")
   void configReturnsConfiguration() {
-    assertSame(config, destination.config());
+    assertThat(destination.config()).isSameAs(config);
   }
 
   @Test
@@ -52,27 +53,24 @@ class SlackWebhookDestinationTest {
   void sendThrowsUnsupportedOperationException() {
     DynamicChecklist checklist = createTestChecklist();
 
-    ExecutionException exception =
-        assertThrows(ExecutionException.class, () -> destination.send(checklist).get());
-
-    assertInstanceOf(UnsupportedOperationException.class, exception.getCause());
-    assertTrue(
-        exception.getCause().getMessage().contains("v1.1"),
-        "Exception message should mention v1.1");
+    assertThatThrownBy(() -> destination.send(checklist).get())
+        .isInstanceOf(ExecutionException.class)
+        .hasCauseInstanceOf(UnsupportedOperationException.class)
+        .hasMessageContaining("v1.1");
   }
 
   @Test
   @DisplayName("formatAsBlockKit() returns null as placeholder")
   void formatAsBlockKitReturnsNull() {
     DynamicChecklist checklist = createTestChecklist();
-    assertNull(destination.formatAsBlockKit(checklist));
+    assertThat(destination.formatAsBlockKit(checklist)).isNull();
   }
 
   @Test
   @DisplayName("shouldSend() returns true by default")
   void shouldSendReturnsTrue() {
     DynamicChecklist checklist = createTestChecklist();
-    assertTrue(destination.shouldSend(checklist));
+    assertThat(destination.shouldSend(checklist)).isTrue();
   }
 
   private DynamicChecklist createTestChecklist() {

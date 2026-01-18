@@ -1,6 +1,7 @@
 package com.oracle.runbook.api.dto;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -20,8 +21,8 @@ class AlertRequestTest {
             Map.of(),
             null);
 
-    assertEquals("Database connection failure", request.title());
-    assertEquals("CRITICAL", request.severity());
+    assertThat(request.title()).isEqualTo("Database connection failure");
+    assertThat(request.severity()).isEqualTo("CRITICAL");
   }
 
   @Test
@@ -39,38 +40,34 @@ class AlertRequestTest {
             labels,
             "{\"raw\": \"payload\"}");
 
-    assertEquals("High CPU", request.title());
-    assertEquals("prometheus", request.sourceService());
-    assertEquals("ocid1.compartment.xxx", request.dimensions().get("compartmentId"));
-    assertEquals("production", request.labels().get("env"));
-    assertEquals("{\"raw\": \"payload\"}", request.rawPayload());
+    assertThat(request.title()).isEqualTo("High CPU");
+    assertThat(request.sourceService()).isEqualTo("prometheus");
+    assertThat(request.dimensions().get("compartmentId")).isEqualTo("ocid1.compartment.xxx");
+    assertThat(request.labels().get("env")).isEqualTo("production");
+    assertThat(request.rawPayload()).isEqualTo("{\"raw\": \"payload\"}");
   }
 
   @Test
   void testNullTitle_ThrowsException() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new AlertRequest(null, "msg", "CRITICAL", null, null, null, null));
+    assertThatThrownBy(() -> new AlertRequest(null, "msg", "CRITICAL", null, null, null, null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void testNullSeverity_ThrowsException() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new AlertRequest("title", "msg", null, null, null, null, null));
+    assertThatThrownBy(() -> new AlertRequest("title", "msg", null, null, null, null, null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void testNullDimensions_DefaultsToEmptyMap() {
     var request = new AlertRequest("title", "msg", "INFO", null, null, null, null);
-    assertNotNull(request.dimensions());
-    assertTrue(request.dimensions().isEmpty());
+    assertThat(request.dimensions()).isNotNull().isEmpty();
   }
 
   @Test
   void testNullLabels_DefaultsToEmptyMap() {
     var request = new AlertRequest("title", "msg", "INFO", null, null, null, null);
-    assertNotNull(request.labels());
-    assertTrue(request.labels().isEmpty());
+    assertThat(request.labels()).isNotNull().isEmpty();
   }
 }

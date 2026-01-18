@@ -1,6 +1,7 @@
 package com.oracle.runbook;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -13,9 +14,9 @@ class RunbookSynthesizerAppTest {
   @Test
   @DisplayName("RunbookSynthesizerApp class exists")
   void classExists() {
-    assertDoesNotThrow(
-        () -> Class.forName("com.oracle.runbook.RunbookSynthesizerApp"),
-        "RunbookSynthesizerApp class should exist");
+    assertThatCode(() -> Class.forName("com.oracle.runbook.RunbookSynthesizerApp"))
+        .as("RunbookSynthesizerApp class should exist")
+        .doesNotThrowAnyException();
   }
 
   @Test
@@ -24,9 +25,9 @@ class RunbookSynthesizerAppTest {
     Class<?> appClass = Class.forName("com.oracle.runbook.RunbookSynthesizerApp");
     Method mainMethod = appClass.getMethod("main", String[].class);
 
-    assertNotNull(mainMethod, "main method should exist");
-    assertTrue(Modifier.isPublic(mainMethod.getModifiers()), "main should be public");
-    assertTrue(Modifier.isStatic(mainMethod.getModifiers()), "main should be static");
-    assertEquals(void.class, mainMethod.getReturnType(), "main should return void");
+    assertThat(mainMethod).as("main method should exist").isNotNull();
+    assertThat(Modifier.isPublic(mainMethod.getModifiers())).as("main should be public").isTrue();
+    assertThat(Modifier.isStatic(mainMethod.getModifiers())).as("main should be static").isTrue();
+    assertThat(mainMethod.getReturnType()).as("main should return void").isEqualTo(void.class);
   }
 }

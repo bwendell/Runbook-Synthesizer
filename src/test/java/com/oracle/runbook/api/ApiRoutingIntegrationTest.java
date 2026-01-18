@@ -1,6 +1,6 @@
 package com.oracle.runbook.api;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.helidon.http.HeaderNames;
 import io.helidon.http.Status;
@@ -36,9 +36,9 @@ class ApiRoutingIntegrationTest {
   @Test
   void testHealthEndpoint_Returns200() {
     try (Http1ClientResponse response = client.get("/api/v1/health").request()) {
-      assertEquals(Status.OK_200, response.status());
+      assertThat(response.status()).isEqualTo(Status.OK_200);
       String body = response.as(String.class);
-      assertTrue(body.contains("\"UP\""), "Health should return UP status");
+      assertThat(body).as("Health should return UP status").contains("\"UP\"");
     }
   }
 
@@ -57,7 +57,7 @@ class ApiRoutingIntegrationTest {
             .post("/api/v1/alerts")
             .header(HeaderNames.CONTENT_TYPE, "application/json")
             .submit(validRequest)) {
-      assertEquals(Status.OK_200, response.status());
+      assertThat(response.status()).isEqualTo(Status.OK_200);
     }
   }
 
@@ -75,15 +75,15 @@ class ApiRoutingIntegrationTest {
             .post("/api/v1/alerts")
             .header(HeaderNames.CONTENT_TYPE, "application/json")
             .submit(invalidRequest)) {
-      assertEquals(Status.BAD_REQUEST_400, response.status());
+      assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
     }
   }
 
   @Test
   void testWebhooksEndpoint_GetReturnsEmptyList() {
     try (Http1ClientResponse response = client.get("/api/v1/webhooks").request()) {
-      assertEquals(Status.OK_200, response.status());
-      assertEquals("[]", response.as(String.class));
+      assertThat(response.status()).isEqualTo(Status.OK_200);
+      assertThat(response.as(String.class)).isEqualTo("[]");
     }
   }
 
@@ -94,9 +94,9 @@ class ApiRoutingIntegrationTest {
             .post("/api/v1/runbooks/sync")
             .header(HeaderNames.CONTENT_TYPE, "application/json")
             .submit("{}")) {
-      assertEquals(Status.ACCEPTED_202, response.status());
+      assertThat(response.status()).isEqualTo(Status.ACCEPTED_202);
       String body = response.as(String.class);
-      assertTrue(body.contains("\"STARTED\""), "Sync should return STARTED status");
+      assertThat(body).as("Sync should return STARTED status").contains("\"STARTED\"");
     }
   }
 }

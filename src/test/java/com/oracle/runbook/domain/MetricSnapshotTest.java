@@ -1,6 +1,7 @@
 package com.oracle.runbook.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import org.junit.jupiter.api.DisplayName;
@@ -17,27 +18,25 @@ class MetricSnapshotTest {
     MetricSnapshot snapshot =
         new MetricSnapshot("CpuUtilization", "oci_computeagent", 92.5, "percent", now);
 
-    assertEquals("CpuUtilization", snapshot.metricName());
-    assertEquals("oci_computeagent", snapshot.namespace());
-    assertEquals(92.5, snapshot.value());
-    assertEquals("percent", snapshot.unit());
-    assertEquals(now, snapshot.timestamp());
+    assertThat(snapshot.metricName()).isEqualTo("CpuUtilization");
+    assertThat(snapshot.namespace()).isEqualTo("oci_computeagent");
+    assertThat(snapshot.value()).isEqualTo(92.5);
+    assertThat(snapshot.unit()).isEqualTo("percent");
+    assertThat(snapshot.timestamp()).isEqualTo(now);
   }
 
   @Test
   @DisplayName("MetricSnapshot throws NullPointerException for null metricName")
   void throwsForNullMetricName() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new MetricSnapshot(null, "namespace", 0.0, "unit", Instant.now()));
+    assertThatThrownBy(() -> new MetricSnapshot(null, "namespace", 0.0, "unit", Instant.now()))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   @DisplayName("MetricSnapshot throws NullPointerException for null timestamp")
   void throwsForNullTimestamp() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new MetricSnapshot("metricName", "namespace", 0.0, "unit", null));
+    assertThatThrownBy(() -> new MetricSnapshot("metricName", "namespace", 0.0, "unit", null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -48,7 +47,7 @@ class MetricSnapshotTest {
     MetricSnapshot zero = new MetricSnapshot("metric", "ns", 0.0, "unit", now);
     MetricSnapshot negative = new MetricSnapshot("metric", "ns", -10.5, "unit", now);
 
-    assertEquals(0.0, zero.value());
-    assertEquals(-10.5, negative.value());
+    assertThat(zero.value()).isEqualTo(0.0);
+    assertThat(negative.value()).isEqualTo(-10.5);
   }
 }

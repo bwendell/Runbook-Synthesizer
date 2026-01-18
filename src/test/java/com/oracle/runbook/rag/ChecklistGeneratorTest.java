@@ -1,6 +1,6 @@
 package com.oracle.runbook.rag;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
 import java.time.Instant;
@@ -24,10 +24,10 @@ class ChecklistGeneratorTest {
     DynamicChecklist checklist = generator.generate(context, chunks);
 
     // Assert
-    assertNotNull(checklist);
-    assertEquals("alert-001", checklist.alertId());
-    assertFalse(checklist.steps().isEmpty());
-    assertFalse(checklist.sourceRunbooks().isEmpty());
+    assertThat(checklist).isNotNull();
+    assertThat(checklist.alertId()).isEqualTo("alert-001");
+    assertThat(checklist.steps()).isNotEmpty();
+    assertThat(checklist.sourceRunbooks()).isNotEmpty();
   }
 
   private EnrichedContext createTestContext() {

@@ -1,6 +1,6 @@
 package com.oracle.runbook.enrichment;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.LogEntry;
 import java.time.Duration;
@@ -24,7 +24,7 @@ class LogSourceAdapterTest {
     String sourceType = adapter.sourceType();
 
     // Assert
-    assertEquals("oci-logging", sourceType);
+    assertThat(sourceType).isEqualTo("oci-logging");
   }
 
   @Test
@@ -42,10 +42,10 @@ class LogSourceAdapterTest {
     List<LogEntry> logs = future.get();
 
     // Assert
-    assertNotNull(future);
-    assertNotNull(logs);
-    assertEquals(1, logs.size());
-    assertEquals("ERROR", logs.get(0).level());
+    assertThat(future).isNotNull();
+    assertThat(logs).isNotNull();
+    assertThat(logs).hasSize(1);
+    assertThat(logs.get(0).level()).isEqualTo("ERROR");
   }
 
   /** Test implementation of LogSourceAdapter for verifying interface contract. */

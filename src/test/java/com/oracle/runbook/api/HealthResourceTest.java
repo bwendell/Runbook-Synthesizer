@@ -1,6 +1,6 @@
 package com.oracle.runbook.api;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.helidon.http.Status;
 import io.helidon.webclient.http1.Http1Client;
@@ -28,11 +28,11 @@ class HealthResourceTest {
   @Test
   void testHealthEndpoint_ReturnsUpStatus() {
     try (Http1ClientResponse response = client.get("/api/v1/health").request()) {
-      assertEquals(Status.OK_200, response.status());
+      assertThat(response.status()).isEqualTo(Status.OK_200);
       String body = response.as(String.class);
-      assertTrue(body.contains("\"status\""), "Response should contain status field");
-      assertTrue(body.contains("\"UP\""), "Status should be UP");
-      assertTrue(body.contains("\"timestamp\""), "Response should contain timestamp field");
+      assertThat(body).as("Response should contain status field").contains("\"status\"");
+      assertThat(body).as("Status should be UP").contains("\"UP\"");
+      assertThat(body).as("Response should contain timestamp field").contains("\"timestamp\"");
     }
   }
 }

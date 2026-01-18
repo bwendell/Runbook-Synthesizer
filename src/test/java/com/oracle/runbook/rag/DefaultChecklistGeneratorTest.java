@@ -1,6 +1,6 @@
 package com.oracle.runbook.rag;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
 import java.time.Instant;
@@ -42,14 +42,14 @@ class DefaultChecklistGeneratorTest {
     DynamicChecklist checklist = generator.generate(context, chunks);
 
     // Assert
-    assertNotNull(checklist);
-    assertEquals("a1", checklist.alertId());
-    assertEquals(3, checklist.steps().size());
-    assertEquals("Check logs", checklist.steps().get(0).instruction());
-    assertEquals("Verify service is up", checklist.steps().get(2).instruction());
-    assertTrue(llmProvider.lastPrompt.contains("High CPU")); // Verify context was in prompt
-    assertTrue(
-        llmProvider.lastPrompt.contains("Restart the service")); // Verify chunk was in prompt
+    assertThat(checklist).isNotNull();
+    assertThat(checklist.alertId()).isEqualTo("a1");
+    assertThat(checklist.steps()).hasSize(3);
+    assertThat(checklist.steps().get(0).instruction()).isEqualTo("Check logs");
+    assertThat(checklist.steps().get(2).instruction()).isEqualTo("Verify service is up");
+    assertThat(llmProvider.lastPrompt).contains("High CPU"); // Verify context was in prompt
+    assertThat(llmProvider.lastPrompt)
+        .contains("Restart the service"); // Verify chunk was in prompt
   }
 
   @Test
@@ -63,8 +63,8 @@ class DefaultChecklistGeneratorTest {
     DynamicChecklist checklist = generator.generate(context, List.of());
 
     // Assert
-    assertNotNull(checklist);
-    assertTrue(checklist.steps().isEmpty());
+    assertThat(checklist).isNotNull();
+    assertThat(checklist.steps()).isEmpty();
   }
 
   private EnrichedContext createTestContext() {

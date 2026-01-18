@@ -1,6 +1,6 @@
 package com.oracle.runbook.output;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.ChecklistStep;
 import com.oracle.runbook.domain.DynamicChecklist;
@@ -21,7 +21,7 @@ class WebhookDestinationTest {
     WebhookDestination webhook = new TestWebhookDestination("slack-oncall", "slack");
 
     // Act & Assert
-    assertEquals("slack-oncall", webhook.name());
+    assertThat(webhook.name()).isEqualTo("slack-oncall");
   }
 
   @Test
@@ -31,7 +31,7 @@ class WebhookDestinationTest {
     WebhookDestination webhook = new TestWebhookDestination("pd-incidents", "pagerduty");
 
     // Act & Assert
-    assertEquals("pagerduty", webhook.type());
+    assertThat(webhook.type()).isEqualTo("pagerduty");
   }
 
   @Test
@@ -46,10 +46,10 @@ class WebhookDestinationTest {
     WebhookResult result = future.get();
 
     // Assert
-    assertNotNull(future);
-    assertNotNull(result);
-    assertTrue(result.success());
-    assertEquals(200, result.statusCode());
+    assertThat(future).isNotNull();
+    assertThat(result).isNotNull();
+    assertThat(result.success()).isTrue();
+    assertThat(result.statusCode()).isEqualTo(200);
   }
 
   @Test
@@ -60,7 +60,7 @@ class WebhookDestinationTest {
     DynamicChecklist checklist = createTestChecklist();
 
     // Act & Assert
-    assertTrue(webhook.shouldSend(checklist));
+    assertThat(webhook.shouldSend(checklist)).isTrue();
   }
 
   @Test
@@ -76,9 +76,9 @@ class WebhookDestinationTest {
     WebhookDestination webhook = new TestWebhookDestination(config);
 
     // Act & Assert
-    assertEquals(config, webhook.config());
-    assertEquals("slack-oncall", webhook.name());
-    assertEquals("slack", webhook.type());
+    assertThat(webhook.config()).isEqualTo(config);
+    assertThat(webhook.name()).isEqualTo("slack-oncall");
+    assertThat(webhook.type()).isEqualTo("slack");
   }
 
   @Test
@@ -89,14 +89,14 @@ class WebhookDestinationTest {
     WebhookResult failResult = WebhookResult.failure("test-webhook", "Internal server error");
 
     // Assert
-    assertTrue(successResult.success());
-    assertEquals(200, successResult.statusCode());
-    assertTrue(successResult.errorMessage().isEmpty());
-    assertEquals("test-webhook", successResult.destinationName());
+    assertThat(successResult.success()).isTrue();
+    assertThat(successResult.statusCode()).isEqualTo(200);
+    assertThat(successResult.errorMessage()).isEmpty();
+    assertThat(successResult.destinationName()).isEqualTo("test-webhook");
 
-    assertFalse(failResult.success());
-    assertTrue(failResult.errorMessage().isPresent());
-    assertEquals("Internal server error", failResult.errorMessage().get());
+    assertThat(failResult.success()).isFalse();
+    assertThat(failResult.errorMessage()).isPresent();
+    assertThat(failResult.errorMessage().get()).isEqualTo("Internal server error");
   }
 
   private DynamicChecklist createTestChecklist() {

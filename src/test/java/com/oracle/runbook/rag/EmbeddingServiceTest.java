@@ -1,6 +1,6 @@
 package com.oracle.runbook.rag;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -22,9 +22,9 @@ class EmbeddingServiceTest {
     float[] embedding = future.get();
 
     // Assert
-    assertNotNull(future);
-    assertNotNull(embedding);
-    assertEquals(768, embedding.length);
+    assertThat(future).isNotNull();
+    assertThat(embedding).isNotNull();
+    assertThat(embedding).hasSize(768);
   }
 
   @Test
@@ -39,10 +39,10 @@ class EmbeddingServiceTest {
     List<float[]> embeddings = future.get();
 
     // Assert
-    assertNotNull(future);
-    assertNotNull(embeddings);
-    assertEquals(3, embeddings.size());
-    assertEquals(768, embeddings.get(0).length);
+    assertThat(future).isNotNull();
+    assertThat(embeddings).isNotNull();
+    assertThat(embeddings).hasSize(3);
+    assertThat(embeddings.get(0)).hasSize(768);
   }
 
   /** Test implementation of EmbeddingService for verifying interface contract. */

@@ -1,6 +1,7 @@
 package com.oracle.runbook.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -30,51 +31,51 @@ class AlertTest {
             now,
             "{\"raw\": \"payload\"}");
 
-    assertEquals("alert-123", alert.id());
-    assertEquals("High CPU Usage", alert.title());
-    assertEquals("CPU usage exceeded 90% threshold", alert.message());
-    assertEquals(AlertSeverity.CRITICAL, alert.severity());
-    assertEquals("oci-monitoring", alert.sourceService());
-    assertEquals(dimensions, alert.dimensions());
-    assertEquals(labels, alert.labels());
-    assertEquals(now, alert.timestamp());
-    assertEquals("{\"raw\": \"payload\"}", alert.rawPayload());
+    assertThat(alert.id()).isEqualTo("alert-123");
+    assertThat(alert.title()).isEqualTo("High CPU Usage");
+    assertThat(alert.message()).isEqualTo("CPU usage exceeded 90% threshold");
+    assertThat(alert.severity()).isEqualTo(AlertSeverity.CRITICAL);
+    assertThat(alert.sourceService()).isEqualTo("oci-monitoring");
+    assertThat(alert.dimensions()).isEqualTo(dimensions);
+    assertThat(alert.labels()).isEqualTo(labels);
+    assertThat(alert.timestamp()).isEqualTo(now);
+    assertThat(alert.rawPayload()).isEqualTo("{\"raw\": \"payload\"}");
   }
 
   @Test
   @DisplayName("Alert throws NullPointerException for null id")
   void throwsForNullId() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            new Alert(
-                null,
-                "Title",
-                "Message",
-                AlertSeverity.WARNING,
-                "source",
-                Map.of(),
-                Map.of(),
-                Instant.now(),
-                "{}"));
+    assertThatThrownBy(
+            () ->
+                new Alert(
+                    null,
+                    "Title",
+                    "Message",
+                    AlertSeverity.WARNING,
+                    "source",
+                    Map.of(),
+                    Map.of(),
+                    Instant.now(),
+                    "{}"))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   @DisplayName("Alert throws NullPointerException for null title")
   void throwsForNullTitle() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            new Alert(
-                "id",
-                null,
-                "Message",
-                AlertSeverity.WARNING,
-                "source",
-                Map.of(),
-                Map.of(),
-                Instant.now(),
-                "{}"));
+    assertThatThrownBy(
+            () ->
+                new Alert(
+                    "id",
+                    null,
+                    "Message",
+                    AlertSeverity.WARNING,
+                    "source",
+                    Map.of(),
+                    Map.of(),
+                    Instant.now(),
+                    "{}"))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -97,11 +98,11 @@ class AlertTest {
 
     // Modifying original should not affect alert
     mutableDimensions.put("newKey", "newValue");
-    assertFalse(alert.dimensions().containsKey("newKey"));
+    assertThat(alert.dimensions()).doesNotContainKey("newKey");
 
     // Alert's dimensions should be unmodifiable
-    assertThrows(
-        UnsupportedOperationException.class, () -> alert.dimensions().put("another", "value"));
+    assertThatThrownBy(() -> alert.dimensions().put("another", "value"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -124,9 +125,10 @@ class AlertTest {
 
     // Modifying original should not affect alert
     mutableLabels.put("newKey", "newValue");
-    assertFalse(alert.labels().containsKey("newKey"));
+    assertThat(alert.labels()).doesNotContainKey("newKey");
 
     // Alert's labels should be unmodifiable
-    assertThrows(UnsupportedOperationException.class, () -> alert.labels().put("another", "value"));
+    assertThatThrownBy(() -> alert.labels().put("another", "value"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 }

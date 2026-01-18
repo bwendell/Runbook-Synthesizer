@@ -1,6 +1,7 @@
 package com.oracle.runbook.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,38 +14,41 @@ class AlertSeverityTest {
   @Test
   @DisplayName("All severity values exist")
   void allSeverityValuesExist() {
-    assertEquals(3, AlertSeverity.values().length);
-    assertNotNull(AlertSeverity.CRITICAL);
-    assertNotNull(AlertSeverity.WARNING);
-    assertNotNull(AlertSeverity.INFO);
+    assertThat(AlertSeverity.values()).hasSize(3);
+    assertThat(AlertSeverity.CRITICAL).isNotNull();
+    assertThat(AlertSeverity.WARNING).isNotNull();
+    assertThat(AlertSeverity.INFO).isNotNull();
   }
 
   @ParameterizedTest
   @DisplayName("fromString handles case-insensitive input")
   @ValueSource(strings = {"critical", "CRITICAL", "Critical", "CrItIcAl"})
   void fromStringHandlesCaseInsensitiveInput(String input) {
-    assertEquals(AlertSeverity.CRITICAL, AlertSeverity.fromString(input));
+    assertThat(AlertSeverity.fromString(input)).isEqualTo(AlertSeverity.CRITICAL);
   }
 
   @Test
   @DisplayName("fromString returns WARNING for warning strings")
   void fromStringReturnsWarning() {
-    assertEquals(AlertSeverity.WARNING, AlertSeverity.fromString("warning"));
-    assertEquals(AlertSeverity.WARNING, AlertSeverity.fromString("WARNING"));
+    assertThat(AlertSeverity.fromString("warning")).isEqualTo(AlertSeverity.WARNING);
+    assertThat(AlertSeverity.fromString("WARNING")).isEqualTo(AlertSeverity.WARNING);
   }
 
   @Test
   @DisplayName("fromString returns INFO for info strings")
   void fromStringReturnsInfo() {
-    assertEquals(AlertSeverity.INFO, AlertSeverity.fromString("info"));
-    assertEquals(AlertSeverity.INFO, AlertSeverity.fromString("INFO"));
+    assertThat(AlertSeverity.fromString("info")).isEqualTo(AlertSeverity.INFO);
+    assertThat(AlertSeverity.fromString("INFO")).isEqualTo(AlertSeverity.INFO);
   }
 
   @Test
   @DisplayName("fromString throws IllegalArgumentException for unknown values")
   void fromStringThrowsForUnknownValues() {
-    assertThrows(IllegalArgumentException.class, () -> AlertSeverity.fromString("unknown"));
-    assertThrows(IllegalArgumentException.class, () -> AlertSeverity.fromString(""));
-    assertThrows(IllegalArgumentException.class, () -> AlertSeverity.fromString(null));
+    assertThatThrownBy(() -> AlertSeverity.fromString("unknown"))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> AlertSeverity.fromString(""))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> AlertSeverity.fromString(null))
+        .isInstanceOf(IllegalArgumentException.class);
   }
 }

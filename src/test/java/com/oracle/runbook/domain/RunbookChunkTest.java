@@ -1,6 +1,7 @@
 package com.oracle.runbook.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,22 +28,23 @@ class RunbookChunkTest {
             shapes,
             embedding);
 
-    assertEquals("chunk-123", chunk.id());
-    assertEquals("runbooks/memory/high-memory.md", chunk.runbookPath());
-    assertEquals("Step 3: Check for OOM", chunk.sectionTitle());
-    assertEquals("Run dmesg to check for OOM killer events...", chunk.content());
-    assertEquals(tags, chunk.tags());
-    assertEquals(shapes, chunk.applicableShapes());
-    assertArrayEquals(embedding, chunk.embedding());
+    assertThat(chunk.id()).isEqualTo("chunk-123");
+    assertThat(chunk.runbookPath()).isEqualTo("runbooks/memory/high-memory.md");
+    assertThat(chunk.sectionTitle()).isEqualTo("Step 3: Check for OOM");
+    assertThat(chunk.content()).isEqualTo("Run dmesg to check for OOM killer events...");
+    assertThat(chunk.tags()).isEqualTo(tags);
+    assertThat(chunk.applicableShapes()).isEqualTo(shapes);
+    assertThat(chunk.embedding()).containsExactly(embedding);
   }
 
   @Test
   @DisplayName("RunbookChunk throws NullPointerException for null id")
   void throwsForNullId() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            new RunbookChunk(null, "path", "title", "content", List.of(), List.of(), new float[0]));
+    assertThatThrownBy(
+            () ->
+                new RunbookChunk(
+                    null, "path", "title", "content", List.of(), List.of(), new float[0]))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -55,12 +57,12 @@ class RunbookChunkTest {
 
     // Mutating original should not affect chunk
     originalEmbedding[0] = 999.0f;
-    assertEquals(0.1f, chunk.embedding()[0]);
+    assertThat(chunk.embedding()[0]).isEqualTo(0.1f);
 
     // Mutating returned array should not affect chunk
     float[] returnedEmbedding = chunk.embedding();
     returnedEmbedding[0] = 888.0f;
-    assertEquals(0.1f, chunk.embedding()[0]);
+    assertThat(chunk.embedding()[0]).isEqualTo(0.1f);
   }
 
   @Test
@@ -74,10 +76,11 @@ class RunbookChunkTest {
 
     // Modifying original should not affect chunk
     mutableTags.add("cpu");
-    assertEquals(1, chunk.tags().size());
+    assertThat(chunk.tags()).hasSize(1);
 
     // Chunk's list should be unmodifiable
-    assertThrows(UnsupportedOperationException.class, () -> chunk.tags().add("newTag"));
+    assertThatThrownBy(() -> chunk.tags().add("newTag"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -91,9 +94,10 @@ class RunbookChunkTest {
 
     // Modifying original should not affect chunk
     mutableShapes.add("BM.*");
-    assertEquals(1, chunk.applicableShapes().size());
+    assertThat(chunk.applicableShapes()).hasSize(1);
 
     // Chunk's list should be unmodifiable
-    assertThrows(UnsupportedOperationException.class, () -> chunk.applicableShapes().add("GPU.*"));
+    assertThatThrownBy(() -> chunk.applicableShapes().add("GPU.*"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 }

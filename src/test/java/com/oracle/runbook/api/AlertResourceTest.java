@@ -1,6 +1,6 @@
 package com.oracle.runbook.api;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.helidon.http.HeaderNames;
 import io.helidon.http.Status;
@@ -45,11 +45,11 @@ class AlertResourceTest {
             .post("/api/v1/alerts")
             .header(HeaderNames.CONTENT_TYPE, "application/json")
             .submit(validRequest)) {
-      assertEquals(Status.OK_200, response.status());
+      assertThat(response.status()).isEqualTo(Status.OK_200);
       String body = response.as(String.class);
-      assertTrue(body.contains("\"alertId\""), "Response should contain alertId");
-      assertTrue(body.contains("\"summary\""), "Response should contain summary");
-      assertTrue(body.contains("\"steps\""), "Response should contain steps");
+      assertThat(body).as("Response should contain alertId").contains("\"alertId\"");
+      assertThat(body).as("Response should contain summary").contains("\"summary\"");
+      assertThat(body).as("Response should contain steps").contains("\"steps\"");
     }
   }
 
@@ -68,9 +68,9 @@ class AlertResourceTest {
             .post("/api/v1/alerts")
             .header(HeaderNames.CONTENT_TYPE, "application/json")
             .submit(invalidRequest)) {
-      assertEquals(Status.BAD_REQUEST_400, response.status());
+      assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
       String body = response.as(String.class);
-      assertTrue(body.contains("\"errorCode\""), "Response should contain errorCode");
+      assertThat(body).as("Response should contain errorCode").contains("\"errorCode\"");
     }
   }
 
@@ -90,9 +90,9 @@ class AlertResourceTest {
             .post("/api/v1/alerts")
             .header(HeaderNames.CONTENT_TYPE, "application/json")
             .submit(invalidRequest)) {
-      assertEquals(Status.BAD_REQUEST_400, response.status());
+      assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
       String body = response.as(String.class);
-      assertTrue(body.contains("\"errorCode\""), "Response should contain errorCode");
+      assertThat(body).as("Response should contain errorCode").contains("\"errorCode\"");
     }
   }
 }

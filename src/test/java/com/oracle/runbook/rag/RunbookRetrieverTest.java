@@ -1,6 +1,6 @@
 package com.oracle.runbook.rag;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.Alert;
 import com.oracle.runbook.domain.AlertSeverity;
@@ -28,9 +28,9 @@ class RunbookRetrieverTest {
     List<RetrievedChunk> chunks = retriever.retrieve(context, topK);
 
     // Assert
-    assertNotNull(chunks);
-    assertEquals(2, chunks.size());
-    assertTrue(chunks.get(0).similarityScore() > 0);
+    assertThat(chunks).isNotNull();
+    assertThat(chunks).hasSize(2);
+    assertThat(chunks.get(0).similarityScore()).isPositive();
   }
 
   private EnrichedContext createTestContext() {

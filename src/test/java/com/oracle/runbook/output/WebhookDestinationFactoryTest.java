@@ -1,6 +1,7 @@
 package com.oracle.runbook.output;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oracle.runbook.output.adapters.GenericWebhookDestination;
 import com.oracle.runbook.output.adapters.PagerDutyWebhookDestination;
@@ -33,9 +34,9 @@ class WebhookDestinationFactoryTest {
 
     WebhookDestination destination = factory.create(config);
 
-    assertInstanceOf(GenericWebhookDestination.class, destination);
-    assertEquals("generic-webhook", destination.name());
-    assertEquals("generic", destination.type());
+    assertThat(destination).isInstanceOf(GenericWebhookDestination.class);
+    assertThat(destination.name()).isEqualTo("generic-webhook");
+    assertThat(destination.type()).isEqualTo("generic");
   }
 
   @Test
@@ -50,9 +51,9 @@ class WebhookDestinationFactoryTest {
 
     WebhookDestination destination = factory.create(config);
 
-    assertInstanceOf(SlackWebhookDestination.class, destination);
-    assertEquals("slack-alerts", destination.name());
-    assertEquals("slack", destination.type());
+    assertThat(destination).isInstanceOf(SlackWebhookDestination.class);
+    assertThat(destination.name()).isEqualTo("slack-alerts");
+    assertThat(destination.type()).isEqualTo("slack");
   }
 
   @Test
@@ -68,12 +69,12 @@ class WebhookDestinationFactoryTest {
 
     WebhookDestination destination = factory.create(config);
 
-    assertInstanceOf(PagerDutyWebhookDestination.class, destination);
-    assertEquals("pagerduty-incidents", destination.name());
-    assertEquals("pagerduty", destination.type());
+    assertThat(destination).isInstanceOf(PagerDutyWebhookDestination.class);
+    assertThat(destination.name()).isEqualTo("pagerduty-incidents");
+    assertThat(destination.type()).isEqualTo("pagerduty");
 
     PagerDutyWebhookDestination pdDest = (PagerDutyWebhookDestination) destination;
-    assertEquals("routing-key-123", pdDest.routingKey());
+    assertThat(pdDest.routingKey()).isEqualTo("routing-key-123");
   }
 
   @Test
@@ -86,10 +87,9 @@ class WebhookDestinationFactoryTest {
             .url("https://example.com/webhook")
             .build();
 
-    IllegalArgumentException exception =
-        assertThrows(IllegalArgumentException.class, () -> factory.create(config));
-
-    assertTrue(exception.getMessage().contains("unknown"));
+    assertThatThrownBy(() -> factory.create(config))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("unknown");
   }
 
   @Test
@@ -109,8 +109,8 @@ class WebhookDestinationFactoryTest {
             .url("https://example.com/webhook")
             .build();
 
-    assertInstanceOf(SlackWebhookDestination.class, factory.create(upperConfig));
-    assertInstanceOf(GenericWebhookDestination.class, factory.create(mixedConfig));
+    assertThat(factory.create(upperConfig)).isInstanceOf(SlackWebhookDestination.class);
+    assertThat(factory.create(mixedConfig)).isInstanceOf(GenericWebhookDestination.class);
   }
 
   @Test
@@ -127,7 +127,7 @@ class WebhookDestinationFactoryTest {
     WebhookDestination destination = factory.create(config);
 
     PagerDutyWebhookDestination pdDest = (PagerDutyWebhookDestination) destination;
-    assertEquals("my-routing-key", pdDest.routingKey());
+    assertThat(pdDest.routingKey()).isEqualTo("my-routing-key");
   }
 
   @Test
@@ -143,6 +143,6 @@ class WebhookDestinationFactoryTest {
     WebhookDestination destination = factory.create(config);
 
     PagerDutyWebhookDestination pdDest = (PagerDutyWebhookDestination) destination;
-    assertEquals("", pdDest.routingKey());
+    assertThat(pdDest.routingKey()).isEqualTo("");
   }
 }

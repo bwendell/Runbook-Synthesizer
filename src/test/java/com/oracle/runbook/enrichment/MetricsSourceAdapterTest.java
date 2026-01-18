@@ -1,6 +1,6 @@
 package com.oracle.runbook.enrichment;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.MetricSnapshot;
 import java.time.Duration;
@@ -23,7 +23,7 @@ class MetricsSourceAdapterTest {
     String sourceType = adapter.sourceType();
 
     // Assert
-    assertEquals("oci-monitoring", sourceType);
+    assertThat(sourceType).isEqualTo("oci-monitoring");
   }
 
   @Test
@@ -40,10 +40,10 @@ class MetricsSourceAdapterTest {
     List<MetricSnapshot> metrics = future.get();
 
     // Assert
-    assertNotNull(future);
-    assertNotNull(metrics);
-    assertEquals(1, metrics.size());
-    assertEquals("CpuUtilization", metrics.get(0).metricName());
+    assertThat(future).isNotNull();
+    assertThat(metrics).isNotNull();
+    assertThat(metrics).hasSize(1);
+    assertThat(metrics.get(0).metricName()).isEqualTo("CpuUtilization");
   }
 
   /** Test implementation of MetricsSourceAdapter for verifying interface contract. */

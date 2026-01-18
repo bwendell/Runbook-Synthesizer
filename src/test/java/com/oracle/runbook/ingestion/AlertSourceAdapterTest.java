@@ -1,6 +1,6 @@
 package com.oracle.runbook.ingestion;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.Alert;
 import com.oracle.runbook.domain.AlertSeverity;
@@ -19,7 +19,7 @@ class AlertSourceAdapterTest {
     AlertSourceAdapter adapter = new TestAlertSourceAdapter("oci-monitoring");
 
     // Act & Assert
-    assertEquals("oci-monitoring", adapter.sourceType());
+    assertThat(adapter.sourceType()).isEqualTo("oci-monitoring");
   }
 
   @Test
@@ -33,9 +33,9 @@ class AlertSourceAdapterTest {
     Alert alert = adapter.parseAlert(rawPayload);
 
     // Assert
-    assertNotNull(alert);
-    assertEquals("High CPU", alert.title());
-    assertEquals(AlertSeverity.CRITICAL, alert.severity());
+    assertThat(alert).isNotNull();
+    assertThat(alert.title()).isEqualTo("High CPU");
+    assertThat(alert.severity()).isEqualTo(AlertSeverity.CRITICAL);
   }
 
   @Test
@@ -47,8 +47,8 @@ class AlertSourceAdapterTest {
     String otherPayload = "{\"alertname\":\"Test\",\"type\":\"prometheus\"}";
 
     // Act & Assert
-    assertTrue(adapter.canHandle(ociPayload));
-    assertFalse(adapter.canHandle(otherPayload));
+    assertThat(adapter.canHandle(ociPayload)).isTrue();
+    assertThat(adapter.canHandle(otherPayload)).isFalse();
   }
 
   /** Test implementation of AlertSourceAdapter for verifying interface contract. */

@@ -1,6 +1,7 @@
 package com.oracle.runbook.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,21 +27,23 @@ class ResourceMetadataTest {
             freeformTags,
             definedTags);
 
-    assertEquals("ocid1.instance.oc1.iad.xxx", metadata.ocid());
-    assertEquals("web-server-01", metadata.displayName());
-    assertEquals("ocid1.compartment.oc1..xxx", metadata.compartmentId());
-    assertEquals("VM.Standard2.4", metadata.shape());
-    assertEquals("AD-1", metadata.availabilityDomain());
-    assertEquals(freeformTags, metadata.freeformTags());
-    assertEquals(definedTags, metadata.definedTags());
+    assertThat(metadata.ocid()).isEqualTo("ocid1.instance.oc1.iad.xxx");
+    assertThat(metadata.displayName()).isEqualTo("web-server-01");
+    assertThat(metadata.compartmentId()).isEqualTo("ocid1.compartment.oc1..xxx");
+    assertThat(metadata.shape()).isEqualTo("VM.Standard2.4");
+    assertThat(metadata.availabilityDomain()).isEqualTo("AD-1");
+    assertThat(metadata.freeformTags()).isEqualTo(freeformTags);
+    assertThat(metadata.definedTags()).isEqualTo(definedTags);
   }
 
   @Test
   @DisplayName("ResourceMetadata throws NullPointerException for null ocid")
   void throwsForNullOcid() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new ResourceMetadata(null, "name", "compartment", "shape", "ad", Map.of(), Map.of()));
+    assertThatThrownBy(
+            () ->
+                new ResourceMetadata(
+                    null, "name", "compartment", "shape", "ad", Map.of(), Map.of()))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -61,11 +64,11 @@ class ResourceMetadataTest {
 
     // Modifying original should not affect record
     mutableTags.put("newKey", "newValue");
-    assertFalse(metadata.freeformTags().containsKey("newKey"));
+    assertThat(metadata.freeformTags()).doesNotContainKey("newKey");
 
     // Record's map should be unmodifiable
-    assertThrows(
-        UnsupportedOperationException.class, () -> metadata.freeformTags().put("another", "value"));
+    assertThatThrownBy(() -> metadata.freeformTags().put("another", "value"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -86,10 +89,10 @@ class ResourceMetadataTest {
 
     // Modifying original should not affect record
     mutableTags.put("newKey", "newValue");
-    assertFalse(metadata.definedTags().containsKey("newKey"));
+    assertThat(metadata.definedTags()).doesNotContainKey("newKey");
 
     // Record's map should be unmodifiable
-    assertThrows(
-        UnsupportedOperationException.class, () -> metadata.definedTags().put("another", "value"));
+    assertThatThrownBy(() -> metadata.definedTags().put("another", "value"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 }

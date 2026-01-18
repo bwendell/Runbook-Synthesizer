@@ -1,6 +1,6 @@
 package com.oracle.runbook;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.helidon.http.Status;
 import io.helidon.webclient.http1.Http1Client;
@@ -31,7 +31,9 @@ class HealthEndpointTest {
   @DisplayName("Health endpoint returns 200 OK")
   void healthEndpointReturns200() {
     try (Http1ClientResponse response = client.get("/health").request()) {
-      assertEquals(Status.OK_200, response.status(), "Health endpoint should return 200 OK");
+      assertThat(response.status())
+          .as("Health endpoint should return 200 OK")
+          .isEqualTo(Status.OK_200);
     }
   }
 
@@ -40,7 +42,7 @@ class HealthEndpointTest {
   void healthEndpointReturnsUpStatus() {
     try (Http1ClientResponse response = client.get("/health").request()) {
       String body = response.as(String.class);
-      assertTrue(body.contains("UP"), "Health response should contain UP status");
+      assertThat(body).as("Health response should contain UP status").contains("UP");
     }
   }
 }

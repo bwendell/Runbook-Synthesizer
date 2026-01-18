@@ -1,6 +1,8 @@
 package com.oracle.runbook.enrichment;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +14,7 @@ class OciComputeClientTest {
   @Test
   @DisplayName("OciComputeClient constructor should reject null client")
   void testConstructorRejectsNullClient() {
-    assertThrows(NullPointerException.class, () -> new OciComputeClient(null));
+    assertThatThrownBy(() -> new OciComputeClient(null)).isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -20,7 +22,7 @@ class OciComputeClientTest {
   void testGetInstanceContract() {
     try {
       var method = OciComputeClient.class.getMethod("getInstance", String.class);
-      assertTrue(method.getReturnType().equals(CompletableFuture.class));
+      assertThat(method.getReturnType()).isEqualTo(CompletableFuture.class);
     } catch (NoSuchMethodException e) {
       fail("getInstance(String) method should exist");
     }

@@ -1,6 +1,6 @@
 package com.oracle.runbook.api;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.helidon.http.HeaderNames;
 import io.helidon.http.Status;
@@ -33,11 +33,11 @@ class RunbookResourceTest {
             .post("/api/v1/runbooks/sync")
             .header(HeaderNames.CONTENT_TYPE, "application/json")
             .submit("{}")) {
-      assertEquals(Status.ACCEPTED_202, response.status());
+      assertThat(response.status()).isEqualTo(Status.ACCEPTED_202);
       String body = response.as(String.class);
-      assertTrue(body.contains("\"status\""), "Response should contain status");
-      assertTrue(body.contains("\"STARTED\""), "Status should be STARTED");
-      assertTrue(body.contains("\"requestId\""), "Response should contain requestId");
+      assertThat(body).as("Response should contain status").contains("\"status\"");
+      assertThat(body).as("Status should be STARTED").contains("\"STARTED\"");
+      assertThat(body).as("Response should contain requestId").contains("\"requestId\"");
     }
   }
 
@@ -57,9 +57,9 @@ class RunbookResourceTest {
             .post("/api/v1/runbooks/sync")
             .header(HeaderNames.CONTENT_TYPE, "application/json")
             .submit(syncRequest)) {
-      assertEquals(Status.ACCEPTED_202, response.status());
+      assertThat(response.status()).isEqualTo(Status.ACCEPTED_202);
       String body = response.as(String.class);
-      assertTrue(body.contains("\"STARTED\""), "Status should be STARTED");
+      assertThat(body).as("Status should be STARTED").contains("\"STARTED\"");
     }
   }
 
@@ -71,10 +71,11 @@ class RunbookResourceTest {
             .header(HeaderNames.CONTENT_TYPE, "application/json")
             .submit("{}")) {
       String body = response.as(String.class);
-      assertTrue(body.contains("\"requestId\""), "Response should contain requestId");
+      assertThat(body).as("Response should contain requestId").contains("\"requestId\"");
       // Verify requestId looks like a UUID
-      assertTrue(
-          body.matches(".*\"requestId\":\\s*\"[a-f0-9-]+\".*"), "requestId should be a UUID");
+      assertThat(body)
+          .as("requestId should be a UUID")
+          .matches(".*\"requestId\":\\s*\"[a-f0-9-]+\".*");
     }
   }
 }

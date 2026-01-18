@@ -1,6 +1,6 @@
 package com.oracle.runbook.config;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.output.WebhookConfig;
 import io.helidon.common.media.type.MediaTypes;
@@ -39,12 +39,12 @@ class WebhookConfigLoaderTest {
 
     List<WebhookConfig> configs = loader.loadWebhookConfigs();
 
-    assertEquals(1, configs.size());
+    assertThat(configs).hasSize(1);
     WebhookConfig webhookConfig = configs.getFirst();
-    assertEquals("test-webhook", webhookConfig.name());
-    assertEquals("generic", webhookConfig.type());
-    assertEquals("https://example.com/webhook", webhookConfig.url());
-    assertTrue(webhookConfig.enabled());
+    assertThat(webhookConfig.name()).isEqualTo("test-webhook");
+    assertThat(webhookConfig.type()).isEqualTo("generic");
+    assertThat(webhookConfig.url()).isEqualTo("https://example.com/webhook");
+    assertThat(webhookConfig.enabled()).isTrue();
   }
 
   @Test
@@ -69,9 +69,9 @@ class WebhookConfigLoaderTest {
 
     List<WebhookConfig> configs = loader.loadWebhookConfigs();
 
-    assertEquals(2, configs.size());
-    assertEquals("webhook-1", configs.get(0).name());
-    assertEquals("webhook-2", configs.get(1).name());
+    assertThat(configs).hasSize(2);
+    assertThat(configs.get(0).name()).isEqualTo("webhook-1");
+    assertThat(configs.get(1).name()).isEqualTo("webhook-2");
   }
 
   @Test
@@ -83,7 +83,7 @@ class WebhookConfigLoaderTest {
 
     List<WebhookConfig> configs = loader.loadWebhookConfigs();
 
-    assertTrue(configs.isEmpty());
+    assertThat(configs).isEmpty();
   }
 
   @Test
@@ -107,10 +107,10 @@ class WebhookConfigLoaderTest {
 
     List<WebhookConfig> configs = loader.loadWebhookConfigs();
 
-    assertEquals(1, configs.size());
+    assertThat(configs).hasSize(1);
     WebhookConfig webhookConfig = configs.getFirst();
-    assertEquals("Bearer token123", webhookConfig.headers().get("Authorization"));
-    assertEquals("custom-value", webhookConfig.headers().get("X-Custom-Header"));
+    assertThat(webhookConfig.headers().get("Authorization")).isEqualTo("Bearer token123");
+    assertThat(webhookConfig.headers().get("X-Custom-Header")).isEqualTo("custom-value");
   }
 
   @Test
@@ -135,8 +135,8 @@ class WebhookConfigLoaderTest {
 
     List<WebhookConfig> configs = loader.loadEnabledWebhookConfigs();
 
-    assertEquals(1, configs.size());
-    assertEquals("enabled-webhook", configs.getFirst().name());
+    assertThat(configs).hasSize(1);
+    assertThat(configs.getFirst().name()).isEqualTo("enabled-webhook");
   }
 
   @Test
@@ -156,7 +156,7 @@ class WebhookConfigLoaderTest {
 
     List<WebhookConfig> configs = loader.loadWebhookConfigs();
 
-    assertEquals(1, configs.size());
-    assertTrue(configs.getFirst().enabled());
+    assertThat(configs).hasSize(1);
+    assertThat(configs.getFirst().enabled()).isTrue();
   }
 }

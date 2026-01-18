@@ -1,6 +1,6 @@
 package com.oracle.runbook.enrichment;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
 import java.time.Instant;
@@ -25,11 +25,11 @@ class ContextEnrichmentServiceTest {
     EnrichedContext context = future.get();
 
     // Assert
-    assertNotNull(future);
-    assertNotNull(context);
-    assertEquals(alert.id(), context.alert().id());
-    assertNotNull(context.recentMetrics());
-    assertNotNull(context.recentLogs());
+    assertThat(future).isNotNull();
+    assertThat(context).isNotNull();
+    assertThat(context.alert().id()).isEqualTo(alert.id());
+    assertThat(context.recentMetrics()).isNotNull();
+    assertThat(context.recentLogs()).isNotNull();
   }
 
   private Alert createTestAlert() {

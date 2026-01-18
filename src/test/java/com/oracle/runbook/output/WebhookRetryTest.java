@@ -1,7 +1,7 @@
 package com.oracle.runbook.output;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -46,8 +46,8 @@ class WebhookRetryTest {
             .retryDelayMs(1000)
             .build();
 
-    assertEquals(3, config.retryCount());
-    assertEquals(1000, config.retryDelayMs());
+    assertThat(config.retryCount()).isEqualTo(3);
+    assertThat(config.retryDelayMs()).isEqualTo(1000);
   }
 
   @Test
@@ -60,8 +60,8 @@ class WebhookRetryTest {
             .url("https://example.com/webhook")
             .build();
 
-    assertEquals(3, config.retryCount());
-    assertEquals(1000, config.retryDelayMs());
+    assertThat(config.retryCount()).isEqualTo(3);
+    assertThat(config.retryDelayMs()).isEqualTo(1000);
   }
 
   @Test
@@ -103,8 +103,8 @@ class WebhookRetryTest {
     DynamicChecklist checklist = createTestChecklist();
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
-    assertEquals(1, results.size());
-    assertTrue(results.getFirst().isSuccess());
+    assertThat(results).hasSize(1);
+    assertThat(results.getFirst().isSuccess()).isTrue();
 
     // Verify 3 attempts were made
     verify(3, postRequestedFor(urlEqualTo("/webhook")));
@@ -132,8 +132,8 @@ class WebhookRetryTest {
     DynamicChecklist checklist = createTestChecklist();
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
-    assertEquals(1, results.size());
-    assertFalse(results.getFirst().isSuccess());
+    assertThat(results).hasSize(1);
+    assertThat(results.getFirst().isSuccess()).isFalse();
 
     // Verify only 1 attempt was made (no retries)
     verify(1, postRequestedFor(urlEqualTo("/webhook")));
@@ -159,8 +159,8 @@ class WebhookRetryTest {
     DynamicChecklist checklist = createTestChecklist();
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
-    assertEquals(1, results.size());
-    assertFalse(results.getFirst().isSuccess());
+    assertThat(results).hasSize(1);
+    assertThat(results.getFirst().isSuccess()).isFalse();
 
     // Verify retryCount + 1 attempts (initial + retries)
     verify(3, postRequestedFor(urlEqualTo("/webhook")));

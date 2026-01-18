@@ -1,6 +1,8 @@
 package com.oracle.runbook.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,23 +27,23 @@ class ChecklistStepTest {
             StepPriority.HIGH,
             commands);
 
-    assertEquals(1, step.order());
-    assertEquals("Check current memory usage", step.instruction());
-    assertEquals("Memory issues often manifest as high utilization", step.rationale());
-    assertEquals("92%", step.currentValue());
-    assertEquals("<80%", step.expectedValue());
-    assertEquals(StepPriority.HIGH, step.priority());
-    assertEquals(commands, step.commands());
+    assertThat(step.order()).isEqualTo(1);
+    assertThat(step.instruction()).isEqualTo("Check current memory usage");
+    assertThat(step.rationale()).isEqualTo("Memory issues often manifest as high utilization");
+    assertThat(step.currentValue()).isEqualTo("92%");
+    assertThat(step.expectedValue()).isEqualTo("<80%");
+    assertThat(step.priority()).isEqualTo(StepPriority.HIGH);
+    assertThat(step.commands()).isEqualTo(commands);
   }
 
   @Test
   @DisplayName("ChecklistStep throws NullPointerException for null instruction")
   void throwsForNullInstruction() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            new ChecklistStep(
-                1, null, "rationale", "current", "expected", StepPriority.MEDIUM, List.of()));
+    assertThatThrownBy(
+            () ->
+                new ChecklistStep(
+                    1, null, "rationale", "current", "expected", StepPriority.MEDIUM, List.of()))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -62,17 +64,20 @@ class ChecklistStepTest {
 
     // Modifying original should not affect step
     mutableCommands.add("ps aux");
-    assertEquals(1, step.commands().size());
+    assertThat(step.commands()).hasSize(1);
 
     // Step's list should be unmodifiable
-    assertThrows(UnsupportedOperationException.class, () -> step.commands().add("newCommand"));
+    assertThatThrownBy(() -> step.commands().add("newCommand"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
   @DisplayName("ChecklistStep accepts zero order")
   void acceptsZeroOrder() {
-    assertDoesNotThrow(
-        () ->
-            new ChecklistStep(0, "instruction", null, null, null, StepPriority.MEDIUM, List.of()));
+    assertThatCode(
+            () ->
+                new ChecklistStep(
+                    0, "instruction", null, null, null, StepPriority.MEDIUM, List.of()))
+        .doesNotThrowAnyException();
   }
 }

@@ -1,6 +1,6 @@
 package com.oracle.runbook.rag;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.GenerationConfig;
 import java.util.List;
@@ -19,7 +19,7 @@ class LlmProviderTest {
     LlmProvider provider = new TestLlmProvider("oci-genai");
 
     // Act & Assert
-    assertEquals("oci-genai", provider.providerId());
+    assertThat(provider.providerId()).isEqualTo("oci-genai");
   }
 
   @Test
@@ -35,9 +35,9 @@ class LlmProviderTest {
     String result = future.get();
 
     // Assert
-    assertNotNull(future);
-    assertNotNull(result);
-    assertTrue(result.contains("Step 1"));
+    assertThat(future).isNotNull();
+    assertThat(result).isNotNull();
+    assertThat(result).contains("Step 1");
   }
 
   @Test
@@ -52,9 +52,9 @@ class LlmProviderTest {
     float[] embedding = future.get();
 
     // Assert
-    assertNotNull(future);
-    assertNotNull(embedding);
-    assertEquals(768, embedding.length);
+    assertThat(future).isNotNull();
+    assertThat(embedding).isNotNull();
+    assertThat(embedding).hasSize(768);
   }
 
   @Test
@@ -69,10 +69,10 @@ class LlmProviderTest {
     List<float[]> embeddings = future.get();
 
     // Assert
-    assertNotNull(future);
-    assertNotNull(embeddings);
-    assertEquals(3, embeddings.size());
-    assertEquals(768, embeddings.get(0).length);
+    assertThat(future).isNotNull();
+    assertThat(embeddings).isNotNull();
+    assertThat(embeddings).hasSize(3);
+    assertThat(embeddings.get(0)).hasSize(768);
   }
 
   /** Test implementation of LlmProvider for verifying interface contract. */

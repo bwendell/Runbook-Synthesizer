@@ -1,6 +1,8 @@
 package com.oracle.runbook.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -27,16 +29,17 @@ class RetrievedChunkTest {
 
     RetrievedChunk retrieved = new RetrievedChunk(chunk, 0.95, 0.1, 1.05);
 
-    assertEquals(chunk, retrieved.chunk());
-    assertEquals(0.95, retrieved.similarityScore());
-    assertEquals(0.1, retrieved.metadataBoost());
-    assertEquals(1.05, retrieved.finalScore());
+    assertThat(retrieved.chunk()).isEqualTo(chunk);
+    assertThat(retrieved.similarityScore()).isEqualTo(0.95);
+    assertThat(retrieved.metadataBoost()).isEqualTo(0.1);
+    assertThat(retrieved.finalScore()).isEqualTo(1.05);
   }
 
   @Test
   @DisplayName("RetrievedChunk throws NullPointerException for null chunk")
   void throwsForNullChunk() {
-    assertThrows(NullPointerException.class, () -> new RetrievedChunk(null, 0.9, 0.1, 1.0));
+    assertThatThrownBy(() -> new RetrievedChunk(null, 0.9, 0.1, 1.0))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -45,12 +48,12 @@ class RetrievedChunkTest {
     RunbookChunk chunk = createTestChunk();
 
     // Zero scores
-    assertDoesNotThrow(() -> new RetrievedChunk(chunk, 0.0, 0.0, 0.0));
+    assertThatCode(() -> new RetrievedChunk(chunk, 0.0, 0.0, 0.0)).doesNotThrowAnyException();
 
     // Perfect similarity
-    assertDoesNotThrow(() -> new RetrievedChunk(chunk, 1.0, 0.0, 1.0));
+    assertThatCode(() -> new RetrievedChunk(chunk, 1.0, 0.0, 1.0)).doesNotThrowAnyException();
 
     // Negative boost (penalty)
-    assertDoesNotThrow(() -> new RetrievedChunk(chunk, 0.8, -0.1, 0.7));
+    assertThatCode(() -> new RetrievedChunk(chunk, 0.8, -0.1, 0.7)).doesNotThrowAnyException();
   }
 }

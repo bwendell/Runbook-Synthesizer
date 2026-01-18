@@ -1,6 +1,6 @@
 package com.oracle.runbook.output.adapters;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.ChecklistStep;
 import com.oracle.runbook.domain.DynamicChecklist;
@@ -32,9 +32,9 @@ class GenericWebhookDestinationTest {
     GenericWebhookDestination destination = new GenericWebhookDestination(config);
 
     // Assert
-    assertEquals("test-webhook", destination.name());
-    assertEquals("generic", destination.type());
-    assertEquals(config, destination.config());
+    assertThat(destination.name()).isEqualTo("test-webhook");
+    assertThat(destination.type()).isEqualTo("generic");
+    assertThat(destination.config()).isEqualTo(config);
   }
 
   @Test
@@ -54,7 +54,7 @@ class GenericWebhookDestinationTest {
     CompletableFuture<WebhookResult> future = destination.send(checklist);
 
     // Assert
-    assertNotNull(future);
+    assertThat(future).isNotNull();
     // Note: Full integration test would verify actual HTTP response
   }
 
@@ -72,7 +72,7 @@ class GenericWebhookDestinationTest {
     DynamicChecklist checklist = createTestChecklist();
 
     // Act & Assert - default filter allows all
-    assertTrue(destination.shouldSend(checklist));
+    assertThat(destination.shouldSend(checklist)).isTrue();
   }
 
   @Test
@@ -93,9 +93,9 @@ class GenericWebhookDestinationTest {
     WebhookResult result = future.get();
 
     // Assert - should return failure, not throw exception
-    assertFalse(result.success());
-    assertTrue(result.errorMessage().isPresent());
-    assertEquals("failing-webhook", result.destinationName());
+    assertThat(result.success()).isFalse();
+    assertThat(result.errorMessage()).isPresent();
+    assertThat(result.destinationName()).isEqualTo("failing-webhook");
   }
 
   @Test
@@ -114,8 +114,8 @@ class GenericWebhookDestinationTest {
     GenericWebhookDestination destination = new GenericWebhookDestination(config);
 
     // Assert - headers accessible via config
-    assertEquals("Bearer token123", destination.config().headers().get("Authorization"));
-    assertEquals("value", destination.config().headers().get("X-Custom"));
+    assertThat(destination.config().headers().get("Authorization")).isEqualTo("Bearer token123");
+    assertThat(destination.config().headers().get("X-Custom")).isEqualTo("value");
   }
 
   private DynamicChecklist createTestChecklist() {

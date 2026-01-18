@@ -1,6 +1,6 @@
 package com.oracle.runbook.rag;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
 import java.time.Instant;
@@ -41,12 +41,12 @@ class DefaultRunbookRetrieverTest {
     List<RetrievedChunk> results = retriever.retrieve(context, 1);
 
     // Assert
-    assertNotNull(results);
-    assertEquals(1, results.size());
-    assertEquals("c1", results.get(0).chunk().id());
+    assertThat(results).isNotNull();
+    assertThat(results).hasSize(1);
+    assertThat(results.get(0).chunk().id()).isEqualTo("c1");
     // Verify it used the context (stub captures it)
-    assertNotNull(embeddingService.lastContextEmbedded);
-    assertEquals("High Memory", embeddingService.lastContextEmbedded.alert().title());
+    assertThat(embeddingService.lastContextEmbedded).isNotNull();
+    assertThat(embeddingService.lastContextEmbedded.alert().title()).isEqualTo("High Memory");
   }
 
   @Test
@@ -70,12 +70,12 @@ class DefaultRunbookRetrieverTest {
     List<RetrievedChunk> results = retriever.retrieve(context, 2);
 
     // Assert
-    assertEquals(2, results.size());
+    assertThat(results).hasSize(2);
     // c1 should have higher final score due to tag boost
-    assertTrue(
-        results.get(0).finalScore() > results.get(1).finalScore(),
-        "Chunk with matching tags should have higher score");
-    assertEquals("c1", results.get(0).chunk().id());
+    assertThat(results.get(0).finalScore())
+        .as("Chunk with matching tags should have higher score")
+        .isGreaterThan(results.get(1).finalScore());
+    assertThat(results.get(0).chunk().id()).isEqualTo("c1");
   }
 
   @Test
@@ -94,11 +94,11 @@ class DefaultRunbookRetrieverTest {
     List<RetrievedChunk> results = retriever.retrieve(context, 2);
 
     // Assert
-    assertEquals(2, results.size());
-    assertTrue(
-        results.get(0).metadataBoost() > results.get(1).metadataBoost(),
-        "Matching shape should get boost");
-    assertEquals("c1", results.get(0).chunk().id());
+    assertThat(results).hasSize(2);
+    assertThat(results.get(0).metadataBoost())
+        .as("Matching shape should get boost")
+        .isGreaterThan(results.get(1).metadataBoost());
+    assertThat(results.get(0).chunk().id()).isEqualTo("c1");
   }
 
   private EnrichedContext createTestContext(String title, String message, String shape) {

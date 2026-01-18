@@ -1,6 +1,7 @@
 package com.oracle.runbook.output;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oracle.runbook.domain.AlertSeverity;
 import java.util.Map;
@@ -31,14 +32,14 @@ class WebhookConfigTest {
             1000);
 
     // Assert
-    assertEquals("slack-oncall", config.name());
-    assertEquals("slack", config.type());
-    assertEquals("https://hooks.slack.com/test", config.url());
-    assertTrue(config.enabled());
-    assertEquals(filter, config.filter());
-    assertEquals(headers, config.headers());
-    assertEquals(3, config.retryCount());
-    assertEquals(1000, config.retryDelayMs());
+    assertThat(config.name()).isEqualTo("slack-oncall");
+    assertThat(config.type()).isEqualTo("slack");
+    assertThat(config.url()).isEqualTo("https://hooks.slack.com/test");
+    assertThat(config.enabled()).isTrue();
+    assertThat(config.filter()).isEqualTo(filter);
+    assertThat(config.headers()).isEqualTo(headers);
+    assertThat(config.retryCount()).isEqualTo(3);
+    assertThat(config.retryDelayMs()).isEqualTo(1000);
   }
 
   @Test
@@ -59,12 +60,12 @@ class WebhookConfigTest {
             .build();
 
     // Assert
-    assertEquals("pagerduty-incidents", config.name());
-    assertEquals("pagerduty", config.type());
-    assertEquals("https://events.pagerduty.com/v2/enqueue", config.url());
-    assertTrue(config.enabled());
-    assertEquals(filter, config.filter());
-    assertEquals("abc123", config.headers().get("X-Routing-Key"));
+    assertThat(config.name()).isEqualTo("pagerduty-incidents");
+    assertThat(config.type()).isEqualTo("pagerduty");
+    assertThat(config.url()).isEqualTo("https://events.pagerduty.com/v2/enqueue");
+    assertThat(config.enabled()).isTrue();
+    assertThat(config.filter()).isEqualTo(filter);
+    assertThat(config.headers().get("X-Routing-Key")).isEqualTo("abc123");
   }
 
   @Test
@@ -79,7 +80,7 @@ class WebhookConfigTest {
             .build();
 
     // Assert
-    assertTrue(config.enabled());
+    assertThat(config.enabled()).isTrue();
   }
 
   @Test
@@ -94,8 +95,7 @@ class WebhookConfigTest {
             .build();
 
     // Assert
-    assertNotNull(config.headers());
-    assertTrue(config.headers().isEmpty());
+    assertThat(config.headers()).isNotNull().isEmpty();
   }
 
   @Test
@@ -110,67 +110,54 @@ class WebhookConfigTest {
             .build();
 
     // Assert
-    assertNotNull(config.filter());
-    assertTrue(config.filter().matches(AlertSeverity.INFO, Map.of()));
+    assertThat(config.filter()).isNotNull();
+    assertThat(config.filter().matches(AlertSeverity.INFO, Map.of())).isTrue();
   }
 
   @Test
   @DisplayName("builder throws when name is null")
   void builder_throwsWhenNameIsNull() {
     // Act & Assert
-    IllegalArgumentException exception =
-        assertThrows(
-            IllegalArgumentException.class,
+    assertThatThrownBy(
             () ->
-                WebhookConfig.builder().type("generic").url("https://example.com/webhook").build());
-
-    assertTrue(exception.getMessage().contains("name"));
+                WebhookConfig.builder().type("generic").url("https://example.com/webhook").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("name");
   }
 
   @Test
   @DisplayName("builder throws when url is null")
   void builder_throwsWhenUrlIsNull() {
     // Act & Assert
-    IllegalArgumentException exception =
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> WebhookConfig.builder().name("test").type("generic").build());
-
-    assertTrue(exception.getMessage().contains("url"));
+    assertThatThrownBy(() -> WebhookConfig.builder().name("test").type("generic").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("url");
   }
 
   @Test
   @DisplayName("builder throws when type is empty")
   void builder_throwsWhenTypeIsEmpty() {
     // Act & Assert
-    IllegalArgumentException exception =
-        assertThrows(
-            IllegalArgumentException.class,
+    assertThatThrownBy(
             () ->
                 WebhookConfig.builder()
                     .name("test")
                     .type("")
                     .url("https://example.com/webhook")
-                    .build());
-
-    assertTrue(exception.getMessage().contains("type"));
+                    .build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("type");
   }
 
   @Test
   @DisplayName("builder validates URL format")
   void builder_validatesUrlFormat() {
     // Act & Assert
-    IllegalArgumentException exception =
-        assertThrows(
-            IllegalArgumentException.class,
+    assertThatThrownBy(
             () ->
-                WebhookConfig.builder()
-                    .name("test")
-                    .type("generic")
-                    .url("not-a-valid-url")
-                    .build());
-
-    assertTrue(exception.getMessage().toLowerCase().contains("url"));
+                WebhookConfig.builder().name("test").type("generic").url("not-a-valid-url").build())
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContainingAll("url");
   }
 
   @Test
@@ -187,6 +174,6 @@ class WebhookConfigTest {
             .build();
 
     // Assert - original map size matches
-    assertEquals(1, config.headers().size());
+    assertThat(config.headers()).hasSize(1);
   }
 }

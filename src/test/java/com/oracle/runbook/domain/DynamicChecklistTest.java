@@ -1,6 +1,7 @@
 package com.oracle.runbook.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -38,22 +39,23 @@ class DynamicChecklistTest {
             now,
             "oci-genai");
 
-    assertEquals("alert-123", checklist.alertId());
-    assertEquals(
-        "This checklist addresses high memory usage on web-server-01", checklist.summary());
-    assertEquals(steps, checklist.steps());
-    assertEquals(sourceRunbooks, checklist.sourceRunbooks());
-    assertEquals(now, checklist.generatedAt());
-    assertEquals("oci-genai", checklist.llmProviderUsed());
+    assertThat(checklist.alertId()).isEqualTo("alert-123");
+    assertThat(checklist.summary())
+        .isEqualTo("This checklist addresses high memory usage on web-server-01");
+    assertThat(checklist.steps()).isEqualTo(steps);
+    assertThat(checklist.sourceRunbooks()).isEqualTo(sourceRunbooks);
+    assertThat(checklist.generatedAt()).isEqualTo(now);
+    assertThat(checklist.llmProviderUsed()).isEqualTo("oci-genai");
   }
 
   @Test
   @DisplayName("DynamicChecklist throws NullPointerException for null alertId")
   void throwsForNullAlertId() {
-    assertThrows(
-        NullPointerException.class,
-        () ->
-            new DynamicChecklist(null, "summary", List.of(), List.of(), Instant.now(), "provider"));
+    assertThatThrownBy(
+            () ->
+                new DynamicChecklist(
+                    null, "summary", List.of(), List.of(), Instant.now(), "provider"))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -68,10 +70,11 @@ class DynamicChecklistTest {
 
     // Modifying original should not affect checklist
     mutableSteps.add(createTestStep(2));
-    assertEquals(1, checklist.steps().size());
+    assertThat(checklist.steps()).hasSize(1);
 
     // Checklist's list should be unmodifiable
-    assertThrows(UnsupportedOperationException.class, () -> checklist.steps().add(null));
+    assertThatThrownBy(() -> checklist.steps().add(null))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -86,10 +89,10 @@ class DynamicChecklistTest {
 
     // Modifying original should not affect checklist
     mutableRunbooks.add("runbook2.md");
-    assertEquals(1, checklist.sourceRunbooks().size());
+    assertThat(checklist.sourceRunbooks()).hasSize(1);
 
     // Checklist's list should be unmodifiable
-    assertThrows(
-        UnsupportedOperationException.class, () -> checklist.sourceRunbooks().add("another"));
+    assertThatThrownBy(() -> checklist.sourceRunbooks().add("another"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 }

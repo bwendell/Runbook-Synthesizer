@@ -1,7 +1,7 @@
 package com.oracle.runbook.output;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -60,8 +60,8 @@ class WebhookIntegrationTest {
     WebhookResult result = destination.send(checklist).get();
 
     // Verify success
-    assertTrue(result.isSuccess());
-    assertEquals(200, result.statusCode());
+    assertThat(result.isSuccess()).isTrue();
+    assertThat(result.statusCode()).isEqualTo(200);
 
     // Verify the request was made
     verify(
@@ -89,8 +89,8 @@ class WebhookIntegrationTest {
 
     WebhookResult result = destination.send(checklist).get();
 
-    assertFalse(result.isSuccess());
-    assertTrue(result.errorMessage().isPresent());
+    assertThat(result.isSuccess()).isFalse();
+    assertThat(result.errorMessage()).isPresent();
   }
 
   @Test
@@ -122,8 +122,8 @@ class WebhookIntegrationTest {
 
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
-    assertEquals(2, results.size());
-    assertTrue(results.stream().allMatch(WebhookResult::isSuccess));
+    assertThat(results).hasSize(2);
+    assertThat(results).allMatch(WebhookResult::isSuccess);
 
     // Verify both endpoints were called
     verify(postRequestedFor(urlEqualTo("/webhook1")));
@@ -168,8 +168,8 @@ class WebhookIntegrationTest {
 
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
-    assertEquals(1, results.size());
-    assertTrue(results.getFirst().isSuccess());
+    assertThat(results).hasSize(1);
+    assertThat(results.getFirst().isSuccess()).isTrue();
 
     verify(postRequestedFor(urlEqualTo("/configured-webhook")));
   }

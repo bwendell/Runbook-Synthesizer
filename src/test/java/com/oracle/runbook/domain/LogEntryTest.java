@@ -1,6 +1,8 @@
 package com.oracle.runbook.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -20,26 +22,25 @@ class LogEntryTest {
     LogEntry entry =
         new LogEntry("log-123", now, "ERROR", "Connection refused to database server", metadata);
 
-    assertEquals("log-123", entry.id());
-    assertEquals(now, entry.timestamp());
-    assertEquals("ERROR", entry.level());
-    assertEquals("Connection refused to database server", entry.message());
-    assertEquals(metadata, entry.metadata());
+    assertThat(entry.id()).isEqualTo("log-123");
+    assertThat(entry.timestamp()).isEqualTo(now);
+    assertThat(entry.level()).isEqualTo("ERROR");
+    assertThat(entry.message()).isEqualTo("Connection refused to database server");
+    assertThat(entry.metadata()).isEqualTo(metadata);
   }
 
   @Test
   @DisplayName("LogEntry throws NullPointerException for null id")
   void throwsForNullId() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new LogEntry(null, Instant.now(), "INFO", "message", Map.of()));
+    assertThatThrownBy(() -> new LogEntry(null, Instant.now(), "INFO", "message", Map.of()))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   @DisplayName("LogEntry throws NullPointerException for null timestamp")
   void throwsForNullTimestamp() {
-    assertThrows(
-        NullPointerException.class, () -> new LogEntry("id", null, "INFO", "message", Map.of()));
+    assertThatThrownBy(() -> new LogEntry("id", null, "INFO", "message", Map.of()))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -52,11 +53,11 @@ class LogEntryTest {
 
     // Modifying original should not affect entry
     mutableMetadata.put("newKey", "newValue");
-    assertFalse(entry.metadata().containsKey("newKey"));
+    assertThat(entry.metadata()).doesNotContainKey("newKey");
 
     // Entry's metadata should be unmodifiable
-    assertThrows(
-        UnsupportedOperationException.class, () -> entry.metadata().put("another", "value"));
+    assertThatThrownBy(() -> entry.metadata().put("another", "value"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -64,9 +65,13 @@ class LogEntryTest {
   void acceptsVariousLogLevels() {
     Instant now = Instant.now();
 
-    assertDoesNotThrow(() -> new LogEntry("1", now, "DEBUG", "msg", Map.of()));
-    assertDoesNotThrow(() -> new LogEntry("2", now, "INFO", "msg", Map.of()));
-    assertDoesNotThrow(() -> new LogEntry("3", now, "WARN", "msg", Map.of()));
-    assertDoesNotThrow(() -> new LogEntry("4", now, "ERROR", "msg", Map.of()));
+    assertThatCode(() -> new LogEntry("1", now, "DEBUG", "msg", Map.of()))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> new LogEntry("2", now, "INFO", "msg", Map.of()))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> new LogEntry("3", now, "WARN", "msg", Map.of()))
+        .doesNotThrowAnyException();
+    assertThatCode(() -> new LogEntry("4", now, "ERROR", "msg", Map.of()))
+        .doesNotThrowAnyException();
   }
 }

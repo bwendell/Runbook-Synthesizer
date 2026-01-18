@@ -1,6 +1,7 @@
 package com.oracle.runbook.rag;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oracle.runbook.domain.RunbookChunk;
 import dev.langchain4j.data.embedding.Embedding;
@@ -37,16 +38,16 @@ class OracleVectorStoreRepositoryTest {
     repository.store(chunk);
 
     // Assert
-    assertNotNull(stubEmbeddingStore.lastStoredTextSegment);
-    assertNotNull(stubEmbeddingStore.lastStoredEmbedding);
-    assertEquals("Check memory usage", stubEmbeddingStore.lastStoredTextSegment.text());
+    assertThat(stubEmbeddingStore.lastStoredTextSegment).isNotNull();
+    assertThat(stubEmbeddingStore.lastStoredEmbedding).isNotNull();
+    assertThat(stubEmbeddingStore.lastStoredTextSegment.text()).isEqualTo("Check memory usage");
     // Verify metadata is stored
-    assertEquals("chunk-001", stubEmbeddingStore.lastStoredTextSegment.metadata().getString("id"));
-    assertEquals(
-        "runbooks/memory/high-memory.md",
-        stubEmbeddingStore.lastStoredTextSegment.metadata().getString("runbookPath"));
-    assertEquals(
-        "memory,linux", stubEmbeddingStore.lastStoredTextSegment.metadata().getString("tags"));
+    assertThat(stubEmbeddingStore.lastStoredTextSegment.metadata().getString("id"))
+        .isEqualTo("chunk-001");
+    assertThat(stubEmbeddingStore.lastStoredTextSegment.metadata().getString("runbookPath"))
+        .isEqualTo("runbooks/memory/high-memory.md");
+    assertThat(stubEmbeddingStore.lastStoredTextSegment.metadata().getString("tags"))
+        .isEqualTo("memory,linux");
   }
 
   @Test
@@ -62,7 +63,7 @@ class OracleVectorStoreRepositoryTest {
     repository.storeBatch(chunks);
 
     // Assert
-    assertEquals(2, stubEmbeddingStore.batchAddedCount);
+    assertThat(stubEmbeddingStore.batchAddedCount).isEqualTo(2);
   }
 
   @Test
@@ -76,11 +77,11 @@ class OracleVectorStoreRepositoryTest {
     List<ScoredChunk> results = repository.search(queryEmbedding, topK);
 
     // Assert
-    assertNotNull(results);
-    assertEquals(1, results.size());
-    assertEquals("test-chunk-id", results.get(0).chunk().id());
-    assertEquals("Test content", results.get(0).chunk().content());
-    assertEquals(0.95, results.get(0).similarityScore());
+    assertThat(results).isNotNull();
+    assertThat(results).hasSize(1);
+    assertThat(results.get(0).chunk().id()).isEqualTo("test-chunk-id");
+    assertThat(results.get(0).chunk().content()).isEqualTo("Test content");
+    assertThat(results.get(0).similarityScore()).isEqualTo(0.95);
   }
 
   @Test
@@ -93,14 +94,15 @@ class OracleVectorStoreRepositoryTest {
     repository.delete(runbookPath);
 
     // Assert - verify delete was called (tracked in stub)
-    assertEquals(runbookPath, stubEmbeddingStore.lastDeletedRunbookPath);
+    assertThat(stubEmbeddingStore.lastDeletedRunbookPath).isEqualTo(runbookPath);
   }
 
   @Test
   @DisplayName("constructor throws NullPointerException for null store")
   void constructor_withNullStore_throwsNullPointerException() {
     // Act & Assert
-    assertThrows(NullPointerException.class, () -> new OracleVectorStoreRepository(null));
+    assertThatThrownBy(() -> new OracleVectorStoreRepository(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   private RunbookChunk createTestChunk(

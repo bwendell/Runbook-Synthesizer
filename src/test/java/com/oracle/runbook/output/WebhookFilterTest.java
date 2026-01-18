@@ -1,6 +1,6 @@
 package com.oracle.runbook.output;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.AlertSeverity;
 import java.util.Map;
@@ -22,8 +22,8 @@ class WebhookFilterTest {
     WebhookFilter filter = new WebhookFilter(severities, labels);
 
     // Assert
-    assertEquals(severities, filter.severities());
-    assertEquals(labels, filter.requiredLabels());
+    assertThat(filter.severities()).isEqualTo(severities);
+    assertThat(filter.requiredLabels()).isEqualTo(labels);
   }
 
   @Test
@@ -33,7 +33,8 @@ class WebhookFilterTest {
     WebhookFilter filter = new WebhookFilter(Set.of(AlertSeverity.CRITICAL), Map.of("team", "ops"));
 
     // Act & Assert - filter matches against severity and labels
-    assertTrue(filter.matches(AlertSeverity.CRITICAL, Map.of("team", "ops", "env", "prod")));
+    assertThat(filter.matches(AlertSeverity.CRITICAL, Map.of("team", "ops", "env", "prod")))
+        .isTrue();
   }
 
   @Test
@@ -43,7 +44,7 @@ class WebhookFilterTest {
     WebhookFilter filter = new WebhookFilter(Set.of(AlertSeverity.CRITICAL), Map.of());
 
     // Act & Assert
-    assertFalse(filter.matches(AlertSeverity.INFO, Map.of()));
+    assertThat(filter.matches(AlertSeverity.INFO, Map.of())).isFalse();
   }
 
   @Test
@@ -53,7 +54,7 @@ class WebhookFilterTest {
     WebhookFilter filter = new WebhookFilter(Set.of(AlertSeverity.CRITICAL), Map.of("team", "ops"));
 
     // Act & Assert - labels don't contain required 'team' key
-    assertFalse(filter.matches(AlertSeverity.CRITICAL, Map.of("env", "prod")));
+    assertThat(filter.matches(AlertSeverity.CRITICAL, Map.of("env", "prod"))).isFalse();
   }
 
   @Test
@@ -63,7 +64,7 @@ class WebhookFilterTest {
     WebhookFilter filter = new WebhookFilter(Set.of(AlertSeverity.CRITICAL), Map.of("team", "ops"));
 
     // Act & Assert - label key matches but value differs
-    assertFalse(filter.matches(AlertSeverity.CRITICAL, Map.of("team", "dev")));
+    assertThat(filter.matches(AlertSeverity.CRITICAL, Map.of("team", "dev"))).isFalse();
   }
 
   @Test
@@ -73,9 +74,9 @@ class WebhookFilterTest {
     WebhookFilter filter = new WebhookFilter(Set.of(), Map.of());
 
     // Act & Assert
-    assertTrue(filter.matches(AlertSeverity.CRITICAL, Map.of()));
-    assertTrue(filter.matches(AlertSeverity.WARNING, Map.of("any", "label")));
-    assertTrue(filter.matches(AlertSeverity.INFO, Map.of()));
+    assertThat(filter.matches(AlertSeverity.CRITICAL, Map.of())).isTrue();
+    assertThat(filter.matches(AlertSeverity.WARNING, Map.of("any", "label"))).isTrue();
+    assertThat(filter.matches(AlertSeverity.INFO, Map.of())).isTrue();
   }
 
   @Test
@@ -85,9 +86,9 @@ class WebhookFilterTest {
     WebhookFilter filter = new WebhookFilter(Set.of(), Map.of("team", "ops"));
 
     // Act & Assert
-    assertTrue(filter.matches(AlertSeverity.CRITICAL, Map.of("team", "ops")));
-    assertTrue(filter.matches(AlertSeverity.WARNING, Map.of("team", "ops")));
-    assertTrue(filter.matches(AlertSeverity.INFO, Map.of("team", "ops")));
+    assertThat(filter.matches(AlertSeverity.CRITICAL, Map.of("team", "ops"))).isTrue();
+    assertThat(filter.matches(AlertSeverity.WARNING, Map.of("team", "ops"))).isTrue();
+    assertThat(filter.matches(AlertSeverity.INFO, Map.of("team", "ops"))).isTrue();
   }
 
   @Test
@@ -97,9 +98,9 @@ class WebhookFilterTest {
     WebhookFilter filter = WebhookFilter.allowAll();
 
     // Assert
-    assertEquals(Set.of(), filter.severities());
-    assertEquals(Map.of(), filter.requiredLabels());
-    assertTrue(filter.matches(AlertSeverity.CRITICAL, Map.of("any", "labels")));
+    assertThat(filter.severities()).isEqualTo(Set.of());
+    assertThat(filter.requiredLabels()).isEqualTo(Map.of());
+    assertThat(filter.matches(AlertSeverity.CRITICAL, Map.of("any", "labels"))).isTrue();
   }
 
   @Test
@@ -111,7 +112,7 @@ class WebhookFilterTest {
     WebhookFilter filter = new WebhookFilter(severities, labels);
 
     // Assert - verify immutability
-    assertEquals(1, filter.severities().size());
-    assertEquals(1, filter.requiredLabels().size());
+    assertThat(filter.severities()).hasSize(1);
+    assertThat(filter.requiredLabels()).hasSize(1);
   }
 }

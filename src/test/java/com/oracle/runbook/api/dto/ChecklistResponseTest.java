@@ -1,6 +1,7 @@
 package com.oracle.runbook.api.dto;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oracle.runbook.domain.ChecklistStep;
 import com.oracle.runbook.domain.DynamicChecklist;
@@ -38,11 +39,11 @@ class ChecklistResponseTest {
 
     var response = ChecklistResponse.fromDomain(checklist);
 
-    assertEquals("alert-123", response.alertId());
-    assertEquals("Database troubleshooting guide", response.summary());
-    assertEquals(2, response.steps().size());
-    assertEquals("Check logs", response.steps().get(0).instruction());
-    assertEquals("oci-genai", response.llmProviderUsed());
+    assertThat(response.alertId()).isEqualTo("alert-123");
+    assertThat(response.summary()).isEqualTo("Database troubleshooting guide");
+    assertThat(response.steps()).hasSize(2);
+    assertThat(response.steps().get(0).instruction()).isEqualTo("Check logs");
+    assertThat(response.llmProviderUsed()).isEqualTo("oci-genai");
   }
 
   @Test
@@ -53,13 +54,14 @@ class ChecklistResponseTest {
 
     var response = ChecklistResponse.fromDomain(checklist);
 
-    assertEquals(1, response.sourceRunbooks().size());
-    assertEquals("runbook-a.md", response.sourceRunbooks().get(0));
+    assertThat(response.sourceRunbooks()).hasSize(1);
+    assertThat(response.sourceRunbooks().get(0)).isEqualTo("runbook-a.md");
   }
 
   @Test
   void testFromDomain_NullChecklist_ThrowsException() {
-    assertThrows(NullPointerException.class, () -> ChecklistResponse.fromDomain(null));
+    assertThatThrownBy(() -> ChecklistResponse.fromDomain(null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -81,12 +83,12 @@ class ChecklistResponseTest {
     var response = ChecklistResponse.fromDomain(checklist);
     var stepResponse = response.steps().get(0);
 
-    assertEquals(1, stepResponse.order());
-    assertEquals("Check CPU", stepResponse.instruction());
-    assertEquals("CPU is high", stepResponse.rationale());
-    assertEquals("95%", stepResponse.currentValue());
-    assertEquals("below 80%", stepResponse.expectedValue());
-    assertEquals("HIGH", stepResponse.priority());
-    assertEquals(List.of("top -n 1"), stepResponse.commands());
+    assertThat(stepResponse.order()).isEqualTo(1);
+    assertThat(stepResponse.instruction()).isEqualTo("Check CPU");
+    assertThat(stepResponse.rationale()).isEqualTo("CPU is high");
+    assertThat(stepResponse.currentValue()).isEqualTo("95%");
+    assertThat(stepResponse.expectedValue()).isEqualTo("below 80%");
+    assertThat(stepResponse.priority()).isEqualTo("HIGH");
+    assertThat(stepResponse.commands()).isEqualTo(List.of("top -n 1"));
   }
 }

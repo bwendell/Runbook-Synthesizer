@@ -1,6 +1,7 @@
 package com.oracle.runbook.rag;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.oracle.runbook.domain.RunbookChunk;
 import java.util.List;
@@ -18,7 +19,7 @@ class VectorStoreRepositoryTest {
     RunbookChunk chunk = createTestChunk("chunk-001");
 
     // Act & Assert - should not throw
-    assertDoesNotThrow(() -> repository.store(chunk));
+    assertThatCode(() -> repository.store(chunk)).doesNotThrowAnyException();
   }
 
   @Test
@@ -29,7 +30,7 @@ class VectorStoreRepositoryTest {
     List<RunbookChunk> chunks = List.of(createTestChunk("chunk-001"), createTestChunk("chunk-002"));
 
     // Act & Assert - should not throw
-    assertDoesNotThrow(() -> repository.storeBatch(chunks));
+    assertThatCode(() -> repository.storeBatch(chunks)).doesNotThrowAnyException();
   }
 
   @Test
@@ -44,8 +45,8 @@ class VectorStoreRepositoryTest {
     List<ScoredChunk> results = repository.search(queryEmbedding, topK);
 
     // Assert
-    assertNotNull(results);
-    assertEquals(2, results.size());
+    assertThat(results).isNotNull();
+    assertThat(results).hasSize(2);
   }
 
   @Test
@@ -56,7 +57,7 @@ class VectorStoreRepositoryTest {
     String runbookPath = "runbooks/memory/high-memory.md";
 
     // Act & Assert - should not throw
-    assertDoesNotThrow(() -> repository.delete(runbookPath));
+    assertThatCode(() -> repository.delete(runbookPath)).doesNotThrowAnyException();
   }
 
   private RunbookChunk createTestChunk(String id) {

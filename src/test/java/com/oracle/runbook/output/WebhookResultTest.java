@@ -1,6 +1,6 @@
 package com.oracle.runbook.output;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -20,11 +20,11 @@ class WebhookResultTest {
     WebhookResult result = new WebhookResult("slack-oncall", true, 200, Optional.empty(), sentAt);
 
     // Assert
-    assertEquals("slack-oncall", result.destinationName());
-    assertTrue(result.success());
-    assertEquals(200, result.statusCode());
-    assertTrue(result.errorMessage().isEmpty());
-    assertEquals(sentAt, result.sentAt());
+    assertThat(result.destinationName()).isEqualTo("slack-oncall");
+    assertThat(result.success()).isTrue();
+    assertThat(result.statusCode()).isEqualTo(200);
+    assertThat(result.errorMessage()).isEmpty();
+    assertThat(result.sentAt()).isEqualTo(sentAt);
   }
 
   @Test
@@ -34,11 +34,11 @@ class WebhookResultTest {
     WebhookResult result = WebhookResult.success("pagerduty-incidents", 201);
 
     // Assert
-    assertEquals("pagerduty-incidents", result.destinationName());
-    assertTrue(result.success());
-    assertEquals(201, result.statusCode());
-    assertTrue(result.errorMessage().isEmpty());
-    assertNotNull(result.sentAt());
+    assertThat(result.destinationName()).isEqualTo("pagerduty-incidents");
+    assertThat(result.success()).isTrue();
+    assertThat(result.statusCode()).isEqualTo(201);
+    assertThat(result.errorMessage()).isEmpty();
+    assertThat(result.sentAt()).isNotNull();
   }
 
   @Test
@@ -48,12 +48,12 @@ class WebhookResultTest {
     WebhookResult result = WebhookResult.failure("slack-oncall", "Connection timeout");
 
     // Assert
-    assertEquals("slack-oncall", result.destinationName());
-    assertFalse(result.success());
-    assertEquals(0, result.statusCode());
-    assertTrue(result.errorMessage().isPresent());
-    assertEquals("Connection timeout", result.errorMessage().get());
-    assertNotNull(result.sentAt());
+    assertThat(result.destinationName()).isEqualTo("slack-oncall");
+    assertThat(result.success()).isFalse();
+    assertThat(result.statusCode()).isEqualTo(0);
+    assertThat(result.errorMessage()).isPresent();
+    assertThat(result.errorMessage().get()).isEqualTo("Connection timeout");
+    assertThat(result.sentAt()).isNotNull();
   }
 
   @Test
@@ -64,8 +64,8 @@ class WebhookResultTest {
     WebhookResult failureResult = WebhookResult.failure("test", "error");
 
     // Act & Assert
-    assertTrue(successResult.isSuccess());
-    assertFalse(failureResult.isSuccess());
+    assertThat(successResult.isSuccess()).isTrue();
+    assertThat(failureResult.isSuccess()).isFalse();
   }
 
   @Test
@@ -76,7 +76,7 @@ class WebhookResultTest {
     WebhookResult result = new WebhookResult("webhook", true, 200, Optional.empty(), sentAt);
 
     // Assert - verify no setters exist (would be compilation error if attempted)
-    assertEquals("webhook", result.destinationName());
-    assertEquals(200, result.statusCode());
+    assertThat(result.destinationName()).isEqualTo("webhook");
+    assertThat(result.statusCode()).isEqualTo(200);
   }
 }

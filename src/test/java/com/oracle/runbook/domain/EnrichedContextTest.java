@@ -1,6 +1,7 @@
 package com.oracle.runbook.domain;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -50,19 +51,19 @@ class EnrichedContextTest {
 
     EnrichedContext context = new EnrichedContext(alert, resource, metrics, logs, customProps);
 
-    assertEquals(alert, context.alert());
-    assertEquals(resource, context.resource());
-    assertEquals(metrics, context.recentMetrics());
-    assertEquals(logs, context.recentLogs());
-    assertEquals(customProps, context.customProperties());
+    assertThat(context.alert()).isEqualTo(alert);
+    assertThat(context.resource()).isEqualTo(resource);
+    assertThat(context.recentMetrics()).isEqualTo(metrics);
+    assertThat(context.recentLogs()).isEqualTo(logs);
+    assertThat(context.customProperties()).isEqualTo(customProps);
   }
 
   @Test
   @DisplayName("EnrichedContext throws NullPointerException for null alert")
   void throwsForNullAlert() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new EnrichedContext(null, createTestMetadata(), List.of(), List.of(), Map.of()));
+    assertThatThrownBy(
+            () -> new EnrichedContext(null, createTestMetadata(), List.of(), List.of(), Map.of()))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
@@ -77,10 +78,11 @@ class EnrichedContextTest {
 
     // Modifying original should not affect context
     mutableMetrics.add(new MetricSnapshot("mem", "ns", 60.0, "%", Instant.now()));
-    assertEquals(1, context.recentMetrics().size());
+    assertThat(context.recentMetrics()).hasSize(1);
 
     // Context's list should be unmodifiable
-    assertThrows(UnsupportedOperationException.class, () -> context.recentMetrics().add(null));
+    assertThatThrownBy(() -> context.recentMetrics().add(null))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -95,10 +97,11 @@ class EnrichedContextTest {
 
     // Modifying original should not affect context
     mutableLogs.add(new LogEntry("2", Instant.now(), "ERROR", "msg2", Map.of()));
-    assertEquals(1, context.recentLogs().size());
+    assertThat(context.recentLogs()).hasSize(1);
 
     // Context's list should be unmodifiable
-    assertThrows(UnsupportedOperationException.class, () -> context.recentLogs().add(null));
+    assertThatThrownBy(() -> context.recentLogs().add(null))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 
   @Test
@@ -113,11 +116,10 @@ class EnrichedContextTest {
 
     // Modifying original should not affect context
     mutableProps.put("newKey", "newValue");
-    assertFalse(context.customProperties().containsKey("newKey"));
+    assertThat(context.customProperties()).doesNotContainKey("newKey");
 
     // Context's map should be unmodifiable
-    assertThrows(
-        UnsupportedOperationException.class,
-        () -> context.customProperties().put("another", "value"));
+    assertThatThrownBy(() -> context.customProperties().put("another", "value"))
+        .isInstanceOf(UnsupportedOperationException.class);
   }
 }

@@ -1,6 +1,7 @@
 package com.oracle.runbook.api.dto;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.Map;
@@ -15,10 +16,10 @@ class WebhookConfigTest {
         new WebhookConfig(
             "slack-notify", "SLACK", "https://hooks.slack.com/xxx", true, List.of(), Map.of());
 
-    assertEquals("slack-notify", config.name());
-    assertEquals("SLACK", config.type());
-    assertEquals("https://hooks.slack.com/xxx", config.url());
-    assertTrue(config.enabled());
+    assertThat(config.name()).isEqualTo("slack-notify");
+    assertThat(config.type()).isEqualTo("SLACK");
+    assertThat(config.url()).isEqualTo("https://hooks.slack.com/xxx");
+    assertThat(config.enabled()).isTrue();
   }
 
   @Test
@@ -32,36 +33,32 @@ class WebhookConfigTest {
             List.of("CRITICAL", "WARNING"),
             Map.of("X-API-Key", "secret"));
 
-    assertEquals(2, config.filterSeverities().size());
-    assertTrue(config.filterSeverities().contains("CRITICAL"));
-    assertEquals("secret", config.headers().get("X-API-Key"));
+    assertThat(config.filterSeverities()).hasSize(2);
+    assertThat(config.filterSeverities()).contains("CRITICAL");
+    assertThat(config.headers().get("X-API-Key")).isEqualTo("secret");
   }
 
   @Test
   void testNullName_ThrowsException() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new WebhookConfig(null, "SLACK", "url", true, null, null));
+    assertThatThrownBy(() -> new WebhookConfig(null, "SLACK", "url", true, null, null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void testNullUrl_ThrowsException() {
-    assertThrows(
-        NullPointerException.class,
-        () -> new WebhookConfig("name", "SLACK", null, true, null, null));
+    assertThatThrownBy(() -> new WebhookConfig("name", "SLACK", null, true, null, null))
+        .isInstanceOf(NullPointerException.class);
   }
 
   @Test
   void testNullFilterSeverities_DefaultsToEmptyList() {
     var config = new WebhookConfig("name", "SLACK", "url", true, null, null);
-    assertNotNull(config.filterSeverities());
-    assertTrue(config.filterSeverities().isEmpty());
+    assertThat(config.filterSeverities()).isNotNull().isEmpty();
   }
 
   @Test
   void testNullHeaders_DefaultsToEmptyMap() {
     var config = new WebhookConfig("name", "SLACK", "url", true, null, null);
-    assertNotNull(config.headers());
-    assertTrue(config.headers().isEmpty());
+    assertThat(config.headers()).isNotNull().isEmpty();
   }
 }
