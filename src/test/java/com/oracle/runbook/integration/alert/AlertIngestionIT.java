@@ -22,33 +22,32 @@ import org.junit.jupiter.api.Test;
 /**
  * Integration tests for alert ingestion flow.
  *
- * <p>
- * Tests the full flow: POST alert → context enrichment → RAG pipeline →
- * checklist response.
+ * <p>Tests the full flow: POST alert → context enrichment → RAG pipeline → checklist response.
  */
 class AlertIngestionIT extends IntegrationTestBase {
 
-    private final Http1Client client;
+  private final Http1Client client;
 
-    AlertIngestionIT(WebServer server, Http1Client client) {
-        super(server);
-        this.client = client;
-    }
+  AlertIngestionIT(WebServer server, Http1Client client) {
+    super(server);
+    this.client = client;
+  }
 
-    @SetUpServer
-    static void setup(WebServerConfig.Builder builder) {
-        builder.routing(routing -> routing.register("/api/v1/alerts", new AlertResource()));
-    }
+  @SetUpServer
+  static void setup(WebServerConfig.Builder builder) {
+    builder.routing(routing -> routing.register("/api/v1/alerts", new AlertResource()));
+  }
 
-    @BeforeEach
-    void resetMocks() {
-        resetWireMock();
-    }
+  @BeforeEach
+  void resetMocks() {
+    resetWireMock();
+  }
 
-    @Test
-    void postValidAlert_ReturnsChecklist() {
-        // Given: A valid OCI alarm JSON payload
-        String validAlertJson = """
+  @Test
+  void postValidAlert_ReturnsChecklist() {
+    // Given: A valid OCI alarm JSON payload
+    String validAlertJson =
+        """
                 {
                   "title": "High Memory Usage Alert",
                   "message": "Memory usage on host has exceeded 85% threshold",
@@ -64,40 +63,41 @@ class AlertIngestionIT extends IntegrationTestBase {
                 }
                 """;
 
-        // When: POST to /api/v1/alerts
-        try (Http1ClientResponse response = client
-                .post("/api/v1/alerts")
-                .header(HeaderNames.CONTENT_TYPE, "application/json")
-                .submit(validAlertJson)) {
+    // When: POST to /api/v1/alerts
+    try (Http1ClientResponse response =
+        client
+            .post("/api/v1/alerts")
+            .header(HeaderNames.CONTENT_TYPE, "application/json")
+            .submit(validAlertJson)) {
 
-            // Then: HTTP 200 response
-            assertThat(response.status()).isEqualTo(Status.OK_200);
+      // Then: HTTP 200 response
+      assertThat(response.status()).isEqualTo(Status.OK_200);
 
-            // Then: Response contains DynamicChecklist structure
-            String body = response.as(String.class);
-            JsonObject json = parseJson(body);
+      // Then: Response contains DynamicChecklist structure
+      String body = response.as(String.class);
+      JsonObject json = parseJson(body);
 
-            assertThat(json.containsKey("alertId")).isTrue();
-            assertThat(json.containsKey("summary")).isTrue();
-            assertThat(json.containsKey("steps")).isTrue();
-            assertThat(json.getJsonArray("steps")).isNotEmpty();
-            assertThat(json.containsKey("sourceRunbooks")).isTrue();
-            assertThat(json.containsKey("generatedAt")).isTrue();
-            assertThat(json.containsKey("llmProviderUsed")).isTrue();
-        }
+      assertThat(json.containsKey("alertId")).isTrue();
+      assertThat(json.containsKey("summary")).isTrue();
+      assertThat(json.containsKey("steps")).isTrue();
+      assertThat(json.getJsonArray("steps")).isNotEmpty();
+      assertThat(json.containsKey("sourceRunbooks")).isTrue();
+      assertThat(json.containsKey("generatedAt")).isTrue();
+      assertThat(json.containsKey("llmProviderUsed")).isTrue();
     }
+  }
 
-    @Test
-    void postValidAlert_WithMockedOciServices_ReturnsEnrichedChecklist() {
-        // Given: Mock OCI Monitoring metrics endpoint
-        wireMockServer.stubFor(
-                get(urlPathMatching("/20180401/metrics/actions/summarizeMetricsData"))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody(
-                                                """
+  @Test
+  void postValidAlert_WithMockedOciServices_ReturnsEnrichedChecklist() {
+    // Given: Mock OCI Monitoring metrics endpoint
+    wireMockServer.stubFor(
+        get(urlPathMatching("/20180401/metrics/actions/summarizeMetricsData"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
                                                         {
                                                           "items": [
                                                             {
@@ -112,15 +112,15 @@ class AlertIngestionIT extends IntegrationTestBase {
                                                         }
                                                         """)));
 
-        // Given: Mock OCI Logging search endpoint
-        wireMockServer.stubFor(
-                post(urlPathMatching("/20190909/search"))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody(
-                                                """
+    // Given: Mock OCI Logging search endpoint
+    wireMockServer.stubFor(
+        post(urlPathMatching("/20190909/search"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
                                                         {
                                                           "results": [
                                                             {
@@ -133,15 +133,15 @@ class AlertIngestionIT extends IntegrationTestBase {
                                                         }
                                                         """)));
 
-        // Given: Mock OCI GenAI generate endpoint
-        wireMockServer.stubFor(
-                post(urlPathMatching("/20231130/actions/generateText"))
-                        .willReturn(
-                                aResponse()
-                                        .withStatus(200)
-                                        .withHeader("Content-Type", "application/json")
-                                        .withBody(
-                                                """
+    // Given: Mock OCI GenAI generate endpoint
+    wireMockServer.stubFor(
+        post(urlPathMatching("/20231130/actions/generateText"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
                                                         {
                                                           "modelId": "cohere.command",
                                                           "inferenceResponse": {
@@ -154,8 +154,9 @@ class AlertIngestionIT extends IntegrationTestBase {
                                                         }
                                                         """)));
 
-        // When: POST valid alert
-        String validAlertJson = """
+    // When: POST valid alert
+    String validAlertJson =
+        """
                 {
                   "title": "High Memory Usage Alert",
                   "message": "Memory usage on host has exceeded 85% threshold",
@@ -169,74 +170,79 @@ class AlertIngestionIT extends IntegrationTestBase {
                 }
                 """;
 
-        try (Http1ClientResponse response = client
-                .post("/api/v1/alerts")
-                .header(HeaderNames.CONTENT_TYPE, "application/json")
-                .submit(validAlertJson)) {
+    try (Http1ClientResponse response =
+        client
+            .post("/api/v1/alerts")
+            .header(HeaderNames.CONTENT_TYPE, "application/json")
+            .submit(validAlertJson)) {
 
-            // Then: HTTP 200 with checklist
-            assertThat(response.status()).isEqualTo(Status.OK_200);
+      // Then: HTTP 200 with checklist
+      assertThat(response.status()).isEqualTo(Status.OK_200);
 
-            String body = response.as(String.class);
-            JsonObject json = parseJson(body);
+      String body = response.as(String.class);
+      JsonObject json = parseJson(body);
 
-            assertThat(json.getString("alertId")).isNotBlank();
-            assertThat(json.getJsonArray("steps").size()).isGreaterThan(0);
-        }
+      assertThat(json.getString("alertId")).isNotBlank();
+      assertThat(json.getJsonArray("steps").size()).isGreaterThan(0);
     }
+  }
 
-    @Test
-    void postEmptyObject_ReturnsBadRequest() {
-        // Given: Empty JSON object
-        String emptyJson = "{}";
+  @Test
+  void postEmptyObject_ReturnsBadRequest() {
+    // Given: Empty JSON object
+    String emptyJson = "{}";
 
-        // When: POST to /api/v1/alerts
-        try (Http1ClientResponse response = client
-                .post("/api/v1/alerts")
-                .header(HeaderNames.CONTENT_TYPE, "application/json")
-                .submit(emptyJson)) {
+    // When: POST to /api/v1/alerts
+    try (Http1ClientResponse response =
+        client
+            .post("/api/v1/alerts")
+            .header(HeaderNames.CONTENT_TYPE, "application/json")
+            .submit(emptyJson)) {
 
-            // Then: HTTP 400 with validation error
-            assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
+      // Then: HTTP 400 with validation error
+      assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
 
-            String body = response.as(String.class);
-            JsonObject json = parseJson(body);
+      String body = response.as(String.class);
+      JsonObject json = parseJson(body);
 
-            assertThat(json.containsKey("errorCode")).isTrue();
-            assertThat(json.getString("errorCode")).isEqualTo("VALIDATION_ERROR");
-        }
+      assertThat(json.containsKey("errorCode")).isTrue();
+      assertThat(json.getString("errorCode")).isEqualTo("VALIDATION_ERROR");
     }
+  }
 
-    @Test
-    void postMissingTitle_ReturnsBadRequest() {
-        // Given: JSON without required title field
-        String missingTitleJson = """
+  @Test
+  void postMissingTitle_ReturnsBadRequest() {
+    // Given: JSON without required title field
+    String missingTitleJson =
+        """
                 {
                   "message": "Some message",
                   "severity": "WARNING"
                 }
                 """;
 
-        // When: POST to /api/v1/alerts
-        try (Http1ClientResponse response = client
-                .post("/api/v1/alerts")
-                .header(HeaderNames.CONTENT_TYPE, "application/json")
-                .submit(missingTitleJson)) {
+    // When: POST to /api/v1/alerts
+    try (Http1ClientResponse response =
+        client
+            .post("/api/v1/alerts")
+            .header(HeaderNames.CONTENT_TYPE, "application/json")
+            .submit(missingTitleJson)) {
 
-            // Then: HTTP 400 with validation error
-            assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
+      // Then: HTTP 400 with validation error
+      assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
 
-            String body = response.as(String.class);
-            JsonObject json = parseJson(body);
+      String body = response.as(String.class);
+      JsonObject json = parseJson(body);
 
-            assertThat(json.getString("errorCode")).isEqualTo("VALIDATION_ERROR");
-        }
+      assertThat(json.getString("errorCode")).isEqualTo("VALIDATION_ERROR");
     }
+  }
 
-    @Test
-    void postInvalidSeverity_ReturnsBadRequest() {
-        // Given: JSON with invalid severity
-        String invalidSeverityJson = """
+  @Test
+  void postInvalidSeverity_ReturnsBadRequest() {
+    // Given: JSON with invalid severity
+    String invalidSeverityJson =
+        """
                 {
                   "title": "Test Alert",
                   "message": "Test message",
@@ -244,26 +250,27 @@ class AlertIngestionIT extends IntegrationTestBase {
                 }
                 """;
 
-        // When: POST to /api/v1/alerts
-        try (Http1ClientResponse response = client
-                .post("/api/v1/alerts")
-                .header(HeaderNames.CONTENT_TYPE, "application/json")
-                .submit(invalidSeverityJson)) {
+    // When: POST to /api/v1/alerts
+    try (Http1ClientResponse response =
+        client
+            .post("/api/v1/alerts")
+            .header(HeaderNames.CONTENT_TYPE, "application/json")
+            .submit(invalidSeverityJson)) {
 
-            // Then: HTTP 400 with validation error about severity
-            assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
+      // Then: HTTP 400 with validation error about severity
+      assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
 
-            String body = response.as(String.class);
-            JsonObject json = parseJson(body);
+      String body = response.as(String.class);
+      JsonObject json = parseJson(body);
 
-            assertThat(json.getString("errorCode")).isEqualTo("VALIDATION_ERROR");
-            assertThat(json.getString("message")).contains("severity");
-        }
+      assertThat(json.getString("errorCode")).isEqualTo("VALIDATION_ERROR");
+      assertThat(json.getString("message")).contains("severity");
     }
+  }
 
-    private JsonObject parseJson(String json) {
-        try (JsonReader reader = Json.createReader(new StringReader(json))) {
-            return reader.readObject();
-        }
+  private JsonObject parseJson(String json) {
+    try (JsonReader reader = Json.createReader(new StringReader(json))) {
+      return reader.readObject();
     }
+  }
 }

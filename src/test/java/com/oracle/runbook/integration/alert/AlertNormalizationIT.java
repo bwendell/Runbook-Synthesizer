@@ -22,63 +22,63 @@ import org.junit.jupiter.api.Test;
 /**
  * Integration tests for OCI-specific alert payload normalization.
  *
- * <p>
- * Verifies that OCI Monitoring Alarm payloads are correctly transformed into
- * the canonical Alert
+ * <p>Verifies that OCI Monitoring Alarm payloads are correctly transformed into the canonical Alert
  * format.
  */
 class AlertNormalizationIT extends IntegrationTestBase {
 
-    private final Http1Client client;
+  private final Http1Client client;
 
-    AlertNormalizationIT(WebServer server, Http1Client client) {
-        super(server);
-        this.client = client;
+  AlertNormalizationIT(WebServer server, Http1Client client) {
+    super(server);
+    this.client = client;
+  }
+
+  @SetUpServer
+  static void setup(WebServerConfig.Builder builder) {
+    builder.routing(routing -> routing.register("/api/v1/alerts", new AlertResource()));
+  }
+
+  @BeforeEach
+  void resetMocks() {
+    resetWireMock();
+  }
+
+  @Test
+  void postOciMonitoringAlarm_NormalizesToCanonicalAlert() {
+    // Given: OCI Monitoring Alarm format (from fixture)
+    String ociAlarmJson = TestFixtures.loadString("alerts/oci-monitoring-alarm.json");
+
+    // When: POST OCI alarm to alerts endpoint
+    // Note: Current AlertResource accepts canonical format, so we use the
+    // high-memory-alert fixture
+    // In a real implementation, there would be an adapter to normalize OCI alarm
+    // format
+    String canonicalAlertJson = TestFixtures.loadString("alerts/high-memory-alert.json");
+
+    try (Http1ClientResponse response =
+        client
+            .post("/api/v1/alerts")
+            .header(HeaderNames.CONTENT_TYPE, "application/json")
+            .submit(canonicalAlertJson)) {
+
+      // Then: HTTP 200 response
+      assertThat(response.status()).isEqualTo(Status.OK_200);
+
+      String body = response.as(String.class);
+      JsonObject json = parseJson(body);
+
+      // Then: Checklist is generated with proper source info
+      assertThat(json.getString("alertId")).isNotBlank();
+      assertThat(json.getJsonArray("steps").size()).isGreaterThan(0);
     }
+  }
 
-    @SetUpServer
-    static void setup(WebServerConfig.Builder builder) {
-        builder.routing(routing -> routing.register("/api/v1/alerts", new AlertResource()));
-    }
-
-    @BeforeEach
-    void resetMocks() {
-        resetWireMock();
-    }
-
-    @Test
-    void postOciMonitoringAlarm_NormalizesToCanonicalAlert() {
-        // Given: OCI Monitoring Alarm format (from fixture)
-        String ociAlarmJson = TestFixtures.loadString("alerts/oci-monitoring-alarm.json");
-
-        // When: POST OCI alarm to alerts endpoint
-        // Note: Current AlertResource accepts canonical format, so we use the
-        // high-memory-alert fixture
-        // In a real implementation, there would be an adapter to normalize OCI alarm
-        // format
-        String canonicalAlertJson = TestFixtures.loadString("alerts/high-memory-alert.json");
-
-        try (Http1ClientResponse response = client
-                .post("/api/v1/alerts")
-                .header(HeaderNames.CONTENT_TYPE, "application/json")
-                .submit(canonicalAlertJson)) {
-
-            // Then: HTTP 200 response
-            assertThat(response.status()).isEqualTo(Status.OK_200);
-
-            String body = response.as(String.class);
-            JsonObject json = parseJson(body);
-
-            // Then: Checklist is generated with proper source info
-            assertThat(json.getString("alertId")).isNotBlank();
-            assertThat(json.getJsonArray("steps").size()).isGreaterThan(0);
-        }
-    }
-
-    @Test
-    void alertWithDimensions_ExtractsResourceInfo() {
-        // Given: Alert with compartmentId and resourceId dimensions
-        String alertWithDimensionsJson = """
+  @Test
+  void alertWithDimensions_ExtractsResourceInfo() {
+    // Given: Alert with compartmentId and resourceId dimensions
+    String alertWithDimensionsJson =
+        """
                 {
                   "title": "CPU Alarm Firing",
                   "message": "CPU above threshold",
@@ -93,26 +93,28 @@ class AlertNormalizationIT extends IntegrationTestBase {
                 }
                 """;
 
-        try (Http1ClientResponse response = client
-                .post("/api/v1/alerts")
-                .header(HeaderNames.CONTENT_TYPE, "application/json")
-                .submit(alertWithDimensionsJson)) {
+    try (Http1ClientResponse response =
+        client
+            .post("/api/v1/alerts")
+            .header(HeaderNames.CONTENT_TYPE, "application/json")
+            .submit(alertWithDimensionsJson)) {
 
-            // Then: Successful processing
-            assertThat(response.status()).isEqualTo(Status.OK_200);
+      // Then: Successful processing
+      assertThat(response.status()).isEqualTo(Status.OK_200);
 
-            // The checklist should be generated using the resource dimensions
-            String body = response.as(String.class);
-            JsonObject json = parseJson(body);
+      // The checklist should be generated using the resource dimensions
+      String body = response.as(String.class);
+      JsonObject json = parseJson(body);
 
-            assertThat(json.getString("alertId")).isNotBlank();
-        }
+      assertThat(json.getString("alertId")).isNotBlank();
     }
+  }
 
-    @Test
-    void alertWithLabels_PreservesCustomTags() {
-        // Given: Alert with custom labels
-        String alertWithLabelsJson = """
+  @Test
+  void alertWithLabels_PreservesCustomTags() {
+    // Given: Alert with custom labels
+    String alertWithLabelsJson =
+        """
                 {
                   "title": "Database Connection Pool Exhausted",
                   "message": "All connections in pool are in use",
@@ -127,24 +129,25 @@ class AlertNormalizationIT extends IntegrationTestBase {
                 }
                 """;
 
-        try (Http1ClientResponse response = client
-                .post("/api/v1/alerts")
-                .header(HeaderNames.CONTENT_TYPE, "application/json")
-                .submit(alertWithLabelsJson)) {
+    try (Http1ClientResponse response =
+        client
+            .post("/api/v1/alerts")
+            .header(HeaderNames.CONTENT_TYPE, "application/json")
+            .submit(alertWithLabelsJson)) {
 
-            // Then: Successful processing with labels preserved
-            assertThat(response.status()).isEqualTo(Status.OK_200);
+      // Then: Successful processing with labels preserved
+      assertThat(response.status()).isEqualTo(Status.OK_200);
 
-            String body = response.as(String.class);
-            JsonObject json = parseJson(body);
+      String body = response.as(String.class);
+      JsonObject json = parseJson(body);
 
-            assertThat(json.getString("summary")).contains("Database Connection Pool Exhausted");
-        }
+      assertThat(json.getString("summary")).contains("Database Connection Pool Exhausted");
     }
+  }
 
-    private JsonObject parseJson(String json) {
-        try (JsonReader reader = Json.createReader(new StringReader(json))) {
-            return reader.readObject();
-        }
+  private JsonObject parseJson(String json) {
+    try (JsonReader reader = Json.createReader(new StringReader(json))) {
+      return reader.readObject();
     }
+  }
 }
