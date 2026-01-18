@@ -19,9 +19,9 @@
 - Modify: `src/main/java/com/oracle/runbook/api/AlertResource.java`
 
 **Acceptance Criteria**:
-- [ ] Add constructor accepting `RagPipelineService`, `WebhookDispatcher`, `boolean stubMode`
-- [ ] Store dependencies as final fields
-- [ ] Add backward-compatible no-arg constructor defaulting to stub mode
+- [x] Add constructor accepting `RagPipelineService`, `WebhookDispatcher`, `boolean stubMode`
+- [x] Store dependencies as final fields
+- [x] Add backward-compatible no-arg constructor defaulting to stub mode
 
 **Hints**:
 ```java
@@ -51,11 +51,11 @@ wsl ./mvnw test -Dtest=AlertResourceTest -q
 - Modify: `src/main/java/com/oracle/runbook/api/AlertResource.java`
 
 **Acceptance Criteria**:
-- [ ] Check `stubMode` flag in `handlePost()`
-- [ ] If stub mode: use existing `generateStubChecklist()` 
-- [ ] If real mode: convert `AlertRequest` to `Alert`, call `ragPipeline.processAlert()`, convert result to `ChecklistResponse`
-- [ ] In real mode: dispatch to webhooks after returning response
-- [ ] Handle exceptions from pipeline with 500 status
+- [x] Check `stubMode` flag in `handlePost()`
+- [x] If stub mode: use existing `generateStubChecklist()` 
+- [x] If real mode: convert `AlertRequest` to `Alert`, call `ragPipeline.processAlert()`, convert result to `ChecklistResponse`
+- [x] In real mode: dispatch to webhooks after returning response
+- [x] Handle exceptions from pipeline with 500 status
 
 **Hints**:
 ```java
@@ -84,11 +84,11 @@ wsl ./mvnw test -Dtest=AlertResourceTest -q
 - Modify: `src/main/java/com/oracle/runbook/RunbookSynthesizerApp.java`
 
 **Acceptance Criteria**:
-- [ ] Create stub implementations of pipeline dependencies in main app
-- [ ] Instantiate `RagPipelineService` with dependencies
-- [ ] Instantiate `WebhookDispatcher` with configured destinations
-- [ ] Pass dependencies to `AlertResource` constructor  
-- [ ] Add configuration reading for stub vs real mode
+- [x] Create stub implementations of pipeline dependencies in main app
+- [x] Instantiate `RagPipelineService` with dependencies
+- [x] Instantiate `WebhookDispatcher` with configured destinations
+- [x] Pass dependencies to `AlertResource` constructor  
+- [x] Add configuration reading for stub vs real mode
 
 **Hints**:
 ```java
@@ -120,8 +120,8 @@ wsl ./mvnw test -Dtest=AlertResourceTest,ApiRoutingIntegrationTest -q
 - Modify: `src/test/java/com/oracle/runbook/api/AlertResourceTest.java`
 
 **Acceptance Criteria**:
-- [ ] Tests continue to pass with no-arg constructor (stub mode)
-- [ ] Optionally add test verifying stub mode behavior explicitly
+- [x] Tests continue to pass with no-arg constructor (stub mode)
+- [x] Optionally add test verifying stub mode behavior explicitly
 
 **Verification**:
 ```powershell
@@ -138,8 +138,8 @@ wsl ./mvnw test -Dtest=AlertResourceTest -q
 - Modify: `src/test/java/com/oracle/runbook/api/ApiRoutingIntegrationTest.java`
 
 **Acceptance Criteria**:
-- [ ] Integration tests continue to pass with no-arg constructor
-- [ ] No functional changes needed if backward-compat constructor works
+- [x] Integration tests continue to pass with no-arg constructor
+- [x] No functional changes needed if backward-compat constructor works
 
 **Verification**:
 ```powershell
@@ -154,10 +154,10 @@ wsl ./mvnw verify -Dtest.skip=false -DskipITs=false -q
 - Modify: `src/test/java/com/oracle/runbook/integration/e2e/AlertToChecklistIT.java`
 
 **Acceptance Criteria**:
-- [ ] Add test method that wires `AlertResource` with real `RagPipelineService`
-- [ ] Test verifies full flow: HTTP POST → RAG Pipeline → Checklist Response → Webhook Dispatch
-- [ ] Use test doubles for LLM/embedding (already exists in test file)
-- [ ] Use WireMock for webhook verification (already set up)
+- [x] Add test method that wires `AlertResource` with real `RagPipelineService`
+- [x] Test verifies full flow: HTTP POST → RAG Pipeline → Checklist Response → Webhook Dispatch
+- [x] Use test doubles for LLM/embedding (already exists in test file)
+- [x] Use WireMock for webhook verification (already set up)
 
 **Hints**:
 - Leverage existing `TestLlmProvider`, `TestEmbeddingService`, `InMemoryVectorStore` from the test file

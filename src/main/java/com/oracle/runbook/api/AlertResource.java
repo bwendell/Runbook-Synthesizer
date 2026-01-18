@@ -4,7 +4,11 @@ import com.oracle.runbook.api.dto.AlertRequest;
 import com.oracle.runbook.api.dto.ChecklistResponse;
 import com.oracle.runbook.api.dto.ChecklistResponse.ChecklistStepResponse;
 import com.oracle.runbook.api.dto.ErrorResponse;
+import com.oracle.runbook.domain.Alert;
 import com.oracle.runbook.domain.AlertSeverity;
+import com.oracle.runbook.domain.DynamicChecklist;
+import com.oracle.runbook.output.WebhookDispatcher;
+import com.oracle.runbook.rag.RagPipelineService;
 import io.helidon.http.Status;
 import io.helidon.webserver.http.HttpRules;
 import io.helidon.webserver.http.HttpService;
@@ -18,13 +22,45 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Alert ingestion resource providing POST /api/v1/alerts endpoint.
  *
- * <p>Receives alerts and returns generated troubleshooting checklists.
+ * <p>Receives alerts and returns generated troubleshooting checklists. Supports both stub mode (for
+ * testing) and real mode (for production) via constructor configuration.
  */
 public class AlertResource implements HttpService {
+
+  private static final Logger LOGGER = Logger.getLogger(AlertResource.class.getName());
+  private static final int DEFAULT_TOP_K = 5;
+
+  private final RagPipelineService ragPipeline;
+  private final WebhookDispatcher webhookDispatcher;
+  private final boolean stubMode;
+
+  /**
+   * Creates an AlertResource with injected dependencies.
+   *
+   * @param ragPipeline the RAG pipeline service for generating checklists
+   * @param webhookDispatcher the dispatcher for sending to webhooks
+   * @param stubMode if true, uses stub data instead of real pipeline
+   */
+  public AlertResource(
+      RagPipelineService ragPipeline, WebhookDispatcher webhookDispatcher, boolean stubMode) {
+    this.ragPipeline = ragPipeline;
+    this.webhookDispatcher = webhookDispatcher;
+    this.stubMode = stubMode;
+  }
+
+  /**
+   * Creates an AlertResource in stub mode for backward compatibility. This constructor is used by
+   * existing tests and simple deployments.
+   */
+  public AlertResource() {
+    this(null, null, true);
+  }
 
   @Override
   public void routing(HttpRules rules) {
@@ -39,8 +75,9 @@ public class AlertResource implements HttpService {
       AlertRequest alertRequest = parseAlertRequest(body);
 
       // Validate severity
+      AlertSeverity severity;
       try {
-        AlertSeverity.fromString(alertRequest.severity());
+        severity = AlertSeverity.fromString(alertRequest.severity());
       } catch (IllegalArgumentException e) {
         sendError(
             res,
@@ -50,11 +87,34 @@ public class AlertResource implements HttpService {
         return;
       }
 
-      // Generate stub checklist response
-      var checklistResponse = generateStubChecklist(alertRequest);
+      if (stubMode) {
+        // Stub mode: use hardcoded checklist for testing
+        var checklistResponse = generateStubChecklist(alertRequest);
+        res.send(toJson(checklistResponse));
+      } else {
+        // Real mode: process through RAG pipeline
+        try {
+          Alert alert = convertToAlert(alertRequest, severity);
+          DynamicChecklist checklist = ragPipeline.processAlert(alert, DEFAULT_TOP_K).join();
+          var checklistResponse = convertToResponse(checklist);
 
-      // Send response
-      res.send(toJson(checklistResponse));
+          // Send response to HTTP client first
+          res.send(toJson(checklistResponse));
+
+          // Then dispatch to webhooks (fire-and-forget)
+          if (webhookDispatcher != null) {
+            webhookDispatcher.dispatch(checklist);
+          }
+        } catch (Exception e) {
+          LOGGER.log(Level.SEVERE, "Error processing alert through RAG pipeline", e);
+          sendError(
+              res,
+              Status.INTERNAL_SERVER_ERROR_500,
+              "PIPELINE_ERROR",
+              "Failed to process alert: " + e.getMessage());
+          return;
+        }
+      }
 
     } catch (NullPointerException e) {
       sendError(res, Status.BAD_REQUEST_400, "VALIDATION_ERROR", e.getMessage());
@@ -109,6 +169,56 @@ public class AlertResource implements HttpService {
         List.of("runbook-stub.md"),
         Instant.now(),
         "stub");
+  }
+
+  /**
+   * Converts an AlertRequest DTO to the domain Alert model.
+   *
+   * @param request the incoming request DTO
+   * @param severity the parsed severity enum
+   * @return the domain Alert
+   */
+  private Alert convertToAlert(AlertRequest request, AlertSeverity severity) {
+    return new Alert(
+        UUID.randomUUID().toString(),
+        request.title(),
+        request.message(),
+        severity,
+        request.sourceService(),
+        request.dimensions(),
+        request.labels(),
+        Instant.now(),
+        request.rawPayload());
+  }
+
+  /**
+   * Converts a DynamicChecklist domain model to the response DTO.
+   *
+   * @param checklist the domain checklist
+   * @return the response DTO
+   */
+  private ChecklistResponse convertToResponse(DynamicChecklist checklist) {
+    var steps =
+        checklist.steps().stream()
+            .map(
+                step ->
+                    new ChecklistStepResponse(
+                        step.order(),
+                        step.instruction(),
+                        step.rationale(),
+                        step.currentValue(),
+                        step.expectedValue(),
+                        step.priority() != null ? step.priority().name() : "MEDIUM",
+                        step.commands()))
+            .toList();
+
+    return new ChecklistResponse(
+        checklist.alertId(),
+        checklist.summary(),
+        steps,
+        checklist.sourceRunbooks(),
+        checklist.generatedAt(),
+        checklist.llmProviderUsed());
   }
 
   private void sendError(ServerResponse res, Status status, String errorCode, String message) {

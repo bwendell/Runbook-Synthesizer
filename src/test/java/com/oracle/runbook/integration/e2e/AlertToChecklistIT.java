@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
+import com.oracle.runbook.enrichment.ContextEnrichmentService;
 import com.oracle.runbook.integration.IntegrationTestBase;
 import com.oracle.runbook.output.*;
 import com.oracle.runbook.output.adapters.GenericWebhookDestination;
@@ -66,8 +67,8 @@ class AlertToChecklistIT extends IntegrationTestBase {
                     .withHeader("Content-Type", "application/json")
                     .withBody(
                         """
-                                                        {"metricData": [{"name": "MemoryUtilization", "value": 92.5}]}
-                                                        """)));
+                            {"metricData": [{"name": "MemoryUtilization", "value": 92.5}]}
+                            """)));
 
     // Mock OCI Logging API
     wireMockServer.stubFor(
@@ -78,8 +79,8 @@ class AlertToChecklistIT extends IntegrationTestBase {
                     .withHeader("Content-Type", "application/json")
                     .withBody(
                         """
-                                                        {"logs": [{"message": "Memory pressure detected", "timestamp": "2026-01-17T00:00:00Z"}]}
-                                                        """)));
+                            {"logs": [{"message": "Memory pressure detected", "timestamp": "2026-01-17T00:00:00Z"}]}
+                            """)));
 
     // Mock webhook destination
     wireMockServer.stubFor(
@@ -177,6 +178,63 @@ class AlertToChecklistIT extends IntegrationTestBase {
     // Then: Checklist includes both runbooks as sources
     assertThat(checklist.sourceRunbooks())
         .containsExactlyInAnyOrder("runbooks/memory.md", "runbooks/linux.md");
+  }
+
+  @Test
+  void alertResource_RealMode_ProcessesThroughRagPipeline() {
+    // Given: Mock webhook destination
+    wireMockServer.stubFor(
+        post(urlPathEqualTo("/webhook/pipeline-test"))
+            .willReturn(aResponse().withStatus(200).withBody("ok")));
+
+    // Given: Mock LLM response
+    llmProvider.setResponse(
+        "Alert Processing Checklist\n\n"
+            + "Step 1: Verify system metrics are within bounds\n"
+            + "Step 2: Check application health endpoints");
+
+    // Given: Seed vector store with runbook chunks
+    seedRunbookChunks();
+
+    // Given: Create test enrichment service that returns immediately
+    TestEnrichmentService enrichmentService = new TestEnrichmentService();
+
+    // Given: Create RagPipelineService with test components
+    RagPipelineService ragPipeline =
+        new RagPipelineService(enrichmentService, retriever, checklistGenerator);
+
+    // Given: Create WebhookDispatcher
+    WebhookConfig webhookConfig =
+        WebhookConfig.builder()
+            .name("pipeline-test")
+            .type("generic")
+            .url(wireMockBaseUrl() + "/webhook/pipeline-test")
+            .build();
+    WebhookDispatcher dispatcher =
+        new WebhookDispatcher(List.of(new GenericWebhookDestination(webhookConfig)));
+
+    // Given: AlertResource wired in real mode (stubMode=false)
+    com.oracle.runbook.api.AlertResource alertResource =
+        new com.oracle.runbook.api.AlertResource(ragPipeline, dispatcher, false);
+
+    // When: Simulate HTTP POST by constructing Alert and processing through
+    // pipeline
+    Alert alert = createOciMonitoringAlert();
+    DynamicChecklist checklist = ragPipeline.processAlert(alert, 5).join();
+
+    // Then: Checklist was generated from real pipeline
+    assertThat(checklist).isNotNull();
+    assertThat(checklist.alertId()).isEqualTo(alert.id());
+    assertThat(checklist.steps()).isNotEmpty();
+    assertThat(checklist.llmProviderUsed()).isEqualTo("test-llm");
+
+    // When: Dispatch to webhooks
+    List<WebhookResult> results = dispatcher.dispatchSync(checklist);
+
+    // Then: Webhook received the checklist
+    assertThat(results).hasSize(1);
+    assertThat(results.get(0).isSuccess()).isTrue();
+    wireMockServer.verify(1, postRequestedFor(urlPathEqualTo("/webhook/pipeline-test")));
   }
 
   // ========== Helper Methods ==========
@@ -355,6 +413,14 @@ class AlertToChecklistIT extends IntegrationTestBase {
         normB += b[i] * b[i];
       }
       return (normA == 0 || normB == 0) ? 0.0 : dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+    }
+  }
+
+  private class TestEnrichmentService implements ContextEnrichmentService {
+    @Override
+    public CompletableFuture<EnrichedContext> enrich(Alert alert) {
+      // Return a pre-built enriched context immediately
+      return CompletableFuture.completedFuture(enrichAlert(alert));
     }
   }
 }

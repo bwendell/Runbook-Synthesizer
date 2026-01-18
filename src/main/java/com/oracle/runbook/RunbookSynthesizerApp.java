@@ -33,7 +33,7 @@ public class RunbookSynthesizerApp {
     WebServer server =
         WebServer.builder()
             .config(serverConfig)
-            .routing(RunbookSynthesizerApp::configureRouting)
+            .routing(routing -> configureRouting(routing, config))
             .build();
 
     // Register shutdown hook for graceful shutdown
@@ -59,14 +59,31 @@ public class RunbookSynthesizerApp {
    * Configure HTTP routing for the application.
    *
    * @param routing the routing builder
+   * @param config the application configuration
    */
-  private static void configureRouting(HttpRouting.Builder routing) {
+  static void configureRouting(HttpRouting.Builder routing, Config config) {
     // Root endpoint
     routing.get("/", (req, res) -> res.send("Runbook-Synthesizer is running"));
 
+    // Check if stub mode is enabled (defaults to true for backward compatibility)
+    boolean stubMode = config.get("app.stub-mode").asBoolean().orElse(true);
+    LOGGER.info("AlertResource configured with stubMode=" + stubMode);
+
     // API v1 endpoints
     routing.register("/api/v1/health", new HealthResource());
-    routing.register("/api/v1/alerts", new AlertResource());
+
+    if (stubMode) {
+      // Use no-arg constructor for stub mode (existing tests/simple deployment)
+      routing.register("/api/v1/alerts", new AlertResource());
+    } else {
+      // TODO: Wire real RagPipelineService and WebhookDispatcher when dependencies
+      // are ready
+      // For now, fall back to stub mode even if config says real mode
+      LOGGER.warning(
+          "Real mode requested but dependencies not yet wired. Using stub mode instead.");
+      routing.register("/api/v1/alerts", new AlertResource());
+    }
+
     routing.register("/api/v1/webhooks", new WebhookResource());
     routing.register("/api/v1/runbooks", new RunbookResource());
   }
