@@ -78,7 +78,7 @@
   ```
 
 ### 2.2 Migrate API Tests to AssertJ
-- [ ] **Task**: Convert API resource tests to AssertJ
+- [x] **Task**: Convert API resource tests to AssertJ
 - **Files** (6 files):
   - `api/AlertResourceTest.java`
   - `api/HealthResourceTest.java`
@@ -94,7 +94,7 @@
   ```
 
 ### 2.3 Migrate Output Tests to AssertJ
-- [ ] **Task**: Convert webhook/output tests to AssertJ
+- [x] **Task**: Convert webhook/output tests to AssertJ
 - **Files** (11 files in `output/` package)
 - **Acceptance Criteria**:
   - All assertions use AssertJ
@@ -105,7 +105,7 @@
   ```
 
 ### 2.4 Migrate RAG Tests to AssertJ
-- [ ] **Task**: Convert RAG pipeline tests to AssertJ
+- [x] **Task**: Convert RAG pipeline tests to AssertJ
 - **Files** (10 files in `rag/` package)
 - **Acceptance Criteria**:
   - All assertions use AssertJ
@@ -115,7 +115,7 @@
   ```
 
 ### 2.5 Migrate Enrichment Tests to AssertJ
-- [ ] **Task**: Convert enrichment adapter tests to AssertJ
+- [x] **Task**: Convert enrichment adapter tests to AssertJ
 - **Files** (6 files in `enrichment/` package)
 - **Acceptance Criteria**:
   - All assertions use AssertJ
@@ -125,7 +125,7 @@
   ```
 
 ### 2.6 Migrate Config Tests to AssertJ
-- [ ] **Task**: Convert configuration tests to AssertJ
+- [x] **Task**: Convert configuration tests to AssertJ
 - **Files** (3 files in `config/` package)
 - **Acceptance Criteria**:
   - All assertions use AssertJ
