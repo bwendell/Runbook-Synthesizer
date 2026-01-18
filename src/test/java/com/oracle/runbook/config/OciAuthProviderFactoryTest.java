@@ -3,6 +3,7 @@ package com.oracle.runbook.config;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.oracle.bmc.auth.AuthenticationDetailsProvider;
+import com.oracle.bmc.auth.BasicAuthenticationDetailsProvider;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,12 +34,21 @@ class OciAuthProviderFactoryTest {
     Files.writeString(configFile, configContent);
 
     OciConfig config =
-        new OciConfig("ocid1.compartment.oc1..test", null, configFile.toString(), "DEFAULT");
+        new OciConfig(
+            "ocid1.compartment.oc1..test",
+            null,
+            configFile.toString(),
+            "DEFAULT",
+            null,
+            null,
+            null,
+            null,
+            null);
 
     // Test: Factory should not throw for valid config
     assertDoesNotThrow(
         () -> {
-          AuthenticationDetailsProvider provider = OciAuthProviderFactory.create(config);
+          BasicAuthenticationDetailsProvider provider = OciAuthProviderFactory.create(config);
           assertNotNull(provider);
         });
   }
@@ -47,7 +57,16 @@ class OciAuthProviderFactoryTest {
   @DisplayName("Should throw when config file does not exist")
   void shouldThrowWhenConfigFileNotExists() {
     OciConfig config =
-        new OciConfig("ocid1.compartment.oc1..test", null, "/nonexistent/path/config", "DEFAULT");
+        new OciConfig(
+            "ocid1.compartment.oc1..test",
+            null,
+            "/nonexistent/path/config",
+            "DEFAULT",
+            null,
+            null,
+            null,
+            null,
+            null);
 
     assertThrows(IllegalStateException.class, () -> OciAuthProviderFactory.create(config));
   }
@@ -56,6 +75,110 @@ class OciAuthProviderFactoryTest {
   @DisplayName("Should throw when config is null")
   void shouldThrowWhenConfigIsNull() {
     assertThrows(NullPointerException.class, () -> OciAuthProviderFactory.create(null));
+  }
+
+  @Test
+  @DisplayName("Should create auth provider from environment variables when set in config")
+  void shouldCreateAuthProviderFromEnvironmentVariables() {
+    // Create config with env-based auth fields populated
+    OciConfig config =
+        new OciConfig(
+            "ocid1.compartment.oc1..test",
+            "us-ashburn-1",
+            null, // no config file
+            null, // no profile
+            "ocid1.user.oc1..testuser",
+            "ocid1.tenancy.oc1..testtenancy",
+            "aa:bb:cc:dd:ee:ff",
+            "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA0Z3VS5JJcds3xfn/ygWyF8PW3R7gHBACAQEwADANBgkqhkiG\n9w0BAQEFAAOCAg8AMIICCgKCAgEA0Z3VS5JJcds3xfn/ygWyF8PW3R7gHBACAgEA\n-----END RSA PRIVATE KEY-----",
+            null);
+
+    // Test: Factory should create SimpleAuthenticationDetailsProvider
+    assertDoesNotThrow(
+        () -> {
+          BasicAuthenticationDetailsProvider provider = OciAuthProviderFactory.create(config);
+          assertNotNull(provider);
+        });
+  }
+
+  @Test
+  @DisplayName("Should prefer environment variables over config file when both present")
+  void shouldPreferEnvVarsOverConfigFile() throws IOException {
+    // Create valid config file
+    Path configFile = tempDir.resolve("config");
+    String configContent =
+        """
+				[DEFAULT]
+				user=ocid1.user.oc1..fromconfigfile
+				fingerprint=11:22:33:44:55:66
+				tenancy=ocid1.tenancy.oc1..fromconfigfile
+				region=us-phoenix-1
+				key_file=%s
+				"""
+            .formatted(createMockKeyFile(tempDir));
+    Files.writeString(configFile, configContent);
+
+    // Config with BOTH env vars and config file - env vars should win
+    OciConfig config =
+        new OciConfig(
+            "ocid1.compartment.oc1..test",
+            "us-ashburn-1",
+            configFile.toString(),
+            "DEFAULT",
+            "ocid1.user.oc1..fromenv", // env takes priority
+            "ocid1.tenancy.oc1..fromenv",
+            "aa:bb:cc:dd:ee:ff",
+            "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA0Z3VS5JJcds3xfn/ygWyF8PW3R7gHBACAQEwADANBgkqhkiG\n9w0BAQEFAAOCAg8AMIICCgKCAgEA0Z3VS5JJcds3xfn/ygWyF8PW3R7gHBACAgEA\n-----END RSA PRIVATE KEY-----",
+            null);
+
+    // Test: Factory should still succeed (but using env-based provider)
+    BasicAuthenticationDetailsProvider provider = OciAuthProviderFactory.create(config);
+    assertNotNull(provider);
+    // The provider should have the env var user ID
+    // Cast to AuthenticationDetailsProvider to access getUserId()
+    AuthenticationDetailsProvider authProvider = (AuthenticationDetailsProvider) provider;
+    assertTrue(
+        authProvider.getUserId().contains("fromenv"),
+        "Should use env var user ID, not config file");
+  }
+
+  @Test
+  @DisplayName("Should fall back to config file when environment variables not set")
+  void shouldFallbackToConfigFileWhenEnvNotSet() throws IOException {
+    // Create valid config file
+    Path configFile = tempDir.resolve("config");
+    String configContent =
+        """
+				[DEFAULT]
+				user=ocid1.user.oc1..fromconfigfile
+				fingerprint=11:22:33:44:55:66
+				tenancy=ocid1.tenancy.oc1..fromconfigfile
+				region=us-phoenix-1
+				key_file=%s
+				"""
+            .formatted(createMockKeyFile(tempDir));
+    Files.writeString(configFile, configContent);
+
+    // Config with only config file, no env vars
+    OciConfig config =
+        new OciConfig(
+            "ocid1.compartment.oc1..test",
+            null,
+            configFile.toString(),
+            "DEFAULT",
+            null, // no userId
+            null,
+            null,
+            null,
+            null);
+
+    BasicAuthenticationDetailsProvider provider = OciAuthProviderFactory.create(config);
+    assertNotNull(provider);
+    // Cast to AuthenticationDetailsProvider to access getUserId()
+    AuthenticationDetailsProvider authProvider = (AuthenticationDetailsProvider) provider;
+    assertTrue(
+        authProvider.getUserId().contains("fromconfigfile"),
+        "Should fallback to config file user ID");
   }
 
   /** Creates a mock RSA private key file for testing. */

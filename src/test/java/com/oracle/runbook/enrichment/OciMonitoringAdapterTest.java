@@ -26,7 +26,9 @@ class OciMonitoringAdapterTest {
   @Test
   @DisplayName("OciMonitoringAdapter constructor should reject null monitoringClient")
   void testConstructorRejectsNullClient() {
-    OciConfig config = new OciConfig("ocid1.compartment.oc1..test", null, null, null);
+    OciConfig config =
+        new OciConfig(
+            "ocid1.compartment.oc1..test", null, null, null, null, null, null, null, null);
 
     assertThrows(NullPointerException.class, () -> new OciMonitoringAdapter(null, config));
   }

@@ -25,7 +25,9 @@ class OciLoggingAdapterTest {
   @Test
   @DisplayName("OciLoggingAdapter constructor should reject null client")
   void testConstructorRejectsNullClient() {
-    OciConfig config = new OciConfig("ocid1.compartment.oc1..test", null, null, null);
+    OciConfig config =
+        new OciConfig(
+            "ocid1.compartment.oc1..test", null, null, null, null, null, null, null, null);
 
     assertThrows(NullPointerException.class, () -> new OciLoggingAdapter(null, config));
   }

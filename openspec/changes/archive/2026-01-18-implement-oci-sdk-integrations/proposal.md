@@ -35,7 +35,7 @@ This phase implements the OCI-specific adapters that bring the application to li
 
 ## Dependencies
 
-> [!IMPORTANT]
+> **Important:**
 > This phase depends on Phase 3 (`implement-ports-interfaces`) being complete. The adapter classes implement interfaces defined there.
 
 ### Required Interfaces (from Phase 3)

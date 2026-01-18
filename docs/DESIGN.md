@@ -59,9 +59,9 @@ flowchart TB
 
     subgraph RAGPipeline["🧠 RAG Pipeline"]
         EMBEDDER[Embedding Service]
-        VECTORDB[(Oracle 23ai\nVector Store)]
+        VECTORDB[("Oracle 23ai<br/>Vector Store")]
         RETRIEVER[Content Retriever]
-        GENERATOR[LLM Provider\nPluggable]
+        GENERATOR["LLM Provider<br/>Pluggable"]
     end
 
     subgraph Output["📋 Multi-Channel Output"]
@@ -100,7 +100,7 @@ Receives alerts from multiple sources and normalizes them into a canonical forma
 | OCI Events Service | Event Rule trigger | P0 | For Object Storage events |
 | REST API (manual) | HTTP POST | P0 | Core endpoint for all sources |
 
-> [!TIP]
+> **Tip:**
 > **OCI Monitoring Alarms** are the primary alert source. Configure alarms to send notifications to the Events Service, which triggers the Runbook-Synthesizer webhook.
 
 #### Canonical Alert Model
@@ -224,7 +224,7 @@ The heart of dynamic runbook generation.
 
 #### 3.1 Document Ingestion (OCI Object Storage)
 
-> [!IMPORTANT]
+> **Important:**
 > **OCI Object Storage** is central to this design. Runbooks are stored as markdown files in buckets, with automatic indexing triggered by Object Storage events.
 
 ```mermaid
@@ -239,7 +239,7 @@ flowchart LR
     TRIGGER --> FUNCTION[Ingestion Function]
     FUNCTION --> PARSER[Markdown Parser]
     PARSER --> CHUNKER[Smart Chunker]
-    CHUNKER --> EMBEDDER[LLM Provider\nEmbeddings]
+    CHUNKER --> EMBEDDER["LLM Provider<br/>Embeddings"]
     EMBEDDER --> VECTOR[(Oracle 23ai)]
 ```
 
@@ -595,7 +595,7 @@ flowchart TB
     end
     
     subgraph DataTier["Data Tier"]
-        ADB[(Autonomous DB\n23ai)]
+        ADB[("Autonomous DB<br/>23ai")]
     end
     
     subgraph OCI["OCI Services"]
