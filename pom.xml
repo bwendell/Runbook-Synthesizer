@@ -210,6 +210,14 @@
             <scope>test</scope>
         </dependency>
         
+        <!-- SLF4J Simple Logger for Testcontainers diagnostics -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.17</version>
+            <scope>test</scope>
+        </dependency>
+        
         <!-- Oracle JDBC Driver for 23ai Vector Support -->
         <dependency>
             <groupId>com.oracle.database.jdbc</groupId>
@@ -240,7 +248,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.4</version>
                 <configuration>
-                    <argLine>--enable-preview</argLine>
+                    <argLine>--enable-preview --enable-native-access=ALL-UNNAMED</argLine>
                     <!-- Exclude integration tests from surefire -->
                     <excludes>
                         <exclude>**/*IT.java</exclude>
@@ -254,7 +262,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>3.5.4</version>
                 <configuration>
-                    <argLine>--enable-preview</argLine>
+                    <argLine>--enable-preview --enable-native-access=ALL-UNNAMED</argLine>
                     <!-- Include only integration tests -->
                     <includes>
                         <include>**/*IT.java</include>
@@ -381,7 +389,7 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <version>3.5.4</version>
                         <configuration>
-                            <argLine>--enable-preview</argLine>
+                            <argLine>--enable-preview --enable-native-access=ALL-UNNAMED</argLine>
                             <!-- Include only integration tests -->
                             <includes>
                                 <include>**/*IT.java</include>
@@ -425,7 +433,7 @@
                         <artifactId>maven-failsafe-plugin</artifactId>
                         <version>3.5.4</version>
                         <configuration>
-                            <argLine>--enable-preview</argLine>
+                            <argLine>--enable-preview --enable-native-access=ALL-UNNAMED</argLine>
                             <!-- Include only integration tests -->
                             <includes>
                                 <include>**/*IT.java</include>
