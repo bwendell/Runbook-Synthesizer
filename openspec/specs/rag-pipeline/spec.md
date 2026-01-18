@@ -45,19 +45,13 @@ The system SHALL provide a VectorStoreRepository interface for storing runbook c
 
 ### Requirement: OracleVectorStoreRepository uses Oracle 23ai
 
-The system SHALL provide an Oracle 23ai implementation of VectorStoreRepository using LangChain4j OracleEmbeddingStore.
+The system SHALL provide an Oracle 23ai implementation of VectorStoreRepository, ensuring compatibility with both cloud-hosted (ADB-S) and containerized (Testcontainers) Oracle 23ai instances.
 
-#### Scenario: Store chunk to Oracle 23ai
-- **WHEN** `store(chunk)` is called on OracleVectorStoreRepository
-- **THEN** the chunk is stored using LangChain4j OracleEmbeddingStore
-- **AND** metadata (tags, shapes, path, title) is preserved
-
-#### Scenario: Retrieve similar chunks from Oracle 23ai
-- **WHEN** `findSimilar(embedding, topK)` is called
-- **THEN** Oracle 23ai Vector Search returns top-K similar embeddings
-- **AND** results are mapped back to RunbookChunk domain objects
-
----
+#### Scenario: Initialize repository with dynamic JDBC URL
+- **GIVEN** a dynamically provided JDBC URL and credentials (from Testcontainers or Cloud)
+- **WHEN** OracleVectorStoreRepository is initialized
+- **THEN** it successfully connects to the instance
+- **AND** performs vector operations as expected
 
 ### Requirement: RunbookRetriever combines similarity with metadata re-ranking
 
