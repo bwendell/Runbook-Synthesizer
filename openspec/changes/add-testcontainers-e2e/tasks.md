@@ -103,79 +103,90 @@ git commit -m "build: add Maven profile for container E2E tests"
 @Tag("container")
 public abstract class ContainerTestBase {
     
+    // Start containers in parallel using static declaration
     @Container
     protected static final OracleContainer oracle = new OracleContainer("gvenzl/oracle-free:23-slim")
-        .withDatabaseName("testdb")
-        .withUsername("testuser")
-        .withPassword("testpass");
+        .withNetwork(Network.newNetwork())
+        .withNetworkAliases("oracle")
+        .withReuse(true); // Optimize local runs
     
     @Container
     protected static final GenericContainer<?> ollama = new GenericContainer<>("ollama/ollama:latest")
+        .withNetwork(oracle.getNetwork())
+        .withNetworkAliases("ollama")
         .withExposedPorts(11434)
         .waitingFor(Wait.forHttp("/api/tags").forPort(11434));
     
     @BeforeAll
-    static void pullModels() {
-        // Pull required models after Ollama starts
-    }
-    
-    protected String getOllamaBaseUrl() {
-        return "http://" + ollama.getHost() + ":" + ollama.getMappedPort(11434);
-    }
-    
-    protected String getOracleJdbcUrl() {
-        return oracle.getJdbcUrl();
+    static void setup() {
+        // Parallel startup is handled by @Testcontainers for static fields
     }
 }
 ```
 
 **Step 2: Add Docker availability check**
-- Add `@EnabledIf("isDockerAvailable")` condition
+- Add `@EnabledIf("isDockerAvailable")` condition using `Testcontainers.createDockerClientStrategy()`
 
 **Step 3: Verify**
-- Run with Docker: Container should start
-- Run without Docker: Tests should skip gracefully
+- Run with Docker: Containers should start in parallel (check logs)
 
 **Step 4: Commit**
 ```bash
 git add src/test/java/com/oracle/runbook/integration/containers/
-git commit -m "test: add ContainerTestBase with Oracle and Ollama containers"
+git commit -m "test: add ContainerTestBase with parallel Oracle and Ollama containers"
 ```
 
 ---
 
-### Task 1.4: Create Oracle Schema Initialization [S]
+### Task 1.4: Validate Centralized Oracle Schema [S]
+
+> **Dependency**: Requires `automate-test-infrastructure` Task 2.3 (centralized schema) to be complete.
 
 **Files:**
-- Create: `src/test/resources/containers/oracle-init.sql`
+- Reference: `src/test/resources/schema/oracle-vector-schema.sql` (created by `automate-test-infrastructure`)
 
-**Step 1: Write schema DDL**
-```sql
--- Vector store table for runbook chunks
-CREATE TABLE runbook_chunks (
-    id VARCHAR2(256) PRIMARY KEY,
-    runbook_path VARCHAR2(1024) NOT NULL,
-    section_title VARCHAR2(512),
-    content CLOB,
-    embedding VECTOR(768, FLOAT32),
-    tags CLOB,
-    applicable_shapes CLOB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+**Step 1: Validate schema compatibility**
+- Verify the centralized schema includes all columns required by E2E tests:
+  - `id`, `runbook_path`, `section_title`, `content`, `embedding VECTOR(768, FLOAT32)`, `tags`, `applicable_shapes`, `created_at`
+- Verify vector index exists with COSINE distance metric
 
--- Create vector index
-CREATE VECTOR INDEX runbook_chunks_vec_idx ON runbook_chunks(embedding)
-    ORGANIZATION NEIGHBOR PARTITIONS
-    PARAMETERS (type IVF, distance COSINE, accuracy 95);
-```
-
-**Step 2: Configure container to run init script**
-- Use `oracle.withInitScript("containers/oracle-init.sql")`
+**Step 2: Configure container to use centralized init script**
+- Use `oracle.withInitScript("schema/oracle-vector-schema.sql")` (NOT `containers/oracle-init.sql`)
 
 **Step 3: Commit**
+
 ```bash
-git add src/test/resources/containers/
-git commit -m "test: add Oracle 23ai schema initialization for container tests"
+git commit -m "test: configure E2E containers to use centralized Oracle schema"
+```
+
+---
+
+### Task 1.5: Implement Scenario Seeder and Factories [M]
+
+**Files:**
+
+- Create: `src/test/java/com/oracle/runbook/integration/containers/RunbookSeeder.java`
+- Create: `src/test/java/com/oracle/runbook/integration/containers/E2EDataFactory.java`
+
+**Step 1: Implement RunbookSeeder**
+
+- Method `seedRunbook(String path)`: Loads fixture and inserts into real Oracle container
+- Hint: Use JDBC `PreparedStatement` with vector storage
+
+**Step 2: Implement E2EDataFactory**
+
+- Method `createTestAlert()`: Returns `Alert` record with sensible defaults
+- Follow `testing-patterns` by supporting property overrides
+
+**Step 3: Verify**
+
+- Run a simple unit test for the seeder (against a mock DB if needed, or wait for Task 2.1)
+
+**Step 4: Commit**
+
+```bash
+git add src/test/java/com/oracle/runbook/integration/containers/
+git commit -m "test: implement Scenario Seeder and Data Factories for E2E tests"
 ```
 
 ---
@@ -427,14 +438,14 @@ git commit -m "ci: add container E2E test stage"
 ## Summary
 
 | Task | Complexity | Focus Area |
-|------|------------|------------|
-| 1.1-1.4 | S-S-M-S | Infrastructure |
+| :--- | :--- | :--- |
+| 1.1-1.5 | S-S-M-S-M | Infrastructure |
 | 2.1-2.2 | M-M | Oracle Vector Store |
 | 3.1-3.2 | M-M | Ollama LLM |
 | 4.1-4.2 | L-M | Full Stack |
 | 5.1-5.2 | S-S | Documentation |
 
-**Total: 12 tasks** (5 Small, 5 Medium, 2 Large)
+**Total: 13 tasks** (5 Small, 6 Medium, 2 Large)
 
 ---
 

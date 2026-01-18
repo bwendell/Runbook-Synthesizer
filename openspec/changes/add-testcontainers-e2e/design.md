@@ -47,25 +47,25 @@ Use `gvenzl/oracle-free:23-slim` for Oracle 23ai vector support.
 Use `ollama/ollama:latest` with `nomic-embed-text` and `llama3.2:1b` models.
 
 **Rationale:**
-- `nomic-embed-text` - 768-dimension embeddings, fast, open-source
-- `llama3.2:1b` - smallest Llama variant, fast inference for tests
-- Ollama provides OpenAI-compatible API
+- `llama3.2:1b` is fine for realistic E2E verification of checklist formatting and flow.
+- Ollama provides OpenAI-compatible API.
 
 **Alternatives considered:**
-- Mock LLM responses - current approach, doesn't test real inference
-- GPU containers - requires NVIDIA Docker runtime, not portable
+- Smaller models (e.g., TinyLlama) - too low quality for E2E.
 
-### Decision 3: Test Categorization
+### Decision 3: Test Data Management (Scenario Seeder)
 
-Use Maven profiles and JUnit 5 tags:
-- `@Tag("container")` for Testcontainers-based tests
-- Profile `e2e-containers` to run container tests
-- Default `verify` goal excludes container tests
+
+Adopt the **Scenario Seeder** pattern using domain-focused factories.
 
 **Rationale:**
-- Fast feedback for standard `./mvnw verify`
-- Opt-in for slower container tests
-- CI/CD can run both in parallel stages
+- **testing-patterns**: Emphasizes factory functions (`getMockX`) with sensible defaults.
+- **software-architecture**: Recommends avoiding generic `utils` and keeping data close to the domain.
+- E2E tests will use a `RunbookSeeder` to populate Oracle 23ai per-test, ensuring test isolation.
+
+**Alternatives considered:**
+- Shared static fixtures - prone to state leakage and brittle tests.
+
 
 ## Container Architecture
 
@@ -96,15 +96,18 @@ Use Maven profiles and JUnit 5 tags:
 
 | Risk | Mitigation |
 |------|------------|
-| Slow startup (~60s total) | Use `@Testcontainers` with reusable containers |
+| Slow startup (~60s total) | Use parallel startup with `@Testcontainers` |
 | Flaky if Docker unavailable | Skip with `@EnabledIf("dockerAvailable")` |
 | Large image downloads first run | Document in README, cache in CI |
 | Oracle licensing | Use `gvenzl/oracle-free` (free for dev/test) |
 
-## Open Questions
 
-1. **Ollama model selection**: Should we use a smaller model than llama3.2:1b for even faster tests? (Trade-off: less realistic responses)
+## Implementation Details
 
-2. **Container startup parallelization**: Should Oracle and Ollama start in parallel, or is sequential safer?
+### Parallel Startup
 
-3. **Test data fixtures**: Should container tests use the same `TestFixtures` or separate realistic data?
+Oracle and Ollama containers will be started in parallel to minimize total setup time. Testcontainers executes static initializers in parallel when possible.
+
+### Data Factory Pattern
+
+Use `AlertFactory.createWarningAlert()` and `RunbookSeeder.seedMemoryRunbook()` to keep test setup readable and domain-aligned.
