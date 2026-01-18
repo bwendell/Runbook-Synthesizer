@@ -3,9 +3,9 @@ package com.oracle.runbook.rag;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
+import com.oracle.runbook.integration.TestFixtures;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,8 @@ class ChecklistGeneratorTest {
   void generate_acceptsContextAndChunks_returnsDynamicChecklist() {
     // Arrange
     ChecklistGenerator generator = new TestChecklistGenerator();
-    EnrichedContext context = createTestContext();
+    EnrichedContext context =
+        TestFixtures.loadAs("contexts/enriched-context-memory.json", EnrichedContext.class);
     List<RetrievedChunk> chunks = createTestChunks();
 
     // Act
@@ -28,21 +29,6 @@ class ChecklistGeneratorTest {
     assertThat(checklist.alertId()).isEqualTo("alert-001");
     assertThat(checklist.steps()).isNotEmpty();
     assertThat(checklist.sourceRunbooks()).isNotEmpty();
-  }
-
-  private EnrichedContext createTestContext() {
-    Alert alert =
-        new Alert(
-            "alert-001",
-            "High Memory",
-            "Memory utilization exceeded threshold",
-            AlertSeverity.WARNING,
-            "oci-monitoring",
-            Map.of("resourceId", "ocid1.instance.oc1..example"),
-            Map.of(),
-            Instant.now(),
-            "{}");
-    return new EnrichedContext(alert, null, List.of(), List.of(), Map.of());
   }
 
   private List<RetrievedChunk> createTestChunks() {

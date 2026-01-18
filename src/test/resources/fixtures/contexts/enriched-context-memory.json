@@ -1,0 +1,20 @@
+{
+  "alert": {
+    "id": "alert-001",
+    "title": "High Memory",
+    "message": "Memory utilization exceeded threshold",
+    "severity": "WARNING",
+    "sourceService": "oci-monitoring",
+    "dimensions": {
+      "resourceId": "ocid1.instance.oc1..example",
+      "compartmentId": "ocid1.compartment.oc1..example"
+    },
+    "labels": {},
+    "timestamp": "2026-01-17T20:00:00Z",
+    "rawPayload": "{}"
+  },
+  "resource": null,
+  "recentMetrics": [],
+  "recentLogs": [],
+  "customProperties": {}
+}

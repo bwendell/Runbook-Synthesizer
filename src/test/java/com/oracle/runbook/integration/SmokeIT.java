@@ -1,6 +1,6 @@
 package com.oracle.runbook.integration;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import io.helidon.webserver.WebServer;
 import io.helidon.webserver.WebServerConfig;
@@ -25,6 +25,6 @@ class SmokeIT {
 
   @Test
   void serverStartsSuccessfully() {
-    assertNotNull(server, "Server should be available");
+    assertThat(server).as("Server should be available").isNotNull();
   }
 }

@@ -1,0 +1,28 @@
+{
+  "blocks": [
+    {
+      "type": "header",
+      "text": {
+        "type": "plain_text",
+        "text": "High Memory Alert - Troubleshooting Checklist"
+      }
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Alert ID:* alert-123\n*Severity:* WARNING"
+      }
+    },
+    {
+      "type": "divider"
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": ":one: *Check memory usage with free -h*\n_Rationale:_ Memory is at 92%\n```free -h```"
+      }
+    }
+  ]
+}

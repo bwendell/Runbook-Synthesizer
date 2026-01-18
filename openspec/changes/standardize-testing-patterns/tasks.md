@@ -139,7 +139,7 @@
 ## 3. Expand Test Fixtures
 
 ### 3.1 Add Additional Fixture Files
-- [ ] **Task**: Create new fixture files for common test scenarios
+- [x] **Task**: Create new fixture files for common test scenarios
 - **Files to Create**:
   - `fixtures/contexts/enriched-context-memory.json`
   - `fixtures/checklists/sample-checklist.json`
@@ -154,7 +154,7 @@
   ```
 
 ### 3.2 Update Tests to Use New Fixtures
-- [ ] **Task**: Refactor tests that inline test data to use fixtures
+- [x] **Task**: Refactor tests that inline test data to use fixtures
 - **Priority Files**:
   - `ChecklistGeneratorTest.java` - replace `createTestContext()` helper
   - `WebhookDispatcherTest.java` - replace `createTestChecklist()` helper
@@ -171,7 +171,7 @@
 ## 4. Minor Cleanups
 
 ### 4.1 Fix TestFixturesTest Assertion Wrappers
-- [ ] **Task**: Remove unnecessary `Objects.requireNonNull()` wrappers around AssertJ assertions
+- [x] **Task**: Remove unnecessary `Objects.requireNonNull()` wrappers around AssertJ assertions
 - **Files**: `src/test/java/com/oracle/runbook/integration/TestFixturesTest.java`
 - **Acceptance Criteria**:
   - Line 18, 19, 32 no longer use `Objects.requireNonNull()`
@@ -188,7 +188,7 @@
 ## 5. Validation
 
 ### 5.1 Run Full Test Suite
-- [ ] **Task**: Verify all tests pass after changes
+- [x] **Task**: Verify all tests pass after changes
 - **Acceptance Criteria**:
   - `mvn test` completes with 0 failures
   - `mvn verify -Pit` completes with 0 failures (integration tests)
@@ -198,7 +198,7 @@
   ```
 
 ### 5.2 Verify Pattern Compliance
-- [ ] **Task**: Confirm no remaining violations
+- [x] **Task**: Confirm no remaining violations
 - **Acceptance Criteria**:
   - No files import JUnit assertions: `rg "import static org.junit.jupiter.api.Assertions" src/test/java/com/oracle/runbook/`
   - No reflection-based tests: `rg "getMethod|getDeclaredMethod" src/test/java/com/oracle/runbook/`

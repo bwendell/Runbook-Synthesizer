@@ -5,7 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.oracle.runbook.domain.DynamicChecklist;
-import java.time.Instant;
+import com.oracle.runbook.integration.TestFixtures;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +31,7 @@ class WebhookDispatcherTest {
     when(destination2.name()).thenReturn("dest-2");
     when(destination3.name()).thenReturn("dest-3");
 
-    checklist = createTestChecklist();
+    checklist = TestFixtures.loadAs("checklists/sample-checklist.json", DynamicChecklist.class);
   }
 
   @Test
@@ -159,15 +159,5 @@ class WebhookDispatcherTest {
     List<WebhookResult> results = dispatcher.dispatch(checklist).get();
 
     assertThat(results).isEmpty();
-  }
-
-  private DynamicChecklist createTestChecklist() {
-    return new DynamicChecklist(
-        "alert-123",
-        "Test Checklist Summary",
-        List.of(),
-        List.of("runbook-1"),
-        Instant.now(),
-        "test-llm");
   }
 }

@@ -1,0 +1,18 @@
+{
+  "routing_key": "example-routing-key",
+  "event_action": "trigger",
+  "dedup_key": "alert-123",
+  "payload": {
+    "summary": "High Memory Alert - Troubleshooting Checklist",
+    "source": "ops-scribe",
+    "severity": "warning",
+    "timestamp": "2026-01-17T20:00:00Z",
+    "custom_details": {
+      "alert_id": "alert-123",
+      "steps_count": 1,
+      "source_runbooks": ["runbook-1"]
+    }
+  },
+  "links": [],
+  "images": []
+}

@@ -1,10 +1,7 @@
 package com.oracle.runbook.enrichment;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.fail;
 
-import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -17,14 +14,7 @@ class OciComputeClientTest {
     assertThatThrownBy(() -> new OciComputeClient(null)).isInstanceOf(NullPointerException.class);
   }
 
-  @Test
-  @DisplayName("getInstance should return Optional with ResourceMetadata")
-  void testGetInstanceContract() {
-    try {
-      var method = OciComputeClient.class.getMethod("getInstance", String.class);
-      assertThat(method.getReturnType()).isEqualTo(CompletableFuture.class);
-    } catch (NoSuchMethodException e) {
-      fail("getInstance(String) method should exist");
-    }
-  }
+  // Note: Removed reflection-based contract tests per testing-patterns-java skill.
+  // Method signature verification is testing implementation details, not behavior.
+  // Actual behavior tests require real OCI client mocks which are covered in integration tests.
 }

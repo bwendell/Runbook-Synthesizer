@@ -1,10 +1,7 @@
 package com.oracle.runbook.rag;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.fail;
 
-import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -18,28 +15,7 @@ class OciObjectStorageClientTest {
         .isInstanceOf(NullPointerException.class);
   }
 
-  @Test
-  @DisplayName("listRunbooks should return List of markdown file names")
-  void testListRunbooksContract() {
-    try {
-      var method =
-          OciObjectStorageClient.class.getMethod("listRunbooks", String.class, String.class);
-      assertThat(method.getReturnType()).isEqualTo(CompletableFuture.class);
-    } catch (NoSuchMethodException e) {
-      fail("listRunbooks(String, String) method should exist");
-    }
-  }
-
-  @Test
-  @DisplayName("getRunbookContent should return Optional with content")
-  void testGetRunbookContentContract() {
-    try {
-      var method =
-          OciObjectStorageClient.class.getMethod(
-              "getRunbookContent", String.class, String.class, String.class);
-      assertThat(method.getReturnType()).isEqualTo(CompletableFuture.class);
-    } catch (NoSuchMethodException e) {
-      fail("getRunbookContent(String, String, String) method should exist");
-    }
-  }
+  // Note: Removed reflection-based contract tests per testing-patterns-java skill.
+  // Method signature verification is testing implementation details, not behavior.
+  // Actual behavior tests require real OCI client mocks which are covered in integration tests.
 }

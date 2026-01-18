@@ -1,0 +1,18 @@
+{
+  "alertId": "alert-123",
+  "summary": "Test Checklist Summary",
+  "steps": [
+    {
+      "order": 1,
+      "instruction": "Check memory usage with free -h",
+      "rationale": "Memory is at 92%",
+      "currentValue": "92%",
+      "expectedValue": "Below 80%",
+      "priority": "HIGH",
+      "commands": ["free -h"]
+    }
+  ],
+  "sourceRunbooks": ["runbook-1"],
+  "generatedAt": "2026-01-17T20:00:00Z",
+  "llmProviderUsed": "test-llm"
+}
