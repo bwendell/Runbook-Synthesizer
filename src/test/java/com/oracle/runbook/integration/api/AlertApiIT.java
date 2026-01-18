@@ -18,6 +18,7 @@ import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import java.io.StringReader;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -75,7 +76,7 @@ class AlertApiIT {
       assertThat(response.status()).isEqualTo(Status.OK_200);
 
       String body = response.as(String.class);
-      JsonObject json = parseJson(body);
+      JsonObject json = Objects.requireNonNull(parseJson(body));
 
       // Verify ChecklistResponse structure
       assertThat(json.containsKey("alertId")).as("Response should contain alertId").isTrue();
@@ -113,7 +114,7 @@ class AlertApiIT {
       assertThat(response.status()).isEqualTo(Status.OK_200);
 
       String body = response.as(String.class);
-      JsonObject json = parseJson(body);
+      JsonObject json = Objects.requireNonNull(parseJson(body));
 
       assertThat(json.containsKey("alertId")).isTrue();
       assertThat(json.containsKey("steps")).isTrue();
@@ -142,7 +143,7 @@ class AlertApiIT {
       assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
 
       String body = response.as(String.class);
-      JsonObject json = parseJson(body);
+      JsonObject json = Objects.requireNonNull(parseJson(body));
 
       assertThat(json.containsKey("errorCode")).as("Response should contain errorCode").isTrue();
       assertThat(json.getString("errorCode")).isEqualTo("VALIDATION_ERROR");
@@ -173,7 +174,7 @@ class AlertApiIT {
       assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
 
       String body = response.as(String.class);
-      JsonObject json = parseJson(body);
+      JsonObject json = Objects.requireNonNull(parseJson(body));
 
       assertThat(json.containsKey("errorCode")).isTrue();
     }
@@ -198,7 +199,7 @@ class AlertApiIT {
       assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
 
       String body = response.as(String.class);
-      JsonObject json = parseJson(body);
+      JsonObject json = Objects.requireNonNull(parseJson(body));
 
       assertThat(json.containsKey("errorCode")).isTrue();
     }
@@ -239,7 +240,7 @@ class AlertApiIT {
       assertThat(response.status()).isEqualTo(Status.OK_200);
 
       String body = response.as(String.class);
-      JsonObject json = parseJson(body);
+      JsonObject json = Objects.requireNonNull(parseJson(body));
 
       // Verify all ChecklistResponse fields exist
       assertThat(json.containsKey("alertId")).as("ChecklistResponse.alertId").isTrue();
@@ -295,7 +296,7 @@ class AlertApiIT {
       assertThat(response.status()).isEqualTo(Status.BAD_REQUEST_400);
 
       String body = response.as(String.class);
-      JsonObject json = parseJson(body);
+      JsonObject json = Objects.requireNonNull(parseJson(body));
 
       // Verify all ErrorResponse fields exist
       assertThat(json.containsKey("correlationId")).as("ErrorResponse.correlationId").isTrue();

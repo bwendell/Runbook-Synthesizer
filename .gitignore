@@ -20,3 +20,16 @@ target/
 # OS Specific
 .DS_Store
 Thumbs.db
+
+# Runtime/Test outputs
+output/
+*.txt
+*.log
+
+# More IDE patterns
+.factorypath
+.recommenders/
+
+# Skill package outputs
+*.skill
+dist/

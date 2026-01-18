@@ -16,6 +16,7 @@ import io.helidon.webserver.WebServerConfig;
 import io.helidon.webserver.testing.junit5.SetUpServer;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -126,7 +127,9 @@ class SlackFormattingIT extends IntegrationTestBase {
         break;
       }
     }
-    assertThat(hasDivider).as("Payload should include at least one divider block").isTrue();
+    Objects.requireNonNull(
+            assertThat(hasDivider).as("Payload should include at least one divider block"))
+        .isTrue();
   }
 
   @Test

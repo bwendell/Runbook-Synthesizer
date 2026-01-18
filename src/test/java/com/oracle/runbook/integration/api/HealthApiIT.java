@@ -14,6 +14,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import java.io.StringReader;
 import java.time.Instant;
+import java.util.Objects;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -49,7 +50,7 @@ class HealthApiIT {
       assertThat(response.status()).isEqualTo(Status.OK_200);
 
       String body = response.as(String.class);
-      JsonObject json = parseJson(body);
+      JsonObject json = Objects.requireNonNull(parseJson(body));
 
       // Verify status field
       assertThat(json.containsKey("status")).as("Response should contain status field").isTrue();
@@ -80,7 +81,7 @@ class HealthApiIT {
       String body = response.as(String.class);
 
       // Verify it's valid JSON
-      JsonObject json = parseJson(body);
+      JsonObject json = Objects.requireNonNull(parseJson(body));
       assertThat(json).isNotNull();
 
       // Verify only expected keys are present
@@ -96,8 +97,9 @@ class HealthApiIT {
         assertThat(response.status()).isEqualTo(Status.OK_200);
 
         String body = response.as(String.class);
-        JsonObject json = parseJson(body);
+        JsonObject json = Objects.requireNonNull(parseJson(body));
 
+        assertThat(json.containsKey("status")).isTrue();
         assertThat(json.getString("status")).isEqualTo("UP");
         assertThat(json.containsKey("timestamp")).isTrue();
       }

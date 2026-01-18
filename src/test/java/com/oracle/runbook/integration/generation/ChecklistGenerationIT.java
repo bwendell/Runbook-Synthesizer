@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -178,11 +179,17 @@ class ChecklistGenerationIT extends IntegrationTestBase {
     // (This validates that the LLM prompt appropriately filtered GPU content)
     boolean hasGpuCommands =
         checklist.steps().stream()
+            .filter(Objects::nonNull)
             .anyMatch(
-                step ->
-                    step.instruction().toLowerCase().contains("nvidia-smi")
-                        || step.instruction().toLowerCase().contains("gpu"));
-    assertThat(hasGpuCommands).as("Non-GPU shapes should not have GPU-specific commands").isFalse();
+                step -> {
+                  String instruction = step.instruction();
+                  return instruction != null
+                      && (instruction.toLowerCase().contains("nvidia-smi")
+                          || instruction.toLowerCase().contains("gpu"));
+                });
+    Objects.requireNonNull(
+            assertThat(hasGpuCommands).as("Non-GPU shapes should not have GPU-specific commands"))
+        .isFalse();
   }
 
   // ========== Helper Methods ==========
