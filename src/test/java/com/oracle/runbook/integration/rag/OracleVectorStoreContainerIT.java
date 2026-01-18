@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.RunbookChunk;
 import com.oracle.runbook.integration.OracleContainerBase;
+import com.oracle.runbook.integration.containers.E2EDataFactory;
 import com.oracle.runbook.rag.OracleVectorStoreRepository;
 import com.oracle.runbook.rag.ScoredChunk;
 import dev.langchain4j.data.segment.TextSegment;
@@ -146,6 +147,49 @@ class OracleVectorStoreContainerIT extends OracleContainerBase {
     assertThat(isContainerHealthy()).isTrue();
   }
 
+  @Test
+  @DisplayName("Task 2.2: Should return same-topic chunks ranked highest for semantic queries")
+  void search_WithSemanticallySimilarQuery_ReturnsSameTopicChunks() {
+    // Given: Runbook chunks with distinct topic embeddings
+    // Using deterministic embeddings that simulate real semantic similarity
+    float[] memoryEmbedding = createTopicEmbedding("memory");
+    float[] cpuEmbedding = createTopicEmbedding("cpu");
+    float[] networkEmbedding = createTopicEmbedding("network");
+
+    List<RunbookChunk> chunks =
+        List.of(
+            E2EDataFactory.createChunk(
+                "chunk-mem-1",
+                "runbooks/memory-troubleshooting.md",
+                "Use 'free -h' to check available memory. Monitor with 'top -o %MEM'.",
+                memoryEmbedding),
+            E2EDataFactory.createChunk(
+                "chunk-cpu-1",
+                "runbooks/cpu-troubleshooting.md",
+                "Check CPU with 'mpstat -P ALL 1'. Use 'top' for process view.",
+                cpuEmbedding),
+            E2EDataFactory.createChunk(
+                "chunk-net-1",
+                "runbooks/network-troubleshooting.md",
+                "Use 'netstat -tuln' to check listening ports. Verify with 'ping'.",
+                networkEmbedding));
+
+    vectorStore.storeBatch(chunks);
+
+    // When: Query with memory-related embedding (simulating "RAM usage troubleshooting" query)
+    float[] queryEmbedding = createTopicEmbedding("memory");
+    List<ScoredChunk> results = vectorStore.search(queryEmbedding, 3);
+
+    // Then: Memory chunk should be ranked highest
+    assertThat(results).hasSize(3);
+    assertThat(results.get(0).chunk().id()).isEqualTo("chunk-mem-1");
+    assertThat(results.get(0).chunk().runbookPath())
+        .isEqualTo("runbooks/memory-troubleshooting.md");
+
+    // And: Memory chunk should have highest similarity
+    assertThat(results.get(0).similarityScore()).isGreaterThan(results.get(1).similarityScore());
+  }
+
   // --- Helper methods ---
 
   private RunbookChunk createChunk(String id, String content, float[] embedding) {
@@ -188,6 +232,32 @@ class OracleVectorStoreContainerIT extends OracleContainerBase {
       } else {
         embedding[i] = 0.1f;
       }
+    }
+    return embedding;
+  }
+
+  /**
+   * Creates a topic-based deterministic embedding for semantic similarity testing.
+   *
+   * <p>Different topics produce different embeddings, but same topics produce identical embeddings.
+   * This simulates real semantic embeddings where similar content has similar vectors.
+   */
+  private float[] createTopicEmbedding(String topic) {
+    // Use hash-based seeding for deterministic but distinct embeddings
+    int seed = topic.hashCode();
+    java.util.Random random = new java.util.Random(seed);
+    float[] embedding = new float[768];
+    for (int i = 0; i < 768; i++) {
+      embedding[i] = random.nextFloat();
+    }
+    // Normalize to unit vector
+    float norm = 0;
+    for (float v : embedding) {
+      norm += v * v;
+    }
+    norm = (float) Math.sqrt(norm);
+    for (int i = 0; i < 768; i++) {
+      embedding[i] /= norm;
     }
     return embedding;
   }

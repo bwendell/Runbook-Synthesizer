@@ -1,6 +1,7 @@
 package com.oracle.runbook.integration.containers;
 
 import com.oracle.runbook.domain.*;
+import com.oracle.runbook.output.WebhookConfig;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
