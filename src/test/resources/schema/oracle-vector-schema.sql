@@ -31,26 +31,12 @@ CREATE INDEX runbook_chunks_source_idx ON runbook_chunks (source_file);
 -- Create sequence for generating chunk IDs if needed
 CREATE SEQUENCE runbook_chunk_seq START WITH 1 INCREMENT BY 1;
 
--- Stored procedure for similarity search
-CREATE OR REPLACE PROCEDURE search_similar_chunks (
-    p_query_embedding IN VECTOR,
-    p_limit IN NUMBER DEFAULT 10,
-    p_results OUT SYS_REFCURSOR
-) AS
-BEGIN
-    OPEN p_results FOR
-        SELECT id, content, source_file, chunk_index, metadata,
-               VECTOR_DISTANCE(embedding, p_query_embedding, COSINE) AS similarity
-        FROM runbook_chunks
-        WHERE embedding IS NOT NULL
-        ORDER BY VECTOR_DISTANCE(embedding, p_query_embedding, COSINE)
-        FETCH FIRST p_limit ROWS ONLY;
-END;
-/
+-- Note: Similarity search is handled by LangChain4j's OracleEmbeddingStore
+-- which manages its own table structure and search operations.
+-- No stored procedure is needed here.
 
 -- Grant necessary permissions (for test user)
 -- Note: OracleContainer uses 'test' as default username
 GRANT ALL PRIVILEGES ON runbook_chunks TO PUBLIC;
-GRANT EXECUTE ON search_similar_chunks TO PUBLIC;
 
 COMMIT;
