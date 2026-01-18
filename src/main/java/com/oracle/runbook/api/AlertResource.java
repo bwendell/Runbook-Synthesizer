@@ -9,6 +9,7 @@ import com.oracle.runbook.domain.AlertSeverity;
 import com.oracle.runbook.domain.DynamicChecklist;
 import com.oracle.runbook.output.WebhookDispatcher;
 import com.oracle.runbook.rag.RagPipelineService;
+import io.helidon.http.HeaderNames;
 import io.helidon.http.Status;
 import io.helidon.webserver.http.HttpRules;
 import io.helidon.webserver.http.HttpService;
@@ -90,6 +91,7 @@ public class AlertResource implements HttpService {
       if (stubMode) {
         // Stub mode: use hardcoded checklist for testing
         var checklistResponse = generateStubChecklist(alertRequest);
+        res.header(HeaderNames.CONTENT_TYPE, "application/json");
         res.send(toJson(checklistResponse));
       } else {
         // Real mode: process through RAG pipeline
@@ -99,6 +101,7 @@ public class AlertResource implements HttpService {
           var checklistResponse = convertToResponse(checklist);
 
           // Send response to HTTP client first
+          res.header(HeaderNames.CONTENT_TYPE, "application/json");
           res.send(toJson(checklistResponse));
 
           // Then dispatch to webhooks (fire-and-forget)
@@ -227,6 +230,7 @@ public class AlertResource implements HttpService {
             UUID.randomUUID().toString(), errorCode, message, Instant.now(), Map.of());
 
     res.status(status);
+    res.header(HeaderNames.CONTENT_TYPE, "application/json");
     res.send(toJson(error));
   }
 

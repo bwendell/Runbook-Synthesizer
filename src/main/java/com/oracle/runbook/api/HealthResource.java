@@ -1,9 +1,11 @@
 package com.oracle.runbook.api;
 
+import io.helidon.http.HeaderNames;
 import io.helidon.webserver.http.HttpRules;
 import io.helidon.webserver.http.HttpService;
 import io.helidon.webserver.http.ServerRequest;
 import io.helidon.webserver.http.ServerResponse;
+import jakarta.json.Json;
 import java.time.Instant;
 
 /**
@@ -19,8 +21,13 @@ public class HealthResource implements HttpService {
   }
 
   private void handleGet(ServerRequest req, ServerResponse res) {
-    String timestamp = Instant.now().toString();
-    String json = String.format("{\"status\":\"UP\",\"timestamp\":\"%s\"}", timestamp);
+    String json =
+        Json.createObjectBuilder()
+            .add("status", "UP")
+            .add("timestamp", Instant.now().toString())
+            .build()
+            .toString();
+    res.header(HeaderNames.CONTENT_TYPE, "application/json");
     res.send(json);
   }
 }
