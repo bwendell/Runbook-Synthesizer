@@ -1,9 +1,19 @@
 package com.oracle.runbook.infrastructure.cloud;
 
+import com.oracle.runbook.enrichment.LogSourceAdapter;
+import com.oracle.runbook.enrichment.MetricsSourceAdapter;
+import com.oracle.runbook.enrichment.OciLoggingAdapter;
+import com.oracle.runbook.enrichment.OciMonitoringAdapter;
+import com.oracle.runbook.infrastructure.cloud.aws.AwsBedrockLlmProvider;
+import com.oracle.runbook.infrastructure.cloud.aws.AwsCloudWatchLogsAdapter;
+import com.oracle.runbook.infrastructure.cloud.aws.AwsCloudWatchMetricsAdapter;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsEc2MetadataAdapter;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsS3StorageAdapter;
+import com.oracle.runbook.infrastructure.cloud.aws.AwsSnsAlertSourceAdapter;
 import com.oracle.runbook.infrastructure.cloud.oci.OciComputeMetadataAdapter;
 import com.oracle.runbook.infrastructure.cloud.oci.OciObjectStorageAdapter;
+import com.oracle.runbook.ingestion.AlertSourceAdapter;
+import com.oracle.runbook.rag.LlmProvider;
 import io.helidon.config.Config;
 import java.util.Objects;
 import java.util.Set;
@@ -86,6 +96,68 @@ public class CloudAdapterFactory {
     return switch (providerType) {
       case "oci" -> OciComputeMetadataAdapter.class;
       case "aws" -> AwsEc2MetadataAdapter.class;
+      default -> throw new IllegalStateException("Unknown provider: " + providerType);
+    };
+  }
+
+  /**
+   * Returns the class of the metrics adapter for the configured provider.
+   *
+   * @return the metrics adapter class for the configured provider
+   */
+  public Class<? extends MetricsSourceAdapter> getMetricsAdapterClass() {
+    return switch (providerType) {
+      case "oci" -> OciMonitoringAdapter.class;
+      case "aws" -> AwsCloudWatchMetricsAdapter.class;
+      default -> throw new IllegalStateException("Unknown provider: " + providerType);
+    };
+  }
+
+  /**
+   * Returns the class of the logs adapter for the configured provider.
+   *
+   * @return the logs adapter class for the configured provider
+   */
+  public Class<? extends LogSourceAdapter> getLogsAdapterClass() {
+    return switch (providerType) {
+      case "oci" -> OciLoggingAdapter.class;
+      case "aws" -> AwsCloudWatchLogsAdapter.class;
+      default -> throw new IllegalStateException("Unknown provider: " + providerType);
+    };
+  }
+
+  /**
+   * Returns the class of the alert source adapter for the configured provider.
+   *
+   * <p>Note: OCI alert source adapter is not yet implemented.
+   *
+   * @return the alert source adapter class for the configured provider
+   * @throws IllegalStateException if the configured provider does not support alert adapters
+   */
+  public Class<? extends AlertSourceAdapter> getAlertSourceAdapterClass() {
+    return switch (providerType) {
+      case "aws" -> AwsSnsAlertSourceAdapter.class;
+      case "oci" ->
+          throw new IllegalStateException(
+              "Alert source adapter for 'oci' is not supported. Use 'aws' provider.");
+      default -> throw new IllegalStateException("Unknown provider: " + providerType);
+    };
+  }
+
+  /**
+   * Returns the class of the LLM provider for the configured cloud provider.
+   *
+   * <p>Note: OCI LLM provider is not yet implemented.
+   *
+   * @return the LLM provider class for the configured provider
+   * @throws IllegalStateException if the configured provider does not support LLM
+   */
+  public Class<? extends LlmProvider> getLlmProviderClass() {
+    return switch (providerType) {
+      case "aws" -> AwsBedrockLlmProvider.class;
+      case "oci" ->
+          throw new IllegalStateException(
+              "LLM provider for 'oci' is not supported. Use 'aws' provider.");
       default -> throw new IllegalStateException("Unknown provider: " + providerType);
     };
   }

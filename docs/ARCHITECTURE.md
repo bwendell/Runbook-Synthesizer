@@ -51,10 +51,12 @@ The application supports multiple cloud providers through a pluggable adapter ar
 
 ### Supported Providers
 
-| Provider | Storage        | Compute Metadata | Metrics    | Logs            |
-|----------|----------------|------------------|------------|------------------|
-| **OCI**  | Object Storage | Compute API      | Monitoring | Logging          |
-| **AWS**  | S3             | EC2              | CloudWatch | CloudWatch Logs  |
+> **Note**: AWS is the default cloud provider. OCI is supported as an alternative.
+
+| Provider | Storage        | Compute Metadata | Metrics    | Logs            | Alerts             | LLM                |
+|----------|----------------|------------------|------------|------------------|--------------------|--------------------||
+| **AWS** (default) | S3    | EC2              | CloudWatch | CloudWatch Logs  | SNS/CloudWatch     | Bedrock (Claude/Cohere) |
+| **OCI**  | Object Storage | Compute API      | Monitoring | Logging          | —                  | —                  |
 
 ### Adapter Architecture
 
@@ -70,6 +72,8 @@ flowchart LR
         ComputeMetadataAdapter
         MetricsSourceAdapter
         LogSourceAdapter
+        AlertSourceAdapter
+        LlmProvider
     end
 
     subgraph OCI["☁️ OCI Implementations"]
@@ -80,12 +84,19 @@ flowchart LR
         OciLoggingAdapter
     end
 
-    subgraph AWS["🌐 AWS Implementations"]
+    subgraph AWS["🌐 AWS Implementations (Default)"]
         AwsConfig
         AwsS3StorageAdapter
         AwsEc2MetadataAdapter
         AwsCloudWatchMetricsAdapter
         AwsCloudWatchLogsAdapter
+        AwsSnsAlertSourceAdapter
+        AwsBedrockLlmProvider
+    end
+
+    subgraph LLM["🧠 LLM Providers"]
+        OllamaLlmProvider["OllamaLlmProvider (MVP)"]
+        AwsBedrockLlmProvider2["AwsBedrockLlmProvider (Prod)"]
     end
 
     CloudAdapterFactory -->|creates| OCI
@@ -117,12 +128,16 @@ com.oracle.runbook.infrastructure.cloud/
 │   ├── OciObjectStorageAdapter.java
 │   ├── OciComputeMetadataAdapter.java
 │   └── OciAuthProviderFactory.java
-└── aws/
-    ├── AwsConfig.java            # AWS-specific configuration
-    ├── AwsS3StorageAdapter.java
-    ├── AwsEc2MetadataAdapter.java
-    ├── AwsCloudWatchMetricsAdapter.java
-    └── AwsCloudWatchLogsAdapter.java
+├── aws/
+│   ├── AwsConfig.java            # AWS-specific configuration
+│   ├── AwsS3StorageAdapter.java
+│   ├── AwsEc2MetadataAdapter.java
+│   ├── AwsCloudWatchMetricsAdapter.java
+│   ├── AwsCloudWatchLogsAdapter.java
+│   ├── AwsSnsAlertSourceAdapter.java
+│   └── AwsBedrockLlmProvider.java
+com.oracle.runbook.infrastructure.llm/
+└── OllamaLlmProvider.java        # Local LLM for MVP/development
 ```
 
 ### Provider Selection

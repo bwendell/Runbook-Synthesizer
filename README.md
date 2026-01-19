@@ -12,7 +12,8 @@ An open-source Java tool that transforms static runbooks into intelligent, conte
 - **Context Enrichment**: Enrich runbook content with real-time metrics, logs, and host metadata
 - **RAG Pipeline**: Retrieve only relevant procedures from your knowledge base
 - **Multi-Channel Output**: Deliver checklists via Slack, PagerDuty, or custom webhooks
-- **OCI Native**: Built for Oracle Cloud Infrastructure with first-class support
+- **Multi-Cloud**: AWS is the default provider; OCI is supported as an alternative
+- **Pluggable LLM**: Use local Ollama (MVP) or AWS Bedrock (Production)
 
 ## Quick Start
 
@@ -70,7 +71,7 @@ See [E2E Testing Guidelines](docs/E2E_TESTING_GUIDELINES.md) for detailed testin
 | Language | Java 25 |
 | Build | Maven |
 | Vector Store | Oracle Database 23ai |
-| LLM | Pluggable (OCI GenAI, OpenAI, Ollama) |
+| LLM | Pluggable (Ollama, AWS Bedrock, OCI GenAI) |
 
 ## Documentation
 
@@ -81,7 +82,7 @@ See [E2E Testing Guidelines](docs/E2E_TESTING_GUIDELINES.md) for detailed testin
 
 ## Cloud Provider Configuration
 
-The application supports both **AWS** and **OCI (Oracle Cloud Infrastructure)** as deployment targets. Select your provider using the `cloud.provider` configuration property.
+The application supports both **AWS** (default) and **OCI (Oracle Cloud Infrastructure)** as deployment targets. Select your provider using the `cloud.provider` configuration property.
 
 ### AWS Setup
 

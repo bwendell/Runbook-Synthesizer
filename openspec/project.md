@@ -4,6 +4,8 @@
 
 **Runbook-Synthesizer** is an open-source Java tool that transforms static runbooks into intelligent, context-aware troubleshooting guides by leveraging RAG (Retrieval Augmented Generation) with real-time infrastructure state.
 
+> **Note**: AWS is the default cloud provider. OCI is supported as an alternative.
+
 ### Problem Solved
 - **Context Blindness**: Generic runbook steps don't account for specific host type, configuration, or current state
 - **Staleness**: Infrastructure evolves faster than documentation
@@ -22,20 +24,26 @@
 - **Build**: Maven
 - **RAG Framework**: LangChain4j
 
-### OCI Services
-- **Object Storage**: Store runbook markdown files
-- **Events Service**: Trigger on new/updated runbooks
-- **Functions**: Serverless runbook ingestion
-- **Generative AI**: Cohere embeddings + text generation
-- **Monitoring**: Fetch metrics for context
-- **Logging**: Fetch logs for context
-- **Notifications**: Receive alerts, send outputs
+### Cloud Services
 
-### RAG Stack
-- **Embeddings**: OCI GenAI (Cohere Embed v3)
-- **Vector Store**: Oracle Database 23ai
-- **LLM**: OCI GenAI (Cohere Command) - pluggable to OpenAI/Ollama
-- **Output**: Multi-channel webhooks (Slack, PagerDuty, custom)
+| Provider | Service | Usage |
+|----------|---------|-------|
+| **AWS** (default) | S3 | Runbook storage |
+| | CloudWatch | Metrics and logs |
+| | SNS | CloudWatch Alarm delivery |
+| | Bedrock | LLM inference (Claude 3 Haiku, Cohere Embed v3) |
+| **OCI** | Object Storage | Runbook storage |
+| | Monitoring | Metrics |
+| | Logging | Logs |
+| | Generative AI | LLM inference (Cohere Command, Cohere Embed v3) |
+
+### LLM Stack
+
+| Environment | Provider | Text Model | Embedding Model |
+|-------------|----------|------------|------------------|
+| MVP / Local Dev | Ollama | llama3.2:3b | nomic-embed-text |
+| Production (AWS) | AWS Bedrock | Claude 3 Haiku | Cohere Embed v3 |
+| Production (OCI) | OCI GenAI | Cohere Command | Cohere Embed v3 |
 
 ## Project Conventions
 
@@ -53,7 +61,8 @@
 4. **Output Layer**: REST API core + configurable webhook dispatcher
 
 **Key Interfaces:**
-- `LlmProvider`: Pluggable LLM backends (OCI GenAI, OpenAI, Ollama)
+- `LlmProvider`: Pluggable LLM backends (Ollama for MVP, AWS Bedrock for production, OCI GenAI)
+- `AlertSourceAdapter`: Alert ingestion (AWS SNS/CloudWatch, OCI Monitoring Alarms)
 - `MetricsSourceAdapter` / `LogSourceAdapter`: Observability source adapters
 - `WebhookDestination`: Output channel implementations
 
@@ -90,13 +99,16 @@ Markdown files with YAML frontmatter containing:
 
 ## External Dependencies
 
-### OCI Services
-| Service | Usage |
-|---------|-------|
-| OCI Monitoring Alarms | Primary alert source via Events Service |
-| OCI Object Storage | Runbook storage with automatic event-triggered indexing |
-| OCI Generative AI | LLM inference and embeddings |
-| Oracle Database 23ai | Vector store for RAG retrieval |
+### Cloud Services
+| Provider | Service | Usage |
+|----------|---------|-------|
+| **AWS** (default) | CloudWatch Alarms via SNS | Primary alert source |
+| | S3 | Runbook storage with event-triggered indexing |
+| | Bedrock | LLM inference and embeddings (Claude 3 Haiku, Cohere Embed v3) |
+| **OCI** | Monitoring Alarms | Alert source via Events Service |
+| | Object Storage | Runbook storage with automatic event-triggered indexing |
+| | Generative AI | LLM inference and embeddings |
+| Any | Oracle Database 23ai | Vector store for RAG retrieval |
 
 ### Observability Sources
 | Source | Type | Use Case |
@@ -114,12 +126,12 @@ Markdown files with YAML frontmatter containing:
 ## Roadmap
 
 ### v1.0 (MVP)
-- OCI Monitoring Alarms ingestion via Events Service
-- Context enrichment (OCI Monitoring, OCI Logging, Compute metadata)
+- CloudWatch Alarms / OCI Monitoring Alarms ingestion
+- Context enrichment (CloudWatch / OCI Monitoring, Logging, Compute metadata)
 - RAG pipeline with Oracle 23ai Vector Search
-- Pluggable LLM interface (OCI GenAI default)
+- Pluggable LLM interface (Ollama default for MVP, AWS Bedrock / OCI GenAI for production)
 - REST API core + configurable webhook output framework
-- OCI Object Storage integration for runbooks
+- S3 / OCI Object Storage integration for runbooks
 
 ### v1.1
 - CLI tool for local testing/debugging
@@ -128,6 +140,5 @@ Markdown files with YAML frontmatter containing:
 - GPU host enricher
 
 ### v2.0
-- Multi-cloud alert sources (AWS CloudWatch, Azure Monitor)
-- OpenAI/Ollama LLM provider implementations
+- Azure Monitor alert sources
 - Learning from resolution feedback

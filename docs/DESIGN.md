@@ -1,6 +1,8 @@
-# Runbook-Synthesizer: Dynamic SOP Generation for OCI
+# Runbook-Synthesizer: Dynamic SOP Generation
 
 An open-source Java tool that transforms static runbooks into intelligent, context-aware troubleshooting guides by leveraging RAG (Retrieval Augmented Generation) with real-time infrastructure state.
+
+> **AWS is the default cloud provider.** OCI is supported as an alternative.
 
 ---
 
@@ -25,12 +27,12 @@ Static runbooks suffer from three critical issues:
 |----------|--------|----------|
 | **Framework** | Helidon SE | Oracle's native microframework, first-class OCI support |
 | **Vector Store** | Oracle Database 23ai | OCI ecosystem alignment, AI Vector Search |
-| **LLM Strategy** | Pluggable Interface | MVP uses OCI GenAI (Cohere), swappable to OpenAI/Ollama |
-| **Alert Input** | OCI Monitoring Alarms | Native JSON payloads via webhook/Events Service |
-| **Runbook Storage** | OCI Object Storage | Showcases Object Storage capabilities |
-| **Observability** | Multi-source | OCI Logging + Prometheus + Grafana Loki |
+| **LLM Strategy** | Pluggable Interface | MVP uses Ollama (local), Production uses AWS Bedrock |
+| **Alert Input** | CloudWatch Alarms / OCI Monitoring | Native JSON payloads via SNS webhook / Events Service |
+| **Runbook Storage** | AWS S3 / OCI Object Storage | Multi-cloud object storage |
+| **Observability** | Multi-source | CloudWatch / OCI Monitoring + Prometheus + Grafana Loki |
 | **Output** | Multi-channel Webhooks | REST API core + configurable webhooks |
-| **Authentication** | OCI IAM | Exclusive for v1.0 |
+| **Authentication** | AWS IAM / OCI IAM | Default credential provider chain |
 | **Human-in-the-Loop** | No | Checklists auto-sent to webhooks |
 
 ---
@@ -96,6 +98,7 @@ Receives alerts from multiple sources and normalizes them into a canonical forma
 
 | Source | Protocol | Priority | Notes |
 |--------|----------|----------|-------|
+| **AWS CloudWatch Alarms** | SNS → Webhook | P0 | CloudWatch Alarms delivered via SNS |
 | **OCI Monitoring Alarms** | Webhook → Events Service | P0 | Native JSON alarm payloads |
 | OCI Events Service | Event Rule trigger | P0 | For Object Storage events |
 | REST API (manual) | HTTP POST | P0 | Core endpoint for all sources |
@@ -323,25 +326,39 @@ public record GenerationConfig(
 
 | Provider | Class | Use Case |
 |----------|-------|----------|
-| **OCI GenAI** | `OciGenAiProvider` | Default, uses Cohere via OCI |
+| **Ollama** | `OllamaLlmProvider` | MVP default, local dev, air-gapped |
+| **AWS Bedrock** | `AwsBedrockLlmProvider` | Production (Claude 3 Haiku + Cohere Embed v3) |
+| OCI GenAI | `OciGenAiProvider` | OCI deployments |
 | OpenAI | `OpenAiProvider` | Cross-cloud deployments |
-| Ollama | `OllamaProvider` | On-prem, air-gapped, dev/test |
+
+**LLM Provider Strategy:**
+
+| Environment | Provider | Text Model | Embedding Model |
+|-------------|----------|------------|------------------|
+| MVP / Local Dev | Ollama | llama3.2:3b | nomic-embed-text |
+| Production (AWS) | AWS Bedrock | Claude 3 Haiku | Cohere Embed v3 |
+| Production (OCI) | OCI GenAI | Cohere Command | Cohere Embed v3 |
 
 **Configuration:**
 
 ```yaml
 llm:
-  provider: oci-genai  # or: openai, ollama
+  provider: ollama  # MVP default: ollama, Production: aws-bedrock or oci-genai
+  
+  ollama:
+    baseUrl: http://localhost:11434
+    textModel: llama3.2:3b
+    embeddingModel: nomic-embed-text
+  
+  aws-bedrock:
+    region: us-west-2
+    textModelId: anthropic.claude-3-haiku-20240307-v1:0
+    embeddingModelId: cohere.embed-english-v3
+  
   oci-genai:
     compartmentId: ${OCI_COMPARTMENT_ID}
     modelId: cohere.command-r-plus
     embeddingModelId: cohere.embed-english-v3.0
-  openai:
-    apiKey: ${OPENAI_API_KEY}
-    model: gpt-4-turbo
-  ollama:
-    baseUrl: http://localhost:11434
-    model: llama3
 ```
 
 **Checklist Generation:**
@@ -527,9 +544,9 @@ public interface WebhookDestination {
 
 | Component | Technology | Alternative |
 |-----------|------------|-------------|
-| **Embeddings** | OCI GenAI (Cohere Embed v3) | OpenAI, Ollama |
+| **Embeddings** | Ollama (MVP) / AWS Bedrock / OCI GenAI | OpenAI |
 | **Vector Store** | Oracle Database 23ai | Elasticsearch, PGVector |
-| **LLM** | OCI GenAI (Cohere Command) | OpenAI GPT-4, Anthropic |
+| **LLM** | Ollama (MVP) / AWS Bedrock / OCI GenAI | OpenAI GPT-4, Anthropic |
 | **RAG Framework** | LangChain4j | Spring AI |
 
 ### Dependencies

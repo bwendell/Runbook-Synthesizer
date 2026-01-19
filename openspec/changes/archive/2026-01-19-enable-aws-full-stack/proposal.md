@@ -8,13 +8,25 @@ Enable complete AWS-first functionality for Runbook-Synthesizer, providing produ
 - Factory wiring for all cloud adapters
 - AWS as default cloud provider
 
-## Motivation
+## Why
 
 AWS is now the primary target platform. The application has existing AWS implementations for storage, compute metadata, metrics, and logs, but lacks:
 1. Alert ingestion adapter for CloudWatch Alarms
 2. LLM provider for AWS Bedrock
 3. Complete factory wiring for all adapter types
 4. Configuration defaults for AWS
+
+## What Changes
+
+- **New Files:**
+  - `AwsSnsAlertSourceAdapter.java` - Parses CloudWatch Alarms from SNS
+  - `AwsBedrockLlmProvider.java` - AWS Bedrock LLM integration
+  - `OllamaLlmProvider.java` - Local Ollama LLM for MVP
+- **Modified Files:**
+  - `CloudAdapterFactory.java` - New factory methods for metrics/logs/alerts/LLM
+  - `application.yaml` - AWS as default, complete config
+  - `pom.xml` - Bedrock SDK dependency
+  - Documentation files updated for AWS-first approach
 
 ## Scope
 
