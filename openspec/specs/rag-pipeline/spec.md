@@ -111,7 +111,7 @@ The system SHALL provide a ChecklistGenerator that produces structured troublesh
 
 ### Requirement: RagPipelineService orchestrates the pipeline
 
-The system SHALL provide a top-level RagPipelineService that coordinates retrieval and generation steps.
+The system SHALL provide a top-level RagPipelineService that coordinates retrieval and generation steps, including proper error handling and input validation.
 
 #### Scenario: Process enriched context through full pipeline
 - **WHEN** `process(context)` is called
@@ -123,4 +123,67 @@ The system SHALL provide a top-level RagPipelineService that coordinates retriev
 - **WHEN** `process(context, 10)` is called
 - **THEN** retrieval uses topK=10
 - **AND** all 10 chunks are passed to the generator
+
+#### Scenario: Process with null alert throws exception
+- **WHEN** `processAlert(null, 5)` is called
+- **THEN** a `NullPointerException` or `IllegalArgumentException` is thrown
+- **AND** the exception message indicates null input
+
+#### Scenario: Enrichment service failure propagates to caller
+- **GIVEN** the enrichment service throws a RuntimeException
+- **WHEN** `processAlert(alert, 5)` is called
+- **THEN** the exception is propagated wrapped in CompletionException
+- **AND** the original exception is accessible as the cause
+
+#### Scenario: Retriever failure propagates to caller
+- **GIVEN** the runbook retriever throws a RuntimeException
+- **WHEN** `processAlert(alert, 5)` is called
+- **THEN** the exception is propagated wrapped in CompletionException
+
+#### Scenario: Generator failure propagates to caller
+- **GIVEN** the checklist generator throws a RuntimeException
+- **WHEN** `processAlert(alert, 5)` is called
+- **THEN** the exception is propagated wrapped in CompletionException
+
+#### Scenario: Empty retrieval results still generates checklist
+- **GIVEN** the retriever returns an empty list
+- **WHEN** `processAlert(alert, 5)` is called
+- **THEN** the generator is still invoked with empty chunks list
+- **AND** a checklist is returned (potentially with fallback content)
+
+---
+
+### Requirement: OciObjectStorageClient Behavior Tests
+
+The system SHALL provide comprehensive unit tests for `OciObjectStorageClient` covering all method behaviors and error conditions.
+
+#### Scenario: listRunbooks returns only markdown files
+- **GIVEN** an OCI Object Storage bucket containing files: `runbook.md`, `image.png`, `notes.txt`
+- **WHEN** `listRunbooks(namespace, bucketName)` is called
+- **THEN** only `["runbook.md"]` is returned
+
+#### Scenario: listRunbooks from empty bucket returns empty list
+- **GIVEN** an OCI Object Storage bucket with no objects
+- **WHEN** `listRunbooks(namespace, bucketName)` is called
+- **THEN** an empty list is returned
+
+#### Scenario: listRunbooks propagates BmcException
+- **GIVEN** the OCI SDK throws a BmcException (e.g., 403 Forbidden)
+- **WHEN** `listRunbooks(namespace, bucketName)` is called
+- **THEN** the exception is propagated to the caller
+
+#### Scenario: getRunbookContent returns content for existing object
+- **GIVEN** an object exists in OCI Object Storage with content "# Runbook Content"
+- **WHEN** `getRunbookContent(namespace, bucketName, objectName)` is called
+- **THEN** `Optional.of("# Runbook Content")` is returned
+
+#### Scenario: getRunbookContent returns empty for 404
+- **GIVEN** the OCI SDK throws a BmcException with status code 404
+- **WHEN** `getRunbookContent(namespace, bucketName, objectName)` is called
+- **THEN** `Optional.empty()` is returned
+
+#### Scenario: getRunbookContent wraps non-404 exceptions
+- **GIVEN** the OCI SDK throws a BmcException with status code 500
+- **WHEN** `getRunbookContent(namespace, bucketName, objectName)` is called
+- **THEN** a RuntimeException is thrown with the original exception as cause
 

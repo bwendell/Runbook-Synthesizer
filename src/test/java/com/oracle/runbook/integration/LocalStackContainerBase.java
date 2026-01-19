@@ -12,6 +12,7 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchAsyncClient;
 import software.amazon.awssdk.services.cloudwatchlogs.CloudWatchLogsAsyncClient;
+import software.amazon.awssdk.services.ec2.Ec2AsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 
 /**
@@ -60,7 +61,7 @@ public abstract class LocalStackContainerBase {
 
     localstack =
         new LocalStackContainer(LOCALSTACK_IMAGE)
-            .withServices(Service.S3, Service.CLOUDWATCH, Service.CLOUDWATCHLOGS);
+            .withServices(Service.S3, Service.CLOUDWATCH, Service.CLOUDWATCHLOGS, Service.EC2);
 
     localstack.start();
   }
@@ -135,6 +136,19 @@ public abstract class LocalStackContainerBase {
   protected static CloudWatchLogsAsyncClient createCloudWatchLogsClient() {
     return CloudWatchLogsAsyncClient.builder()
         .endpointOverride(getServiceEndpoint(Service.CLOUDWATCHLOGS))
+        .region(Region.of(localstack.getRegion()))
+        .credentialsProvider(getCredentialsProvider())
+        .build();
+  }
+
+  /**
+   * Creates an Ec2AsyncClient configured to use the LocalStack endpoint.
+   *
+   * @return a new Ec2AsyncClient pointing to LocalStack
+   */
+  protected static Ec2AsyncClient createEc2Client() {
+    return Ec2AsyncClient.builder()
+        .endpointOverride(getServiceEndpoint(Service.EC2))
         .region(Region.of(localstack.getRegion()))
         .credentialsProvider(getCredentialsProvider())
         .build();

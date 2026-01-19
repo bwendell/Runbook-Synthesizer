@@ -10,6 +10,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.services.ec2.Ec2AsyncClient;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -103,6 +104,25 @@ class AwsS3StorageAdapterIT extends LocalStackContainerBase {
           adapter.getRunbookContent(TEST_BUCKET, "nonexistent-runbook.md").get();
 
       assertThat(content).as("Non-existent object should return empty Optional").isEmpty();
+    }
+  }
+
+  @Nested
+  @DisplayName("EC2 Client Factory")
+  class Ec2ClientFactoryTests {
+
+    @Test
+    @DisplayName("Should create EC2 client pointing to LocalStack")
+    void shouldCreateEc2ClientPointingToLocalStack() throws Exception {
+      Ec2AsyncClient ec2Client = createEc2Client();
+
+      assertThat(ec2Client).as("EC2 client should not be null").isNotNull();
+
+      // Verify client can communicate with LocalStack by describing regions
+      var regionsResponse = ec2Client.describeRegions().get();
+      assertThat(regionsResponse.regions())
+          .as("LocalStack EC2 should return at least one region")
+          .isNotEmpty();
     }
   }
 }
