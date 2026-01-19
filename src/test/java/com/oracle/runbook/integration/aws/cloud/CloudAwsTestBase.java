@@ -39,10 +39,10 @@ import software.amazon.awssdk.services.sts.StsClient;
 @EnabledIfSystemProperty(named = "aws.cloud.enabled", matches = "true")
 public abstract class CloudAwsTestBase {
 
-  /** The AWS region to use for all tests. Defaults to us-east-1 for free tier compatibility. */
-  protected static final Region AWS_REGION = Region.US_EAST_1;
+  /** The AWS region to use for all tests. Must match CDK stack deployment region. */
+  protected static final Region AWS_REGION = Region.US_WEST_2;
 
-  /** S3 bucket name from CDK outputs. Format: runbook-e2e-{accountId}-{region} */
+  /** S3 bucket name from CDK outputs. Format: runbook-synthesizer-e2e-{accountId} */
   protected static String bucketName;
 
   /** CloudWatch log group name from CDK outputs. */
@@ -63,9 +63,12 @@ public abstract class CloudAwsTestBase {
       assertThat(identity.account()).as("AWS account should not be null").isNotNull();
       System.out.printf("[CloudAwsTestBase] ✓ Authenticated: %s%n", identity.arn());
 
-      // Set resource names based on account (matching CDK construct naming)
-      bucketName = "runbook-e2e-" + identity.account() + "-" + AWS_REGION.id();
-      logGroupName = "/runbook-e2e/logs";
+      // Set resource names based on account (matching CDK construct naming in e2e-test-stack.ts)
+      bucketName = "runbook-synthesizer-e2e-" + identity.account();
+      logGroupName = "/runbook-synthesizer/e2e";
+
+      // Ensure CDK infrastructure is deployed (auto-deploy if needed)
+      CdkInfrastructureSupport.ensureInfrastructureDeployed(bucketName, logGroupName, AWS_REGION);
     } catch (Exception e) {
       failWithAwsCredentialsError(e.getMessage());
     }

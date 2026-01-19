@@ -94,8 +94,8 @@ integration/aws/
 **Purpose:** Establish that JUnit 5 test discovery works with Failsafe before adding any complexity.
 
 **Tasks:**
-- [ ] 3.1.1 Downgrade JUnit from 6.x to 5.11.4 in `pom.xml` (`<junit.version>5.11.4</junit.version>`)
-- [ ] 3.1.2 Create minimal test `src/test/java/com/oracle/runbook/integration/aws/cloud/MinimalDiagnosticIT.java`:
+- [X] 3.1.1 Downgrade JUnit from 6.x to 5.11.4 in `pom.xml` (`<junit.version>5.11.4</junit.version>`)
+- [X] 3.1.2 Create minimal test `src/test/java/com/oracle/runbook/integration/aws/cloud/MinimalDiagnosticIT.java`:
   ```java
   package com.oracle.runbook.integration.aws.cloud;
   
@@ -219,11 +219,11 @@ Get-Content target/failsafe-reports/*.xml | Select-String "aws.cloud.enabled"
 **Purpose:** Integration tests for CloudWatch Logs operations against real AWS cloud.
 
 **Tasks:**
-- [ ] 3.4.1 Create `src/test/java/com/oracle/runbook/integration/aws/cloud/AwsCloudWatchLogsCloudIT.java`
-- [ ] 3.4.2 Add `@EnabledIfSystemProperty` annotation
-- [ ] 3.4.3 Implement `@BeforeAll` to create log stream and write test events
-- [ ] 3.4.4 Test `fetchLogs()` returns written log entries
-- [ ] 3.4.5 Test filter patterns work correctly
+- [X] 3.4.1 Create `src/test/java/com/oracle/runbook/integration/aws/cloud/AwsCloudWatchLogsCloudIT.java`
+- [X] 3.4.2 Add `@EnabledIfSystemProperty` annotation
+- [X] 3.4.3 Implement `@BeforeAll` to create log stream and write test events
+- [X] 3.4.4 Test `fetchLogs()` returns written log entries
+- [X] 3.4.5 Test filter patterns work correctly
 
 **Verification:**
 ```powershell
