@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.Network;
 import org.testcontainers.oracle.OracleContainer;
 
@@ -65,8 +64,8 @@ public abstract class OracleContainerBase {
    */
   @BeforeAll
   static void startContainer() {
-    // Explicit Docker availability check with clear error message
-    assertDockerAvailable();
+    // Ensure Docker is available (will attempt to start if needed)
+    DockerSupport.ensureDockerAvailable();
 
     sharedNetwork = Network.newNetwork();
 
@@ -77,33 +76,6 @@ public abstract class OracleContainerBase {
             .withInitScript(SCHEMA_SCRIPT);
 
     oracle.start();
-  }
-
-  /**
-   * Asserts that Docker is available and accessible.
-   *
-   * @throws AssertionError if Docker is not available with actionable error message
-   */
-  private static void assertDockerAvailable() {
-    if (!DockerClientFactory.instance().isDockerAvailable()) {
-      throw new AssertionError(
-          """
-
-          ╔══════════════════════════════════════════════════════════════════════════════╗
-          ║                         DOCKER NOT AVAILABLE                                  ║
-          ╠══════════════════════════════════════════════════════════════════════════════╣
-          ║ Container tests require Docker to be running.                                ║
-          ║                                                                              ║
-          ║ To fix this:                                                                 ║
-          ║   1. Start Docker Desktop (Windows/Mac) or Docker daemon (Linux)             ║
-          ║   2. Wait for Docker to fully initialize                                     ║
-          ║   3. Re-run the tests                                                        ║
-          ║                                                                              ║
-          ║ To skip container tests:                                                     ║
-          ║   Run without -Pe2e-containers or -Dtest.use.containers=true                 ║
-          ╚══════════════════════════════════════════════════════════════════════════════╝
-          """);
-    }
   }
 
   /** Stops the Oracle container and cleans up resources after all tests. */

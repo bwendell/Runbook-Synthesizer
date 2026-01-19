@@ -3,7 +3,6 @@ package com.oracle.runbook.integration;
 import java.net.URI;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.containers.localstack.LocalStackContainer.Service;
 import org.testcontainers.utility.DockerImageName;
@@ -57,40 +56,13 @@ public abstract class LocalStackContainerBase {
    */
   @BeforeAll
   static void startLocalStackContainer() {
-    assertDockerAvailable();
+    DockerSupport.ensureDockerAvailable();
 
     localstack =
         new LocalStackContainer(LOCALSTACK_IMAGE)
             .withServices(Service.S3, Service.CLOUDWATCH, Service.CLOUDWATCHLOGS, Service.EC2);
 
     localstack.start();
-  }
-
-  /**
-   * Asserts that Docker is available and accessible.
-   *
-   * @throws AssertionError if Docker is not available with actionable error message
-   */
-  private static void assertDockerAvailable() {
-    if (!DockerClientFactory.instance().isDockerAvailable()) {
-      throw new AssertionError(
-          """
-
-          ╔══════════════════════════════════════════════════════════════════════════════╗
-          ║                         DOCKER NOT AVAILABLE                                  ║
-          ╠══════════════════════════════════════════════════════════════════════════════╣
-          ║ LocalStack integration tests require Docker to be running.                   ║
-          ║                                                                              ║
-          ║ To fix this:                                                                 ║
-          ║   1. Start Docker Desktop (Windows/Mac) or Docker daemon (Linux)             ║
-          ║   2. Wait for Docker to fully initialize                                     ║
-          ║   3. Re-run the tests                                                        ║
-          ║                                                                              ║
-          ║ To skip container tests:                                                     ║
-          ║   Run without -Pe2e-containers or -Dtest.use.containers=true                 ║
-          ╚══════════════════════════════════════════════════════════════════════════════╝
-          """);
-    }
   }
 
   /** Stops the LocalStack container and cleans up resources after all tests. */

@@ -40,3 +40,5 @@ infra/cdk.out/
 infra/dist/
 infra/*.js
 infra/*.d.ts
+
+effective-pom
