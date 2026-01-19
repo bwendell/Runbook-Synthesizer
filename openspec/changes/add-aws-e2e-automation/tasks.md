@@ -64,12 +64,27 @@ npm run cdk:synth
 | Test classes found but 0 methods discovered | `@BeforeAll` throwing before test discovery OR abstract class annotation inheritance issues | Verify with minimal standalone test first |
 | Tests silently skipped | Conditional annotation not satisfied | Check system property is set: look for `aws.e2e.enabled=true` in Failsafe debug output |
 
+### Directory Structure
+
+```
+integration/aws/
+├── cloud/                              # Tests against real AWS cloud services
+│   ├── CloudAwsTestBase.java           # Base class with credential validation
+│   ├── AwsS3StorageCloudIT.java        # S3 cloud tests
+│   └── AwsCloudWatchLogsCloudIT.java   # CloudWatch Logs cloud tests
+└── local/                              # Tests using LocalStack (emulated)
+    ├── AwsS3StorageLocalIT.java
+    ├── AwsCloudWatchLogsLocalIT.java
+    ├── AwsCloudWatchMetricsLocalIT.java
+    └── AwsRagPipelineLocalIT.java
+```
+
 ### Acceptance Criteria
 - Minimal diagnostic test (no inheritance) runs and passes
-- `RealAwsTestBase` validates AWS credentials in `@BeforeAll`
-- Tests are skipped when `aws.e2e.enabled` system property is NOT set
-- Tests pass when run with `-Pe2e-aws-real` profile against provisioned AWS resources
-- All tests use `@EnabledIfSystemProperty(named = "aws.e2e.enabled", matches = "true")`
+- `CloudAwsTestBase` validates AWS credentials in `@BeforeAll`
+- Tests are skipped when `aws.cloud.enabled` system property is NOT set
+- Tests pass when run with `-Pe2e-aws-cloud` profile against provisioned AWS resources
+- All tests use `@EnabledIfSystemProperty(named = "aws.cloud.enabled", matches = "true")`
 - Docker unavailability fails fast with clear error message
 
 ---
@@ -80,9 +95,9 @@ npm run cdk:synth
 
 **Tasks:**
 - [ ] 3.1.1 Downgrade JUnit from 6.x to 5.11.4 in `pom.xml` (`<junit.version>5.11.4</junit.version>`)
-- [ ] 3.1.2 Create minimal test `src/test/java/com/oracle/runbook/integration/aws/e2e/MinimalDiagnosticIT.java`:
+- [ ] 3.1.2 Create minimal test `src/test/java/com/oracle/runbook/integration/aws/cloud/MinimalDiagnosticIT.java`:
   ```java
-  package com.oracle.runbook.integration.aws.e2e;
+  package com.oracle.runbook.integration.aws.cloud;
   
   import static org.assertj.core.api.Assertions.assertThat;
   import org.junit.jupiter.api.DisplayName;
@@ -101,7 +116,7 @@ npm run cdk:synth
 
 **Verification:**
 ```powershell
-.\mvnw.cmd clean verify -Pe2e-aws-real 2>&1 | Tee-Object -FilePath "verify_3_1.log"
+.\mvnw.cmd clean verify -Pe2e-aws-cloud 2>&1 | Tee-Object -FilePath "verify_3_1.log"
 # SUCCESS CRITERIA: Output contains "Tests run: 1" for MinimalDiagnosticIT
 # FAILURE: If "Tests run: 0" → JUnit/Failsafe configuration issue, DO NOT PROCEED
 ```
@@ -112,29 +127,29 @@ npm run cdk:synth
 .\mvnw.cmd help:effective-pom | Select-String "junit.version"
 
 # Check Failsafe includes pattern matches
-.\mvnw.cmd verify -Pe2e-aws-real -X 2>&1 | Select-String "includes"
+.\mvnw.cmd verify -Pe2e-aws-cloud -X 2>&1 | Select-String "includes"
 
 # Verify .class file exists
-Get-ChildItem target/test-classes/com/oracle/runbook/integration/aws/e2e/*.class
+Get-ChildItem target/test-classes/com/oracle/runbook/integration/aws/cloud/*.class
 ```
 
 ---
 
-### Task 3.2: Create RealAwsTestBase with Credential Validation
+### Task 3.2: Create CloudAwsTestBase with Credential Validation
 
 **Purpose:** Base class that validates AWS credentials before any tests run.
 
 **Tasks:**
-- [X] 3.2.1 Create `src/test/java/com/oracle/runbook/integration/aws/e2e/RealAwsTestBase.java`
-- [X] 3.2.2 Add `@EnabledIfSystemProperty(named = "aws.e2e.enabled", matches = "true")` annotation
+- [X] 3.2.1 Create `src/test/java/com/oracle/runbook/integration/aws/cloud/CloudAwsTestBase.java`
+- [X] 3.2.2 Add `@EnabledIfSystemProperty(named = "aws.cloud.enabled", matches = "true")` annotation
 - [X] 3.2.3 Implement `@BeforeAll static void validateAwsCredentials()` using STS GetCallerIdentity
 - [X] 3.2.4 Add fail-fast check for Docker availability (for future containerized tests)
 - [X] 3.2.5 Provide helper methods: `createS3Client()`, `createCloudWatchLogsClient()`, `getBucketName()`
 
 **Key Implementation Details:**
 ```java
-@EnabledIfSystemProperty(named = "aws.e2e.enabled", matches = "true")
-public abstract class RealAwsTestBase {
+@EnabledIfSystemProperty(named = "aws.cloud.enabled", matches = "true")
+public abstract class CloudAwsTestBase {
   
   @BeforeAll
   static void validateAwsCredentials() {
@@ -142,7 +157,7 @@ public abstract class RealAwsTestBase {
     try (StsClient stsClient = StsClient.builder()...build()) {
       var identity = stsClient.getCallerIdentity();
       assertThat(identity.account()).isNotNull();
-      System.out.printf("[RealAwsTestBase] Authenticated: %s%n", identity.arn());
+      System.out.printf("[CloudAwsTestBase] Authenticated: %s%n", identity.arn());
     } catch (Exception e) {
       assumeThat(false).as("AWS credentials not available: " + e.getMessage()).isTrue();
     }
@@ -152,36 +167,36 @@ public abstract class RealAwsTestBase {
 
 **Verification:**
 ```powershell
-# Create a simple test extending RealAwsTestBase
-# Add to MinimalDiagnosticIT or create RealAwsBaseTestIT
+# Create a simple test extending CloudAwsTestBase
+# Add to MinimalDiagnosticIT or create CloudAwsBaseTestIT
 
-.\mvnw.cmd clean verify -Pe2e-aws-real 2>&1 | Tee-Object -FilePath "verify_3_2.log"
+.\mvnw.cmd clean verify -Pe2e-aws-cloud 2>&1 | Tee-Object -FilePath "verify_3_2.log"
 # SUCCESS CRITERIA: 
-#   - Output contains "[RealAwsTestBase] Authenticated: arn:aws:..."
+#   - Output contains "[CloudAwsTestBase] Authenticated: arn:aws:..."
 #   - Test count > 0
 # FAILURE:
-#   - If test is skipped → Check aws.e2e.enabled system property is set
+#   - If test is skipped → Check aws.cloud.enabled system property is set
 #   - If 0 tests → Annotation inheritance issue, add annotation to concrete class too
 ```
 
 **Troubleshooting:**
 ```powershell
 # Verify system property reaches forked JVM
-.\mvnw.cmd verify -Pe2e-aws-real -X 2>&1 | Select-String "aws.e2e.enabled"
-# Should show: [DEBUG] Setting system property [aws.e2e.enabled]=[true]
+.\mvnw.cmd verify -Pe2e-aws-cloud -X 2>&1 | Select-String "aws.cloud.enabled"
+# Should show: [DEBUG] Setting system property [aws.cloud.enabled]=[true]
 
 # If tests still not discovered, check XML report for property
-Get-Content target/failsafe-reports/*.xml | Select-String "aws.e2e.enabled"
+Get-Content target/failsafe-reports/*.xml | Select-String "aws.cloud.enabled"
 ```
 
 ---
 
-### Task 3.3: Create RealAwsS3StorageIT
+### Task 3.3: Create AwsS3StorageCloudIT
 
-**Purpose:** Integration tests for S3 operations against real AWS.
+**Purpose:** Integration tests for S3 operations against real AWS cloud.
 
 **Tasks:**
-- [X] 3.3.1 Create `src/test/java/com/oracle/runbook/integration/aws/e2e/RealAwsS3StorageIT.java`
+- [X] 3.3.1 Create `src/test/java/com/oracle/runbook/integration/aws/cloud/AwsS3StorageCloudIT.java`
 - [X] 3.3.2 Add `@EnabledIfSystemProperty` annotation (MUST be on concrete class, not just inherited)
 - [X] 3.3.3 Implement `@BeforeAll` to upload test files to S3 bucket
 - [X] 3.3.4 Test `listRunbooks()` returns expected markdown files
@@ -190,21 +205,21 @@ Get-Content target/failsafe-reports/*.xml | Select-String "aws.e2e.enabled"
 
 **Verification:**
 ```powershell
-.\mvnw.cmd clean verify -Pe2e-aws-real 2>&1 | Tee-Object -FilePath "verify_3_3.log"
+.\mvnw.cmd clean verify -Pe2e-aws-cloud 2>&1 | Tee-Object -FilePath "verify_3_3.log"
 # SUCCESS CRITERIA:
-#   - "Running Real AWS S3 E2E Tests"
-#   - "Tests run: 3" (or more) for RealAwsS3StorageIT
-#   - "[RealAwsS3StorageIT] Uploaded test file:" messages visible
+#   - "Running AWS S3 Cloud E2E Tests"
+#   - "Tests run: 3" (or more) for AwsS3StorageCloudIT
+#   - "[AwsS3StorageCloudIT] Uploaded test file:" messages visible
 ```
 
 ---
 
-### Task 3.4: Create RealAwsCloudWatchLogsIT
+### Task 3.4: Create AwsCloudWatchLogsCloudIT
 
-**Purpose:** Integration tests for CloudWatch Logs operations against real AWS.
+**Purpose:** Integration tests for CloudWatch Logs operations against real AWS cloud.
 
 **Tasks:**
-- [ ] 3.4.1 Create `src/test/java/com/oracle/runbook/integration/aws/e2e/RealAwsCloudWatchLogsIT.java`
+- [ ] 3.4.1 Create `src/test/java/com/oracle/runbook/integration/aws/cloud/AwsCloudWatchLogsCloudIT.java`
 - [ ] 3.4.2 Add `@EnabledIfSystemProperty` annotation
 - [ ] 3.4.3 Implement `@BeforeAll` to create log stream and write test events
 - [ ] 3.4.4 Test `fetchLogs()` returns written log entries
@@ -212,10 +227,10 @@ Get-Content target/failsafe-reports/*.xml | Select-String "aws.e2e.enabled"
 
 **Verification:**
 ```powershell
-.\mvnw.cmd clean verify -Pe2e-aws-real 2>&1 | Tee-Object -FilePath "verify_3_4.log"
+.\mvnw.cmd clean verify -Pe2e-aws-cloud 2>&1 | Tee-Object -FilePath "verify_3_4.log"
 # SUCCESS CRITERIA:
-#   - "Running Real AWS CloudWatch Logs E2E Tests"
-#   - "Tests run: 2" (or more) for RealAwsCloudWatchLogsIT
+#   - "Running AWS CloudWatch Logs Cloud E2E Tests"
+#   - "Tests run: 2" (or more) for AwsCloudWatchLogsCloudIT
 ```
 
 ---
@@ -227,18 +242,18 @@ Get-Content target/failsafe-reports/*.xml | Select-String "aws.e2e.enabled"
 **Verification:**
 ```powershell
 # Full E2E test run
-.\mvnw.cmd clean verify -Pe2e-aws-real 2>&1 | Tee-Object -FilePath "verify_3_5.log"
+.\mvnw.cmd clean verify -Pe2e-aws-cloud 2>&1 | Tee-Object -FilePath "verify_3_5.log"
 
 # SUCCESS CRITERIA (all must pass):
 # 1. MinimalDiagnosticIT runs (Tests run: 1)
-# 2. RealAwsS3StorageIT runs (Tests run: 3+)
-# 3. RealAwsCloudWatchLogsIT runs (Tests run: 2+)
+# 2. AwsS3StorageCloudIT runs (Tests run: 3+)
+# 3. AwsCloudWatchLogsCloudIT runs (Tests run: 2+)
 # 4. BUILD SUCCESS
 # 5. No Docker-related errors
 
 # Verify tests are skipped when property not set
-.\mvnw.cmd clean verify 2>&1 | Select-String "RealAws"
-# Should show: "Tests run: 0" for all RealAws tests (skipped)
+.\mvnw.cmd clean verify 2>&1 | Select-String "CloudIT"
+# Should show: "Tests run: 0" for all CloudIT tests (skipped)
 ```
 
 ---
@@ -257,16 +272,16 @@ docker info
 # Expected: 5.11.4. If 6.x → Change <junit.version> in pom.xml
 
 # 3. Is the system property being set?
-.\mvnw.cmd verify -Pe2e-aws-real -X 2>&1 | Select-String "aws.e2e.enabled"
-# Expected: "[DEBUG] Setting system property [aws.e2e.enabled]=[true]"
+.\mvnw.cmd verify -Pe2e-aws-cloud -X 2>&1 | Select-String "aws.cloud.enabled"
+# Expected: "[DEBUG] Setting system property [aws.cloud.enabled]=[true]"
 
 # 4. Does the property reach the forked JVM?
-Get-Content target/failsafe-reports/*.xml | Select-String "aws.e2e.enabled"
-# Expected: <property name="aws.e2e.enabled" value="true"/>
+Get-Content target/failsafe-reports/*.xml | Select-String "aws.cloud.enabled"
+# Expected: <property name="aws.cloud.enabled" value="true"/>
 
 # 5. Are test classes being matched?
-.\mvnw.cmd verify -Pe2e-aws-real 2>&1 | Select-String "Running"
-# Expected: "Running Real AWS S3 E2E Tests" etc.
+.\mvnw.cmd verify -Pe2e-aws-cloud 2>&1 | Select-String "Running"
+# Expected: "Running AWS S3 Cloud E2E Tests" etc.
 
 # 6. Are there any errors in Failsafe reports?
 Get-Content target/failsafe-reports/*.txt
@@ -295,22 +310,22 @@ Get-Content target/failsafe-reports/*.txt
 
 ### Acceptance Criteria
 
-- Profile `e2e-aws-real` exists in pom.xml `<profiles>` section
+- Profile `e2e-aws-cloud` exists in pom.xml `<profiles>` section
 - Profile skips Surefire (unit tests) completely
-- Profile only includes `**/aws/e2e/*IT.java` tests in Failsafe
-- Profile sets `aws.e2e.enabled=true` via `<systemPropertyVariables>` (NOT environment variables)
-- Running profile without AWS credentials shows clear error from `RealAwsTestBase`
-- Other profiles (default, `e2e-containers`) do NOT run RealAws tests
+- Profile only includes `**/aws/cloud/*IT.java` tests in Failsafe
+- Profile sets `aws.cloud.enabled=true` via `<systemPropertyVariables>` (NOT environment variables)
+- Running profile without AWS credentials shows clear error from `CloudAwsTestBase`
+- Other profiles (default, `e2e-containers`) do NOT run CloudAws tests
 
 ---
 
-### Task 4.1: Add e2e-aws-real Profile Shell
+### Task 4.1: Add e2e-aws-cloud Profile Shell
 
 **Purpose:** Create the profile structure in pom.xml.
 
 **Tasks:**
 
-- [X] 4.1.1 Add `<profile>` with `<id>e2e-aws-real</id>` to `<profiles>` section
+- [X] 4.1.1 Add `<profile>` with `<id>e2e-aws-cloud</id>` to `<profiles>` section
 - [X] 4.1.2 Add comment explaining the profile's purpose
 
 **Implementation:**
@@ -318,9 +333,9 @@ Get-Content target/failsafe-reports/*.txt
 <profiles>
     <!-- Existing profiles here... -->
     
-    <!-- E2E Real AWS Profile - Runs tests against real AWS services -->
+    <!-- E2E AWS Cloud Profile - Runs tests against real AWS cloud services -->
     <profile>
-        <id>e2e-aws-real</id>
+        <id>e2e-aws-cloud</id>
         <build>
             <plugins>
                 <!-- Plugins added in subsequent tasks -->
@@ -332,15 +347,15 @@ Get-Content target/failsafe-reports/*.txt
 
 **Verification:**
 ```powershell
-.\mvnw.cmd help:active-profiles -Pe2e-aws-real
-# SUCCESS CRITERIA: Shows "e2e-aws-real" as active profile
+.\mvnw.cmd help:active-profiles -Pe2e-aws-cloud
+# SUCCESS CRITERIA: Shows "e2e-aws-cloud" as active profile
 ```
 
 ---
 
 ### Task 4.2: Configure Surefire to Skip Unit Tests
 
-**Purpose:** Prevent unit tests from running when using the e2e-aws-real profile. Unit tests may depend on Docker/LocalStack which we want to avoid.
+**Purpose:** Prevent unit tests from running when using the e2e-aws-cloud profile. Unit tests may depend on Docker/LocalStack which we want to avoid.
 
 **Tasks:**
 
@@ -350,7 +365,7 @@ Get-Content target/failsafe-reports/*.txt
 **Implementation:**
 ```xml
 <profile>
-    <id>e2e-aws-real</id>
+    <id>e2e-aws-cloud</id>
     <build>
         <plugins>
             <!-- Skip unit tests - only run Failsafe integration tests -->
@@ -370,7 +385,7 @@ Get-Content target/failsafe-reports/*.txt
 
 **Verification:**
 ```powershell
-.\mvnw.cmd verify -Pe2e-aws-real 2>&1 | Select-String "Tests are skipped"
+.\mvnw.cmd verify -Pe2e-aws-cloud 2>&1 | Select-String "Tests are skipped"
 # SUCCESS CRITERIA: Output contains "[INFO] Tests are skipped." for Surefire phase
 ```
 
@@ -378,15 +393,15 @@ Get-Content target/failsafe-reports/*.txt
 
 ### Task 4.3: Configure Failsafe with System Property
 
-**Purpose:** Configure Failsafe to run only AWS E2E tests and pass the enabling system property.
+**Purpose:** Configure Failsafe to run only AWS Cloud E2E tests and pass the enabling system property.
 
 > **CRITICAL:** Use `<systemPropertyVariables>` NOT `<environmentVariables>`. Environment variables are unreliable on Windows with Failsafe.
 
 **Tasks:**
 
 - [X] 4.3.1 Add Failsafe plugin configuration inside the profile
-- [X] 4.3.2 Set `<includes>` to `**/aws/e2e/*IT.java`
-- [X] 4.3.3 Add `<systemPropertyVariables>` with `<aws.e2e.enabled>true</aws.e2e.enabled>`
+- [X] 4.3.2 Set `<includes>` to `**/aws/cloud/*IT.java`
+- [X] 4.3.3 Add `<systemPropertyVariables>` with `<aws.cloud.enabled>true</aws.cloud.enabled>`
 - [X] 4.3.4 Add JVM args for preview features: `--enable-preview --enable-native-access=ALL-UNNAMED`
 
 **Implementation:**
@@ -397,13 +412,13 @@ Get-Content target/failsafe-reports/*.txt
     <version>3.5.4</version>
     <configuration>
         <argLine>--enable-preview --enable-native-access=ALL-UNNAMED</argLine>
-        <!-- Include only real AWS e2e tests -->
+        <!-- Include only real AWS cloud tests -->
         <includes>
-            <include>**/aws/e2e/*IT.java</include>
+            <include>**/aws/cloud/*IT.java</include>
         </includes>
         <!-- CRITICAL: Use systemPropertyVariables, NOT environmentVariables -->
         <systemPropertyVariables>
-            <aws.e2e.enabled>true</aws.e2e.enabled>
+            <aws.cloud.enabled>true</aws.cloud.enabled>
         </systemPropertyVariables>
     </configuration>
     <executions>
@@ -426,36 +441,36 @@ Get-Content target/failsafe-reports/*.txt
 **Verification:**
 ```powershell
 # Verify system property is being set
-.\mvnw.cmd verify -Pe2e-aws-real -X 2>&1 | Select-String "aws.e2e.enabled"
-# SUCCESS CRITERIA: Shows "[DEBUG] Setting system property [aws.e2e.enabled]=[true]"
+.\mvnw.cmd verify -Pe2e-aws-cloud -X 2>&1 | Select-String "aws.cloud.enabled"
+# SUCCESS CRITERIA: Shows "[DEBUG] Setting system property [aws.cloud.enabled]=[true]"
 
-# Verify only aws/e2e tests are included
-.\mvnw.cmd verify -Pe2e-aws-real 2>&1 | Select-String "Running"
-# SUCCESS CRITERIA: Only shows "Running" for classes in aws/e2e package
+# Verify only aws/cloud tests are included
+.\mvnw.cmd verify -Pe2e-aws-cloud 2>&1 | Select-String "Running"
+# SUCCESS CRITERIA: Only shows "Running" for classes in aws/cloud package
 ```
 
 ---
 
 ### Task 4.4: Verify Profile Isolation
 
-**Purpose:** Ensure the e2e-aws-real profile doesn't run other tests, and other profiles don't run RealAws tests.
+**Purpose:** Ensure the e2e-aws-cloud profile doesn't run other tests, and other profiles don't run CloudAws tests.
 
 **Verification:**
 ```powershell
-# 1. Verify RealAws tests run ONLY with e2e-aws-real profile
-.\mvnw.cmd clean verify -Pe2e-aws-real 2>&1 | Select-String "Running.*RealAws"
-# SUCCESS CRITERIA: Shows "Running Real AWS S3 E2E Tests" and similar
+# 1. Verify CloudAws tests run ONLY with e2e-aws-cloud profile
+.\mvnw.cmd clean verify -Pe2e-aws-cloud 2>&1 | Select-String "Running.*CloudIT"
+# SUCCESS CRITERIA: Shows "Running AWS S3 Cloud E2E Tests" and similar
 
-# 2. Verify default profile doesn't run RealAws tests
-.\mvnw.cmd clean verify 2>&1 | Select-String "RealAws"
-# SUCCESS CRITERIA: No matches (RealAws tests not in default includes)
+# 2. Verify default profile doesn't run CloudAws tests
+.\mvnw.cmd clean verify 2>&1 | Select-String "CloudIT"
+# SUCCESS CRITERIA: No matches (CloudAws tests not in default includes)
 
-# 3. Verify e2e-containers profile doesn't run RealAws tests
-.\mvnw.cmd clean verify -Pe2e-containers 2>&1 | Select-String "RealAws"
+# 3. Verify e2e-containers profile doesn't run CloudAws tests
+.\mvnw.cmd clean verify -Pe2e-containers 2>&1 | Select-String "CloudIT"
 # SUCCESS CRITERIA: No matches
 
-# 4. Verify unit tests are skipped in e2e-aws-real
-.\mvnw.cmd clean verify -Pe2e-aws-real 2>&1 | Select-String "surefire"
+# 4. Verify unit tests are skipped in e2e-aws-cloud
+.\mvnw.cmd clean verify -Pe2e-aws-cloud 2>&1 | Select-String "surefire"
 # SUCCESS CRITERIA: Shows "[INFO] Tests are skipped." for surefire:test
 ```
 
@@ -468,12 +483,12 @@ Get-Content target/failsafe-reports/*.txt
 **Verification:**
 ```powershell
 # Full E2E run (requires AWS credentials and CDK deployed)
-.\mvnw.cmd clean verify -Pe2e-aws-real 2>&1 | Tee-Object -FilePath "verify_4_5.log"
+.\mvnw.cmd clean verify -Pe2e-aws-cloud 2>&1 | Tee-Object -FilePath "verify_4_5.log"
 
 # SUCCESS CRITERIA (all must be true):
 # 1. Surefire shows "Tests are skipped"
-# 2. Failsafe shows "Running Real AWS S3 E2E Tests"
-# 3. Failsafe shows "Running Real AWS CloudWatch Logs E2E Tests"
+# 2. Failsafe shows "Running AWS S3 Cloud E2E Tests"
+# 3. Failsafe shows "Running AWS CloudWatch Logs Cloud E2E Tests"
 # 4. Tests run count > 0
 # 5. BUILD SUCCESS
 ```
@@ -484,23 +499,23 @@ Get-Content target/failsafe-reports/*.txt
 
 ```powershell
 # 1. Is profile active?
-.\mvnw.cmd help:active-profiles -Pe2e-aws-real
-# Expected: Shows e2e-aws-real as active
+.\mvnw.cmd help:active-profiles -Pe2e-aws-cloud
+# Expected: Shows e2e-aws-cloud as active
 
 # 2. Is Surefire skipping tests?
-.\mvnw.cmd verify -Pe2e-aws-real 2>&1 | Select-String "surefire:test"
+.\mvnw.cmd verify -Pe2e-aws-cloud 2>&1 | Select-String "surefire:test"
 # Expected: "[INFO] Tests are skipped."
 
 # 3. Is system property being set (NOT environment variable)?
-.\mvnw.cmd verify -Pe2e-aws-real -X 2>&1 | Select-String "systemPropertyVariables"
-# Expected: {aws.e2e.enabled=true}
+.\mvnw.cmd verify -Pe2e-aws-cloud -X 2>&1 | Select-String "systemPropertyVariables"
+# Expected: {aws.cloud.enabled=true}
 
 # 4. Is the includes pattern correct?
-.\mvnw.cmd verify -Pe2e-aws-real -X 2>&1 | Select-String "includes"
-# Expected: **/aws/e2e/*IT.java
+.\mvnw.cmd verify -Pe2e-aws-cloud -X 2>&1 | Select-String "includes"
+# Expected: **/aws/cloud/*IT.java
 
 # 5. Are test classes being found?
-.\mvnw.cmd verify -Pe2e-aws-real 2>&1 | Select-String "Running"
+.\mvnw.cmd verify -Pe2e-aws-cloud 2>&1 | Select-String "Running"
 # Expected: Shows test class names
 
 # 6. Check for conflicting Failsafe configurations
