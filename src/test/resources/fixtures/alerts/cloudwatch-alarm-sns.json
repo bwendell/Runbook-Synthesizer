@@ -1,0 +1,12 @@
+{
+  "Type": "Notification",
+  "MessageId": "msg-12345678-1234-1234-1234-123456789012",
+  "TopicArn": "arn:aws:sns:us-west-2:123456789012:cloudwatch-alarms",
+  "Subject": "ALARM: \"HighCPUUtilization\" in US West (Oregon)",
+  "Message": "{\"AlarmName\":\"HighCPUUtilization\",\"AlarmDescription\":\"CPU usage exceeded 90% threshold\",\"AWSAccountId\":\"123456789012\",\"AlarmConfigurationUpdatedTimestamp\":\"2024-01-15T10:30:00.000+0000\",\"NewStateValue\":\"ALARM\",\"NewStateReason\":\"Threshold Crossed: 1 out of 1 datapoints [95.5 (15/01/24 10:25:00)] was greater than the threshold (90.0).\",\"StateChangeTime\":\"2024-01-15T10:30:00.000+0000\",\"Region\":\"US West (Oregon)\",\"AlarmArn\":\"arn:aws:cloudwatch:us-west-2:123456789012:alarm:HighCPUUtilization\",\"OldStateValue\":\"OK\",\"OKActions\":[],\"AlarmActions\":[\"arn:aws:sns:us-west-2:123456789012:cloudwatch-alarms\"],\"InsufficientDataActions\":[],\"Trigger\":{\"MetricName\":\"CPUUtilization\",\"Namespace\":\"AWS/EC2\",\"StatisticType\":\"Statistic\",\"Statistic\":\"AVERAGE\",\"Unit\":null,\"Dimensions\":[{\"name\":\"InstanceId\",\"value\":\"i-1234567890abcdef0\"}],\"Period\":300,\"EvaluationPeriods\":1,\"DatapointsToAlarm\":1,\"ComparisonOperator\":\"GreaterThanThreshold\",\"Threshold\":90.0,\"TreatMissingData\":\"missing\"}}",
+  "Timestamp": "2024-01-15T10:30:05.123Z",
+  "SignatureVersion": "1",
+  "Signature": "base64encodedSignature==",
+  "SigningCertURL": "https://sns.us-west-2.amazonaws.com/SimpleNotificationService.pem",
+  "UnsubscribeURL": "https://sns.us-west-2.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:us-west-2:123456789012:cloudwatch-alarms:subscription-id"
+}

@@ -5,8 +5,8 @@
 **Description:** Add required AWS SDK artifacts to pom.xml for Bedrock runtime.
 
 ### Subtasks
-- [ ] 1.1 Add `software.amazon.awssdk:bedrockruntime` dependency
-- [ ] 1.2 Verify Maven compiles successfully
+- [x] 1.1 Add `software.amazon.awssdk:bedrockruntime` dependency
+- [x] 1.2 Verify Maven compiles successfully
 
 ### Verification Steps
 ```bash
@@ -16,8 +16,8 @@ mvn compile -q
 **Expected:** Build succeeds with no errors.
 
 ### Acceptance Criteria
-- [ ] `pom.xml` contains `bedrockruntime` dependency
-- [ ] `mvn compile` passes
+- [x] `pom.xml` contains `bedrockruntime` dependency
+- [x] `mvn compile` passes
 
 ---
 
@@ -26,14 +26,14 @@ mvn compile -q
 **Description:** Create adapter to parse CloudWatch Alarm JSON delivered via SNS webhook.
 
 ### Subtasks
-- [ ] 2.1 Create `AwsSnsAlertSourceAdapter.java` in `infrastructure/cloud/aws/`
-- [ ] 2.2 Implement `sourceType()` returning `"aws-cloudwatch-sns"`
-- [ ] 2.3 Implement `canHandle()` to detect SNS/CloudWatch signature
-- [ ] 2.4 Implement `parseAlert()` with severity mapping:
+- [x] 2.1 Create `AwsSnsAlertSourceAdapter.java` in `infrastructure/cloud/aws/`
+- [x] 2.2 Implement `sourceType()` returning `"aws-cloudwatch-sns"`
+- [x] 2.3 Implement `canHandle()` to detect SNS/CloudWatch signature
+- [x] 2.4 Implement `parseAlert()` with severity mapping:
   - `ALARM` → `CRITICAL`
   - `INSUFFICIENT_DATA` → `WARNING`
   - `OK` → Return null (skip)
-- [ ] 2.5 Create unit tests `AwsSnsAlertSourceAdapterTest.java`
+- [x] 2.5 Create unit tests `AwsSnsAlertSourceAdapterTest.java`
 
 ### Verification Steps
 ```bash
@@ -43,17 +43,17 @@ mvn test -Dtest=AwsSnsAlertSourceAdapterTest -q
 **Expected:** All unit tests pass.
 
 ### Acceptance Criteria
-- [ ] `AwsSnsAlertSourceAdapter` implements `AlertSourceAdapter` interface
-- [ ] Parses SNS message envelope correctly (extracts `Message` field)
-- [ ] Parses CloudWatch Alarm JSON within Message
-- [ ] Maps `AlarmName` → `Alert.title`
-- [ ] Maps `NewStateReason` → `Alert.message`
-- [ ] Maps `NewStateValue` → `Alert.severity` (using approved mapping)
-- [ ] Returns null for `OK` state
-- [ ] Unit tests cover: valid ALARM, valid INSUFFICIENT_DATA, OK state skip, invalid JSON handling
+- [x] `AwsSnsAlertSourceAdapter` implements `AlertSourceAdapter` interface
+- [x] Parses SNS message envelope correctly (extracts `Message` field)
+- [x] Parses CloudWatch Alarm JSON within Message
+- [x] Maps `AlarmName` → `Alert.title`
+- [x] Maps `NewStateReason` → `Alert.message`
+- [x] Maps `NewStateValue` → `Alert.severity` (using approved mapping)
+- [x] Returns null for `OK` state
+- [x] Unit tests cover: valid ALARM, valid INSUFFICIENT_DATA, OK state skip, invalid JSON handling
 
 ### Sample Test Payloads
-See `src/test/resources/samples/cloudwatch-alarm-sns.json` (to be created)
+See `src/test/resources/fixtures/alerts/cloudwatch-alarm-sns.json`
 
 ---
 
@@ -63,17 +63,18 @@ See `src/test/resources/samples/cloudwatch-alarm-sns.json` (to be created)
 
 ### Subtask 3A: OllamaLlmProvider (MVP Default)
 
-- [ ] 3A.1 Create `OllamaLlmProvider.java` in `infrastructure/llm/`
-- [ ] 3A.2 Implement `providerId()` returning `"ollama"`
-- [ ] 3A.3 Implement `generateText()` using Ollama REST API:
+
+- [x] 3A.1 Create `OllamaLlmProvider.java` in `infrastructure/llm/`
+- [x] 3A.2 Implement `providerId()` returning `"ollama"`
+- [x] 3A.3 Implement `generateText()` using Ollama REST API:
   - Endpoint: `POST /api/generate`
   - Model: `llama3.2:3b` (configurable)
-- [ ] 3A.4 Implement `generateEmbedding()` using Ollama REST API:
+- [x] 3A.4 Implement `generateEmbedding()` using Ollama REST API:
   - Endpoint: `POST /api/embeddings`
   - Model: `nomic-embed-text`
-- [ ] 3A.5 Implement `generateEmbeddings()` for batch embeddings
-- [ ] 3A.6 Create `OllamaConfig.java` record for configuration
-- [ ] 3A.7 Create unit tests `OllamaLlmProviderTest.java`
+- [x] 3A.5 Implement `generateEmbeddings()` for batch embeddings
+- [x] 3A.6 Create `OllamaConfig.java` record for configuration
+- [x] 3A.7 Create unit tests `OllamaLlmProviderTest.java`
 
 **Verification (Ollama):**
 ```bash
@@ -87,26 +88,26 @@ mvn test -Dtest=OllamaLlmProviderTest -q
 ```
 
 **Acceptance Criteria (Ollama):**
-- [ ] `OllamaLlmProvider` implements `LlmProvider` interface
-- [ ] Uses async HTTP client for non-blocking calls
-- [ ] Connects to configurable Ollama base URL
-- [ ] Unit tests pass with WireMock or similar
+- [x] `OllamaLlmProvider` implements `LlmProvider` interface
+- [x] Uses async HTTP client for non-blocking calls
+- [x] Connects to configurable Ollama base URL
+- [x] Unit tests pass with WireMock or similar
 
 ---
 
 ### Subtask 3B: AwsBedrockLlmProvider (Production)
 
-- [ ] 3B.1 Create `AwsBedrockLlmProvider.java` in `infrastructure/cloud/aws/`
-- [ ] 3B.2 Implement `providerId()` returning `"aws-bedrock"`
-- [ ] 3B.3 Implement `generateText()` using Claude 3 Haiku:
+- [x] 3B.1 Create `AwsBedrockLlmProvider.java` in `infrastructure/cloud/aws/`
+- [x] 3B.2 Implement `providerId()` returning `"aws-bedrock"`
+- [x] 3B.3 Implement `generateText()` using Claude 3 Haiku:
   - Model ID: `anthropic.claude-3-haiku-20240307-v1:0`
   - Use `BedrockRuntimeAsyncClient.invokeModel()`
-- [ ] 3B.4 Implement `generateEmbedding()` using Cohere Embed v3:
+- [x] 3B.4 Implement `generateEmbedding()` using Cohere Embed v3:
   - Model ID: `cohere.embed-english-v3`
   - Use `BedrockRuntimeAsyncClient.invokeModel()`
-- [ ] 3B.5 Implement `generateEmbeddings()` for batch embeddings
-- [ ] 3B.6 Create `AwsBedrockConfig.java` record for configuration
-- [ ] 3B.7 Create unit tests `AwsBedrockLlmProviderTest.java` (mocked SDK)
+- [x] 3B.5 Implement `generateEmbeddings()` for batch embeddings
+- [x] 3B.6 Create `AwsBedrockConfig.java` record for configuration
+- [x] 3B.7 Create unit tests `AwsBedrockLlmProviderTest.java` (mocked SDK)
 
 **Verification (Bedrock):**
 ```bash
@@ -115,12 +116,12 @@ mvn test -Dtest=AwsBedrockLlmProviderTest -q
 ```
 
 **Acceptance Criteria (Bedrock):**
-- [ ] `AwsBedrockLlmProvider` implements `LlmProvider` interface
-- [ ] Uses `BedrockRuntimeAsyncClient` for async operations
-- [ ] Correctly formats Claude 3 request body (Messages API format)
-- [ ] Correctly formats Cohere Embed request body
-- [ ] Parses response JSON and extracts embeddings/text
-- [ ] Unit tests cover: text generation, single embedding, batch embeddings, error handling
+- [x] `AwsBedrockLlmProvider` implements `LlmProvider` interface
+- [x] Uses `BedrockRuntimeAsyncClient` for async operations
+- [x] Correctly formats Claude 3 request body (Messages API format)
+- [x] Correctly formats Cohere Embed request body
+- [x] Parses response JSON and extracts embeddings/text
+- [x] Unit tests cover: text generation, single embedding, batch embeddings, error handling
 
 ---
 
