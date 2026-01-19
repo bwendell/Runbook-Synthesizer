@@ -289,10 +289,10 @@
 ## 6. Add Tests
 
 ### 6.1 Add Interface Contract Tests
-- [ ] Add `CloudStorageAdapterTest` verifying interface methods
-- [ ] Add `ComputeMetadataAdapterTest` verifying interface methods
-- [ ] Add `CloudConfigTest` verifying interface contract
-- [ ] Add tests verifying OCI adapters implement new interfaces correctly
+- [x] Add `CloudStorageAdapterTest` verifying interface methods
+- [x] Add `ComputeMetadataAdapterTest` verifying interface methods
+- [x] Add `CloudConfigTest` verifying interface contract
+- [x] Add tests verifying OCI adapters implement new interfaces correctly
 
 **Acceptance Criteria:**
 - Each interface has contract tests verifying method signatures
@@ -305,12 +305,12 @@
 ---
 
 ### 6.2 Add AwsConfig Unit Tests
-- [ ] Add `AwsConfigTest` with required field validation tests
-- [ ] Add tests for `provider()` returning `"aws"`
-- [ ] Add tests for `region()` returning configured region
-- [ ] Add tests for `fromEnvironment()` factory method
-- [ ] Add tests for missing required fields throwing exceptions
-- [ ] Add tests for optional fields (accessKeyId, secretAccessKey)
+- [x] Add `AwsConfigTest` with required field validation tests
+- [x] Add tests for `provider()` returning `"aws"`
+- [x] Add tests for `region()` returning configured region
+- [x] Add tests for `fromEnvironment()` factory method
+- [x] Add tests for missing required fields throwing exceptions
+- [x] Add tests for optional fields (accessKeyId, secretAccessKey)
 
 **Acceptance Criteria:**
 - Tests follow `OciConfigTest` structure with `@Nested` classes
@@ -323,32 +323,32 @@
 ---
 
 ### 6.3 Add AWS Adapter Unit Tests
-- [ ] Add `AwsS3StorageAdapterTest` with mocked S3AsyncClient
-  - [ ] Test `providerType()` returns `"aws"`
-  - [ ] Test `listRunbooks()` success scenario
-  - [ ] Test `listRunbooks()` with empty bucket
-  - [ ] Test `getRunbookContent()` success scenario
-  - [ ] Test `getRunbookContent()` with missing object returns `Optional.empty()`
-  - [ ] Test constructor rejects null client
-  - [ ] Test constructor rejects null config
-- [ ] Add `AwsEc2MetadataAdapterTest` with mocked Ec2AsyncClient
-  - [ ] Test `providerType()` returns `"aws"`
-  - [ ] Test `getInstance()` success scenario
-  - [ ] Test `getInstance()` with missing instance returns `Optional.empty()`
-  - [ ] Test mapping EC2 tags to `ResourceMetadata`
-  - [ ] Test constructor null checks
-- [ ] Add `AwsCloudWatchMetricsAdapterTest` with mocked CloudWatchAsyncClient
-  - [ ] Test `sourceType()` returns `"aws-cloudwatch"`
-  - [ ] Test `fetchMetrics()` success scenario
-  - [ ] Test `fetchMetrics()` with no metrics returns empty list
-  - [ ] Test mapping CloudWatch metrics to `MetricSnapshot`
-  - [ ] Test constructor null checks
-- [ ] Add `AwsCloudWatchLogsAdapterTest` with mocked CloudWatchLogsAsyncClient
-  - [ ] Test `sourceType()` returns `"aws-cloudwatch-logs"`
-  - [ ] Test `fetchLogs()` success scenario
-  - [ ] Test `fetchLogs()` with no logs returns empty list
-  - [ ] Test mapping CloudWatch log events to `LogEntry`
-  - [ ] Test constructor null checks
+- [x] Add `AwsS3StorageAdapterTest` with mocked S3AsyncClient
+  - [x] Test `providerType()` returns `"aws"`
+  - [x] Test `listRunbooks()` success scenario
+  - [x] Test `listRunbooks()` with empty bucket
+  - [x] Test `getRunbookContent()` success scenario
+  - [x] Test `getRunbookContent()` with missing object returns `Optional.empty()`
+  - [x] Test constructor rejects null client
+  - [x] Test constructor rejects null config
+- [x] Add `AwsEc2MetadataAdapterTest` with mocked Ec2AsyncClient
+  - [x] Test `providerType()` returns `"aws"`
+  - [x] Test `getInstance()` success scenario
+  - [x] Test `getInstance()` with missing instance returns `Optional.empty()`
+  - [x] Test mapping EC2 tags to `ResourceMetadata`
+  - [x] Test constructor null checks
+- [x] Add `AwsCloudWatchMetricsAdapterTest` with mocked CloudWatchAsyncClient
+  - [x] Test `sourceType()` returns `"aws-cloudwatch"`
+  - [x] Test `fetchMetrics()` success scenario
+  - [x] Test `fetchMetrics()` with no metrics returns empty list
+  - [x] Test mapping CloudWatch metrics to `MetricSnapshot`
+  - [x] Test constructor null checks
+- [x] Add `AwsCloudWatchLogsAdapterTest` with mocked CloudWatchLogsAsyncClient
+  - [x] Test `sourceType()` returns `"aws-cloudwatch-logs"`
+  - [x] Test `fetchLogs()` success scenario
+  - [x] Test `fetchLogs()` with no logs returns empty list
+  - [x] Test mapping CloudWatch log events to `LogEntry`
+  - [x] Test constructor null checks
 
 **Acceptance Criteria:**
 - Each adapter has at least 80% code coverage
@@ -363,12 +363,12 @@
 ---
 
 ### 6.4 Add CloudAdapterFactory Unit Tests
-- [ ] Add `CloudAdapterFactoryTest`
-  - [ ] Test factory creates OCI adapters when `cloud.provider=oci`
-  - [ ] Test factory creates AWS adapters when `cloud.provider=aws`
-  - [ ] Test factory throws `IllegalArgumentException` for unknown provider
-  - [ ] Test error message is clear and actionable
-  - [ ] Test configuration injection works correctly
+- [x] Add `CloudAdapterFactoryTest`
+  - [x] Test factory creates OCI adapters when `cloud.provider=oci`
+  - [x] Test factory creates AWS adapters when `cloud.provider=aws`
+  - [x] Test factory throws `IllegalArgumentException` for unknown provider
+  - [x] Test error message is clear and actionable
+  - [x] Test configuration injection works correctly
 
 **Acceptance Criteria:**
 - Factory pattern thoroughly tested with configuration mocks
@@ -381,16 +381,16 @@
 ---
 
 ### 6.5 Add Error Handling and Edge Case Tests
-- [ ] Add tests for AWS SDK exception handling
-  - [ ] Test `S3Exception` handling in storage adapter
-  - [ ] Test `Ec2Exception` handling in metadata adapter
-  - [ ] Test `CloudWatchException` handling in metrics adapter
-  - [ ] Test authentication failures (credentials not found)
-  - [ ] Test network timeout scenarios
-- [ ] Add tests for malformed response handling
-  - [ ] Test empty response bodies
-  - [ ] Test missing required fields in response
-  - [ ] Test null values in optional fields
+- [x] Add tests for AWS SDK exception handling
+  - [x] Test `S3Exception` handling in storage adapter
+  - [x] Test `Ec2Exception` handling in metadata adapter
+  - [x] Test `CloudWatchException` handling in metrics adapter
+  - [x] Test authentication failures (credentials not found)
+  - [x] Test network timeout scenarios
+- [x] Add tests for malformed response handling
+  - [x] Test empty response bodies
+  - [x] Test missing required fields in response
+  - [x] Test null values in optional fields
 
 **Acceptance Criteria:**
 - All SDK exceptions wrapped in domain exceptions
@@ -403,12 +403,12 @@
 ---
 
 ### 6.6 Add OCI Adapter Refactoring Regression Tests
-- [ ] Update existing `OciObjectStorageClientTest` → `OciObjectStorageAdapterTest`
-- [ ] Add test verifying `OciObjectStorageAdapter` implements `CloudStorageAdapter`
-- [ ] Update existing `OciComputeClientTest` → `OciComputeMetadataAdapterTest`
-- [ ] Add test verifying `OciComputeMetadataAdapter` implements `ComputeMetadataAdapter`
-- [ ] Add test verifying `OciConfig` implements `CloudConfig`
-- [ ] Ensure all existing OCI tests continue to pass
+- [x] Update existing `OciObjectStorageClientTest` → `OciObjectStorageAdapterTest`
+- [x] Add test verifying `OciObjectStorageAdapter` implements `CloudStorageAdapter`
+- [x] Update existing `OciComputeClientTest` → `OciComputeMetadataAdapterTest`
+- [x] Add test verifying `OciComputeMetadataAdapter` implements `ComputeMetadataAdapter`
+- [x] Add test verifying `OciConfig` implements `CloudConfig`
+- [x] Ensure all existing OCI tests continue to pass
 
 **Acceptance Criteria:**
 - No regression in OCI adapter functionality
@@ -422,24 +422,24 @@
 ---
 
 ### 6.7 Add Integration Tests with LocalStack
-- [ ] Add LocalStack Testcontainers dependency to pom.xml
-- [ ] Create `LocalStackContainerBase` test utility
-  - [ ] Configure for S3, EC2, CloudWatch, CloudWatch Logs services
-  - [ ] Add helper methods for creating test buckets/resources
-  - [ ] Add proper cleanup in @AfterAll
-- [ ] Add `AwsS3StorageAdapterIT`
-  - [ ] Test listing runbooks from real S3 bucket
-  - [ ] Test reading runbook content
-  - [ ] Test handling non-existent objects
-- [ ] Add `AwsEc2MetadataAdapterIT`
+- [x] Add LocalStack Testcontainers dependency to pom.xml
+- [x] Create `LocalStackContainerBase` test utility
+  - [x] Configure for S3, EC2, CloudWatch, CloudWatch Logs services
+  - [x] Add helper methods for creating test buckets/resources
+  - [x] Add proper cleanup in @AfterAll
+- [x] Add `AwsS3StorageAdapterIT`
+  - [x] Test listing runbooks from real S3 bucket
+  - [x] Test reading runbook content
+  - [x] Test handling non-existent objects
+- [ ] Add `AwsEc2MetadataAdapterIT` (Skipped - LocalStack has limited EC2 support)
   - [ ] Test fetching instance metadata
   - [ ] Test handling non-existent instances
-- [ ] Add `AwsCloudWatchMetricsAdapterIT`
-  - [ ] Test fetching metrics from CloudWatch
-  - [ ] Test with custom namespaces and dimensions
-- [ ] Add `AwsCloudWatchLogsAdapterIT`
-  - [ ] Test fetching logs from CloudWatch Logs
-  - [ ] Test log group query handling
+- [x] Add `AwsCloudWatchMetricsAdapterIT`
+  - [x] Test fetching metrics from CloudWatch
+  - [x] Test with custom namespaces and dimensions
+- [x] Add `AwsCloudWatchLogsAdapterIT`
+  - [x] Test fetching logs from CloudWatch Logs
+  - [x] Test log group query handling
 
 **Acceptance Criteria:**
 - Integration tests run against LocalStack containers
@@ -454,11 +454,11 @@
 ---
 
 ### 6.8 Add Configuration Integration Tests
-- [ ] Add `CloudConfigurationIT`
-  - [ ] Test application starts with AWS configuration
-  - [ ] Test application starts with OCI configuration (default)
-  - [ ] Test switching providers via configuration reload
-  - [ ] Test invalid configuration fails fast with clear error
+- [x] Add `CloudConfigurationIT`
+  - [x] Test application starts with AWS configuration
+  - [x] Test application starts with OCI configuration (default)
+  - [x] Test switching providers via configuration reload
+  - [x] Test invalid configuration fails fast with clear error
 
 **Acceptance Criteria:**
 - Full application context tested
@@ -473,9 +473,9 @@
 ## 7. Documentation
 
 ### 7.1 Update ARCHITECTURE.md
-- [ ] Add section on cloud provider abstraction
-- [ ] Document supported providers (OCI, AWS)
-- [ ] Add mermaid diagram showing adapter structure
+- [x] Add section on cloud provider abstraction
+- [x] Document supported providers (OCI, AWS)
+- [x] Add mermaid diagram showing adapter structure
 
 **Acceptance Criteria:**
 - Documentation explains how to configure different providers
@@ -488,10 +488,10 @@
 ---
 
 ### 7.2 Update README.md
-- [ ] Add cloud provider configuration section
-- [ ] Document AWS credentials setup
-- [ ] Document OCI credentials setup (existing)
-- [ ] Add troubleshooting section for common issues
+- [x] Add cloud provider configuration section
+- [x] Document AWS credentials setup
+- [x] Document OCI credentials setup (existing)
+- [x] Add troubleshooting section for common issues
 
 **Acceptance Criteria:**
 - New users can configure either provider

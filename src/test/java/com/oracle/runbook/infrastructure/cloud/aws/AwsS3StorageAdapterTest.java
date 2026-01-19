@@ -152,4 +152,50 @@ class AwsS3StorageAdapterTest {
       assertThat(content).as("Should return empty for non-existent object").isEmpty();
     }
   }
+
+  @Nested
+  @DisplayName("Exception handling")
+  class ExceptionHandlingTests {
+
+    @Test
+    @DisplayName("Should wrap S3Exception in RuntimeException")
+    void shouldWrapS3ExceptionInRuntimeException() {
+      S3AsyncClient mockClient = mock(S3AsyncClient.class);
+
+      CompletableFuture<ResponseBytes<GetObjectResponse>> failedFuture = new CompletableFuture<>();
+      failedFuture.completeExceptionally(
+          software.amazon.awssdk.services.s3.model.S3Exception.builder()
+              .message("Access Denied")
+              .statusCode(403)
+              .build());
+
+      when(mockClient.getObject(any(GetObjectRequest.class), any(AsyncResponseTransformer.class)))
+          .thenReturn(failedFuture);
+
+      AwsS3StorageAdapter adapter = new AwsS3StorageAdapter(mockClient);
+
+      assertThatThrownBy(() -> adapter.getRunbookContent("test-bucket", "protected.md").get())
+          .hasCauseInstanceOf(RuntimeException.class)
+          .hasMessageContaining("protected.md");
+    }
+
+    @Test
+    @DisplayName("Should return empty list when contents is null in response")
+    void shouldHandleNullContentsInListResponse() throws Exception {
+      S3AsyncClient mockClient = mock(S3AsyncClient.class);
+
+      // When AWS SDK has null contents, it internally converts to empty list
+      ListObjectsV2Response mockResponse =
+          ListObjectsV2Response.builder().build(); // No contents set
+
+      when(mockClient.listObjectsV2(any(ListObjectsV2Request.class)))
+          .thenReturn(CompletableFuture.completedFuture(mockResponse));
+
+      AwsS3StorageAdapter adapter = new AwsS3StorageAdapter(mockClient);
+
+      List<String> runbooks = adapter.listRunbooks("test-bucket").get();
+
+      assertThat(runbooks).as("Should return empty list when no contents").isEmpty();
+    }
+  }
 }

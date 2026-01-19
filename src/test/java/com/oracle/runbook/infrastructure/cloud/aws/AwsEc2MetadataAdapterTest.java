@@ -122,4 +122,88 @@ class AwsEc2MetadataAdapterTest {
       assertThat(result).isEmpty();
     }
   }
+
+  @Nested
+  @DisplayName("Exception handling")
+  class ExceptionHandlingTests {
+
+    @Test
+    @DisplayName("Should wrap Ec2Exception in CompletionException")
+    void shouldWrapEc2ExceptionInCompletionException() {
+      Ec2AsyncClient mockClient = mock(Ec2AsyncClient.class);
+
+      // Ec2Exception.builder() returns Ec2Exception for EC2 service errors
+      CompletableFuture<DescribeInstancesResponse> failedFuture = new CompletableFuture<>();
+      failedFuture.completeExceptionally(
+          software.amazon.awssdk.services.ec2.model.Ec2Exception.builder()
+              .message("Request has expired")
+              .statusCode(400)
+              .awsErrorDetails(
+                  software.amazon.awssdk.awscore.exception.AwsErrorDetails.builder()
+                      .errorCode("RequestExpired")
+                      .errorMessage("Request has expired")
+                      .build())
+              .build());
+
+      when(mockClient.describeInstances(any(DescribeInstancesRequest.class)))
+          .thenReturn(failedFuture);
+
+      AwsEc2MetadataAdapter adapter = new AwsEc2MetadataAdapter(mockClient);
+
+      // Following aws-sdk-java pattern: async exceptions wrapped in CompletionException
+      assertThatThrownBy(() -> adapter.getInstance("i-expired").get())
+          .isInstanceOf(java.util.concurrent.ExecutionException.class)
+          .hasRootCauseInstanceOf(software.amazon.awssdk.services.ec2.model.Ec2Exception.class)
+          .hasMessageContaining("Request has expired");
+    }
+
+    @Test
+    @DisplayName("Should handle empty reservations list gracefully")
+    void shouldHandleEmptyReservationsGracefully() throws Exception {
+      Ec2AsyncClient mockClient = mock(Ec2AsyncClient.class);
+
+      // Response with no reservations (null or empty handled same way)
+      DescribeInstancesResponse mockResponse =
+          DescribeInstancesResponse.builder().build(); // No reservations set
+
+      when(mockClient.describeInstances(any(DescribeInstancesRequest.class)))
+          .thenReturn(CompletableFuture.completedFuture(mockResponse));
+
+      AwsEc2MetadataAdapter adapter = new AwsEc2MetadataAdapter(mockClient);
+
+      Optional<ResourceMetadata> result = adapter.getInstance("i-nonexistent").get();
+
+      assertThat(result).as("Should return empty when no reservations").isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should handle null tags in instance gracefully")
+    void shouldHandleNullTagsGracefully() throws Exception {
+      Ec2AsyncClient mockClient = mock(Ec2AsyncClient.class);
+
+      // Instance with no tags set (null)
+      Instance mockInstance =
+          Instance.builder()
+              .instanceId("i-notags")
+              .instanceType("t3.micro")
+              // No tags set - should handle null gracefully
+              .build();
+
+      DescribeInstancesResponse mockResponse =
+          DescribeInstancesResponse.builder()
+              .reservations(Reservation.builder().instances(mockInstance).build())
+              .build();
+
+      when(mockClient.describeInstances(any(DescribeInstancesRequest.class)))
+          .thenReturn(CompletableFuture.completedFuture(mockResponse));
+
+      AwsEc2MetadataAdapter adapter = new AwsEc2MetadataAdapter(mockClient);
+
+      Optional<ResourceMetadata> result = adapter.getInstance("i-notags").get();
+
+      assertThat(result).isPresent();
+      assertThat(result.get().displayName()).isNull(); // No Name tag
+      assertThat(result.get().freeformTags()).isEmpty(); // No freeform tags
+    }
+  }
 }

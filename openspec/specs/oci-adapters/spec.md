@@ -1,7 +1,9 @@
 # oci-adapters Specification
 
 ## Purpose
-TBD - created by archiving change implement-oci-sdk-integrations. Update Purpose after archive.
+
+Defines the OCI-specific adapter implementations that integrate with Oracle Cloud Infrastructure services. These adapters implement cloud-agnostic interfaces from the `infrastructure.cloud` package, enabling multi-cloud support.
+
 ## Requirements
 ### Requirement: OCI Monitoring Adapter
 
@@ -55,53 +57,65 @@ The system SHALL provide an `OciLoggingAdapter` class that implements the `LogSo
 
 ---
 
-### Requirement: OCI Compute Client
+### Requirement: OCI Compute Metadata Adapter
 
-The system SHALL provide an `OciComputeClient` class for retrieving compute instance metadata.
+The system SHALL provide an `OciComputeMetadataAdapter` class that implements the `ComputeMetadataAdapter` interface for retrieving compute instance metadata from OCI.
 
 #### Scenario: Get instance metadata
 
 - **GIVEN** a valid compute instance OCID
 - **WHEN** `getInstance(instanceOcid)` is called
-- **THEN** the client returns a `ResourceMetadata` object
+- **THEN** the adapter returns a `ResourceMetadata` object
 - **AND** the object contains `ocid`, `displayName`, `shape`, `availabilityDomain`, tags
 
 #### Scenario: Handle instance not found
 
 - **GIVEN** an OCID for a non-existent or terminated instance
 - **WHEN** `getInstance()` is called
-- **THEN** the client returns `Optional.empty()` (not throw exception)
+- **THEN** the adapter returns `Optional.empty()` (not throw exception)
+
+#### Scenario: Report correct provider type
+
+- **GIVEN** an `OciComputeMetadataAdapter` instance
+- **WHEN** `providerType()` is called
+- **THEN** the adapter returns the string `"oci"`
 
 ---
 
-### Requirement: OCI Object Storage Client
+### Requirement: OCI Object Storage Adapter
 
-The system SHALL provide an `OciObjectStorageClient` class for reading runbook files from OCI Object Storage.
+The system SHALL provide an `OciObjectStorageAdapter` class that implements the `CloudStorageAdapter` interface for reading runbook files from OCI Object Storage.
 
 #### Scenario: List runbook files in bucket
 
 - **GIVEN** a namespace and bucket name containing markdown files
 - **WHEN** `listRunbooks(namespace, bucketName)` is called
-- **THEN** the client returns a list of object names
+- **THEN** the adapter returns a list of object names
 - **AND** only includes files ending with `.md` extension
 
 #### Scenario: Read runbook content
 
 - **GIVEN** a valid object path to a markdown file
 - **WHEN** `getRunbookContent(namespace, bucket, objectName)` is called
-- **THEN** the client returns the file content as a UTF-8 String
+- **THEN** the adapter returns the file content as a UTF-8 String
 
 #### Scenario: Handle missing runbook file
 
 - **GIVEN** an object name that does not exist in the bucket
 - **WHEN** `getRunbookContent()` is called
-- **THEN** the client returns `Optional.empty()`
+- **THEN** the adapter returns `Optional.empty()`
+
+#### Scenario: Report correct provider type
+
+- **GIVEN** an `OciObjectStorageAdapter` instance
+- **WHEN** `providerType()` is called
+- **THEN** the adapter returns the string `"oci"`
 
 ---
 
 ### Requirement: OCI Configuration Model
 
-The system SHALL provide an `OciConfig` record for OCI connection settings.
+The system SHALL provide an `OciConfig` record that implements the `CloudConfig` interface for OCI connection settings.
 
 #### Scenario: Create config with required fields
 
@@ -114,6 +128,12 @@ The system SHALL provide an `OciConfig` record for OCI connection settings.
 
 - **WHEN** attempting to create `OciConfig` with null compartmentId
 - **THEN** the constructor throws `NullPointerException`
+
+#### Scenario: Report correct provider
+
+- **GIVEN** an `OciConfig` instance
+- **WHEN** `provider()` is called
+- **THEN** it returns the string `"oci"`
 
 ---
 

@@ -79,6 +79,118 @@ See [E2E Testing Guidelines](docs/E2E_TESTING_GUIDELINES.md) for detailed testin
 - [E2E Testing Guidelines](docs/E2E_TESTING_GUIDELINES.md) - Container-based E2E testing with Testcontainers
 - [Contributing](CONTRIBUTING.md) - How to contribute
 
+## Cloud Provider Configuration
+
+The application supports both **AWS** and **OCI (Oracle Cloud Infrastructure)** as deployment targets. Select your provider using the `cloud.provider` configuration property.
+
+### AWS Setup
+
+**Prerequisites:**
+- AWS Account with IAM permissions for S3, EC2, CloudWatch, and CloudWatch Logs
+- AWS credentials configured via one of the supported methods
+
+**Configuration:**
+
+```yaml
+# application.yaml
+cloud:
+  provider: aws
+  aws:
+    region: us-east-1
+    storage:
+      bucket: your-runbook-bucket-name
+```
+
+**Credential Setup:**
+
+The application uses the [AWS Default Credential Provider Chain](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials-chain.html). Configure credentials using one of these methods:
+
+1. **Environment Variables** (recommended for containers):
+   ```bash
+   export AWS_ACCESS_KEY_ID=your-access-key
+   export AWS_SECRET_ACCESS_KEY=your-secret-key
+   export AWS_REGION=us-east-1
+   ```
+
+2. **AWS Credentials File** (recommended for local development):
+   ```ini
+   # ~/.aws/credentials
+   [default]
+   aws_access_key_id = your-access-key
+   aws_secret_access_key = your-secret-key
+   ```
+
+3. **IAM Instance Role** (recommended for EC2/ECS/EKS):
+   - No explicit configuration needed
+   - Instance profile credentials are automatically detected
+
+4. **Web Identity Token (IRSA)** for EKS:
+   - Configured automatically via EKS Pod Identity or IRSA
+
+### OCI Setup
+
+**Prerequisites:**
+- OCI Account with permissions for Object Storage, Compute, Monitoring, and Logging
+- OCI CLI configured or API key setup
+
+**Configuration:**
+
+```yaml
+# application.yaml
+cloud:
+  provider: oci
+  oci:
+    region: us-ashburn-1
+    compartmentId: ocid1.compartment.oc1..example
+    storage:
+      namespace: your-namespace
+      bucket: your-runbook-bucket-name
+```
+
+**Credential Setup:**
+
+Configure OCI authentication using one of these methods:
+
+1. **OCI Config File** (recommended for local development):
+   ```ini
+   # ~/.oci/config
+   [DEFAULT]
+   user=ocid1.user.oc1..example
+   fingerprint=xx:xx:xx:xx...
+   tenancy=ocid1.tenancy.oc1..example
+   region=us-ashburn-1
+   key_file=~/.oci/oci_api_key.pem
+   ```
+
+2. **Instance Principal** (recommended for OCI Compute):
+   - No explicit configuration needed
+   - Instance principal is automatically detected when running on OCI
+
+3. **Resource Principal** (for OCI Functions):
+   - Configured via function environment
+
+### Troubleshooting
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| `SdkClientException: Unable to load credentials` | AWS credentials not configured | Configure credentials using one of the methods above |
+| `BmcException: Could not find config file` | OCI config file missing | Create `~/.oci/config` or use instance principal |
+| `NoSuchBucketException` | S3 bucket doesn't exist | Create the bucket or verify bucket name |
+| `BucketNotFound` | OCI bucket doesn't exist | Create the bucket in OCI Console |
+| `AccessDeniedException` | Insufficient IAM permissions | Grant required permissions to IAM user/role |
+| `ConnectionTimeoutException` | Network connectivity issue | Verify network access to cloud provider |
+
+**Logging:**
+
+Enable debug logging for cloud adapter troubleshooting:
+
+```yaml
+# application.yaml
+logging:
+  levels:
+    com.oracle.runbook.infrastructure.cloud: DEBUG
+```
+
 ## License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.

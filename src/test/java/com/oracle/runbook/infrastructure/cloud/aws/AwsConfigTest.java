@@ -108,4 +108,78 @@ class AwsConfigTest {
       assertThat(config.accessKeyId()).isEqualTo("AKIAIOSFODNN7EXAMPLE");
     }
   }
+
+  @Nested
+  @DisplayName("Environment variable parsing")
+  class EnvironmentVariableTests {
+
+    @Test
+    @DisplayName("fromEnvironment returns valid config when all required env vars are set")
+    void fromEnvironment_ReturnsConfig_WhenAllRequiredVarsSet() {
+      java.util.Map<String, String> envVars = new java.util.HashMap<>();
+      envVars.put("AWS_REGION", "us-east-1");
+      envVars.put("AWS_S3_BUCKET", "test-runbooks");
+      envVars.put("AWS_ACCESS_KEY_ID", "AKIAIOSFODNN7EXAMPLE");
+      envVars.put("AWS_SECRET_ACCESS_KEY", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY");
+
+      java.util.Optional<AwsConfig> result = AwsConfig.fromEnvironment(envVars::get);
+
+      assertThat(result).as("Config should be present when all vars are set").isPresent();
+      AwsConfig config = result.get();
+      assertThat(config.region()).isEqualTo("us-east-1");
+      assertThat(config.bucket()).isEqualTo("test-runbooks");
+      assertThat(config.accessKeyId()).isEqualTo("AKIAIOSFODNN7EXAMPLE");
+      assertThat(config.secretAccessKey()).isEqualTo("wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY");
+    }
+
+    @Test
+    @DisplayName(
+        "fromEnvironment returns config with minimal required env vars (uses default credential chain)")
+    void fromEnvironment_ReturnsConfig_WithMinimalRequiredVars() {
+      java.util.Map<String, String> envVars = new java.util.HashMap<>();
+      envVars.put("AWS_REGION", "eu-west-1");
+      envVars.put("AWS_S3_BUCKET", "my-bucket");
+
+      java.util.Optional<AwsConfig> result = AwsConfig.fromEnvironment(envVars::get);
+
+      assertThat(result).as("Config should be present with just region and bucket").isPresent();
+      AwsConfig config = result.get();
+      assertThat(config.region()).isEqualTo("eu-west-1");
+      assertThat(config.bucket()).isEqualTo("my-bucket");
+      assertThat(config.accessKeyId()).as("Should use default credential chain").isNull();
+      assertThat(config.secretAccessKey()).as("Should use default credential chain").isNull();
+    }
+
+    @Test
+    @DisplayName("fromEnvironment returns empty when region is missing")
+    void fromEnvironment_ReturnsEmpty_WhenRegionMissing() {
+      java.util.Map<String, String> envVars = new java.util.HashMap<>();
+      envVars.put("AWS_S3_BUCKET", "test-bucket");
+
+      java.util.Optional<AwsConfig> result = AwsConfig.fromEnvironment(envVars::get);
+
+      assertThat(result).as("Config should be empty when AWS_REGION is missing").isEmpty();
+    }
+
+    @Test
+    @DisplayName("fromEnvironment returns empty when bucket is missing")
+    void fromEnvironment_ReturnsEmpty_WhenBucketMissing() {
+      java.util.Map<String, String> envVars = new java.util.HashMap<>();
+      envVars.put("AWS_REGION", "us-east-1");
+
+      java.util.Optional<AwsConfig> result = AwsConfig.fromEnvironment(envVars::get);
+
+      assertThat(result).as("Config should be empty when AWS_S3_BUCKET is missing").isEmpty();
+    }
+
+    @Test
+    @DisplayName("fromEnvironment returns empty when no vars are set")
+    void fromEnvironment_ReturnsEmpty_WhenNoVarsSet() {
+      java.util.Map<String, String> emptyEnv = java.util.Map.of();
+
+      java.util.Optional<AwsConfig> result = AwsConfig.fromEnvironment(emptyEnv::get);
+
+      assertThat(result).as("Config should be empty when no env vars are set").isEmpty();
+    }
+  }
 }

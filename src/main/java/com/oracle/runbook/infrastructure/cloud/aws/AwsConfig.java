@@ -43,4 +43,55 @@ public record AwsConfig(String region, String bucket, String accessKeyId, String
   public String provider() {
     return "aws";
   }
+
+  /** Environment variable names for AWS configuration. */
+  public static final String ENV_REGION = "AWS_REGION";
+
+  public static final String ENV_S3_BUCKET = "AWS_S3_BUCKET";
+  public static final String ENV_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID";
+  public static final String ENV_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
+
+  /**
+   * Creates an AwsConfig from environment variables if all required variables are present.
+   *
+   * <p>Requires the following environment variables:
+   *
+   * <ul>
+   *   <li>{@code AWS_REGION} - AWS region (required)
+   *   <li>{@code AWS_S3_BUCKET} - S3 bucket for runbook storage (required)
+   *   <li>{@code AWS_ACCESS_KEY_ID} - AWS access key ID (optional, uses default chain if null)
+   *   <li>{@code AWS_SECRET_ACCESS_KEY} - AWS secret access key (optional, uses default chain if
+   *       null)
+   * </ul>
+   *
+   * @param envLookup function to look up environment variable values (e.g., System::getenv)
+   * @return Optional containing AwsConfig if required vars present, empty otherwise
+   */
+  public static java.util.Optional<AwsConfig> fromEnvironment(
+      java.util.function.Function<String, String> envLookup) {
+    String region = envLookup.apply(ENV_REGION);
+    String bucket = envLookup.apply(ENV_S3_BUCKET);
+    String accessKeyId = envLookup.apply(ENV_ACCESS_KEY_ID);
+    String secretAccessKey = envLookup.apply(ENV_SECRET_ACCESS_KEY);
+
+    // Required fields must be present
+    if (isBlank(region) || isBlank(bucket)) {
+      return java.util.Optional.empty();
+    }
+
+    return java.util.Optional.of(new AwsConfig(region, bucket, accessKeyId, secretAccessKey));
+  }
+
+  /**
+   * Creates an AwsConfig from system environment variables.
+   *
+   * @return Optional containing AwsConfig if required vars present, empty otherwise
+   */
+  public static java.util.Optional<AwsConfig> fromEnvironment() {
+    return fromEnvironment(System::getenv);
+  }
+
+  private static boolean isBlank(String s) {
+    return s == null || s.isBlank();
+  }
 }

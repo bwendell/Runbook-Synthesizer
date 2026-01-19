@@ -112,4 +112,80 @@ class AwsCloudWatchMetricsAdapterTest {
       assertThat(metrics).isEmpty();
     }
   }
+
+  @Nested
+  @DisplayName("Exception handling")
+  class ExceptionHandlingTests {
+
+    @Test
+    @DisplayName("Should wrap CloudWatchException in CompletionException")
+    void shouldWrapCloudWatchExceptionInCompletionException() {
+      CloudWatchAsyncClient mockClient = mock(CloudWatchAsyncClient.class);
+
+      CompletableFuture<GetMetricStatisticsResponse> failedFuture = new CompletableFuture<>();
+      failedFuture.completeExceptionally(
+          software.amazon.awssdk.services.cloudwatch.model.CloudWatchException.builder()
+              .message("Access Denied")
+              .statusCode(403)
+              .awsErrorDetails(
+                  software.amazon.awssdk.awscore.exception.AwsErrorDetails.builder()
+                      .errorCode("AccessDenied")
+                      .errorMessage("User is not authorized")
+                      .build())
+              .build());
+
+      when(mockClient.getMetricStatistics(any(GetMetricStatisticsRequest.class)))
+          .thenReturn(failedFuture);
+
+      AwsCloudWatchMetricsAdapter adapter = new AwsCloudWatchMetricsAdapter(mockClient);
+
+      // Following aws-sdk-java pattern: async exceptions wrapped in CompletionException
+      assertThatThrownBy(() -> adapter.fetchMetrics("i-test", Duration.ofHours(1)).get())
+          .isInstanceOf(java.util.concurrent.ExecutionException.class)
+          .hasRootCauseInstanceOf(
+              software.amazon.awssdk.services.cloudwatch.model.CloudWatchException.class);
+    }
+
+    @Test
+    @DisplayName("Should handle null datapoints in response gracefully")
+    void shouldHandleNullDatapointsGracefully() throws Exception {
+      CloudWatchAsyncClient mockClient = mock(CloudWatchAsyncClient.class);
+
+      // Response with no datapoints set (null internally)
+      GetMetricStatisticsResponse mockResponse =
+          GetMetricStatisticsResponse.builder().build(); // No datapoints
+
+      when(mockClient.getMetricStatistics(any(GetMetricStatisticsRequest.class)))
+          .thenReturn(CompletableFuture.completedFuture(mockResponse));
+
+      AwsCloudWatchMetricsAdapter adapter = new AwsCloudWatchMetricsAdapter(mockClient);
+
+      List<MetricSnapshot> metrics = adapter.fetchMetrics("i-test", Duration.ofHours(1)).get();
+
+      assertThat(metrics).as("Should return empty list when no datapoints").isEmpty();
+    }
+
+    @Test
+    @DisplayName("Should handle null values in datapoint gracefully")
+    void shouldHandleNullValuesInDatapointGracefully() throws Exception {
+      CloudWatchAsyncClient mockClient = mock(CloudWatchAsyncClient.class);
+
+      // Datapoint with null average and unit (edge case)
+      GetMetricStatisticsResponse mockResponse =
+          GetMetricStatisticsResponse.builder()
+              .datapoints(Datapoint.builder().timestamp(Instant.now()).build()) // No average/unit
+              .build();
+
+      when(mockClient.getMetricStatistics(any(GetMetricStatisticsRequest.class)))
+          .thenReturn(CompletableFuture.completedFuture(mockResponse));
+
+      AwsCloudWatchMetricsAdapter adapter = new AwsCloudWatchMetricsAdapter(mockClient);
+
+      List<MetricSnapshot> metrics = adapter.fetchMetrics("i-test", Duration.ofHours(1)).get();
+
+      assertThat(metrics).hasSize(1);
+      assertThat(metrics.get(0).value()).isEqualTo(0.0); // Null defaults to 0.0
+      assertThat(metrics.get(0).unit()).isEqualTo("None"); // Null defaults to "None"
+    }
+  }
 }
