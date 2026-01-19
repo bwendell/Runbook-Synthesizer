@@ -22,7 +22,7 @@ class AwsConfigTest {
     @Test
     @DisplayName("AwsConfig should implement CloudConfig interface")
     void shouldImplementCloudConfig() {
-      AwsConfig config = new AwsConfig("us-east-1", "test-bucket", null, null);
+      AwsConfig config = new AwsConfig("us-west-2", "test-bucket", null, null);
 
       assertThat(config)
           .as("AwsConfig must implement CloudConfig for polymorphic cloud configuration")
@@ -32,7 +32,7 @@ class AwsConfigTest {
     @Test
     @DisplayName("provider() should return 'aws'")
     void providerShouldReturnAws() {
-      AwsConfig config = new AwsConfig("us-east-1", "test-bucket", null, null);
+      AwsConfig config = new AwsConfig("us-west-2", "test-bucket", null, null);
 
       assertThat(config.provider())
           .as("provider() must return 'aws' for AWS configuration")
@@ -65,7 +65,7 @@ class AwsConfigTest {
     @Test
     @DisplayName("AwsConfig should reject null bucket")
     void shouldRejectNullBucket() {
-      assertThatThrownBy(() -> new AwsConfig("us-east-1", null, null, null))
+      assertThatThrownBy(() -> new AwsConfig("us-west-2", null, null, null))
           .isInstanceOf(NullPointerException.class)
           .hasMessageContaining("bucket");
     }
@@ -73,7 +73,7 @@ class AwsConfigTest {
     @Test
     @DisplayName("AwsConfig should allow null accessKeyId for default credential chain")
     void shouldAllowNullAccessKeyId() {
-      AwsConfig config = new AwsConfig("us-east-1", "test-bucket", null, null);
+      AwsConfig config = new AwsConfig("us-west-2", "test-bucket", null, null);
 
       assertThat(config.accessKeyId()).isNull();
     }
@@ -81,7 +81,7 @@ class AwsConfigTest {
     @Test
     @DisplayName("AwsConfig should allow null secretAccessKey for default credential chain")
     void shouldAllowNullSecretAccessKey() {
-      AwsConfig config = new AwsConfig("us-east-1", "test-bucket", "AKIAIOSFODNN7EXAMPLE", null);
+      AwsConfig config = new AwsConfig("us-west-2", "test-bucket", "AKIAIOSFODNN7EXAMPLE", null);
 
       assertThat(config.secretAccessKey()).isNull();
     }
@@ -94,7 +94,7 @@ class AwsConfigTest {
     @Test
     @DisplayName("bucket() should return configured bucket")
     void bucketShouldReturnConfiguredBucket() {
-      AwsConfig config = new AwsConfig("us-east-1", "my-runbooks-bucket", null, null);
+      AwsConfig config = new AwsConfig("us-west-2", "my-runbooks-bucket", null, null);
 
       assertThat(config.bucket()).isEqualTo("my-runbooks-bucket");
     }
@@ -103,7 +103,7 @@ class AwsConfigTest {
     @DisplayName("accessKeyId() should return configured access key")
     void accessKeyIdShouldReturnConfiguredValue() {
       AwsConfig config =
-          new AwsConfig("us-east-1", "test-bucket", "AKIAIOSFODNN7EXAMPLE", "secretkey123");
+          new AwsConfig("us-west-2", "test-bucket", "AKIAIOSFODNN7EXAMPLE", "secretkey123");
 
       assertThat(config.accessKeyId()).isEqualTo("AKIAIOSFODNN7EXAMPLE");
     }
@@ -117,7 +117,7 @@ class AwsConfigTest {
     @DisplayName("fromEnvironment returns valid config when all required env vars are set")
     void fromEnvironment_ReturnsConfig_WhenAllRequiredVarsSet() {
       java.util.Map<String, String> envVars = new java.util.HashMap<>();
-      envVars.put("AWS_REGION", "us-east-1");
+      envVars.put("AWS_REGION", "us-west-2");
       envVars.put("AWS_S3_BUCKET", "test-runbooks");
       envVars.put("AWS_ACCESS_KEY_ID", "AKIAIOSFODNN7EXAMPLE");
       envVars.put("AWS_SECRET_ACCESS_KEY", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY");
@@ -126,7 +126,7 @@ class AwsConfigTest {
 
       assertThat(result).as("Config should be present when all vars are set").isPresent();
       AwsConfig config = result.get();
-      assertThat(config.region()).isEqualTo("us-east-1");
+      assertThat(config.region()).isEqualTo("us-west-2");
       assertThat(config.bucket()).isEqualTo("test-runbooks");
       assertThat(config.accessKeyId()).isEqualTo("AKIAIOSFODNN7EXAMPLE");
       assertThat(config.secretAccessKey()).isEqualTo("wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY");
@@ -165,7 +165,7 @@ class AwsConfigTest {
     @DisplayName("fromEnvironment returns empty when bucket is missing")
     void fromEnvironment_ReturnsEmpty_WhenBucketMissing() {
       java.util.Map<String, String> envVars = new java.util.HashMap<>();
-      envVars.put("AWS_REGION", "us-east-1");
+      envVars.put("AWS_REGION", "us-west-2");
 
       java.util.Optional<AwsConfig> result = AwsConfig.fromEnvironment(envVars::get);
 

@@ -83,7 +83,7 @@ class AwsEc2MetadataAdapterTest {
               .instanceId("i-1234567890abcdef0")
               .tags(Tag.builder().key("Name").value("test-instance").build())
               .instanceType("t3.medium")
-              .placement(Placement.builder().availabilityZone("us-east-1a").build())
+              .placement(Placement.builder().availabilityZone("us-west-2a").build())
               .build();
 
       DescribeInstancesResponse mockResponse =
@@ -101,7 +101,7 @@ class AwsEc2MetadataAdapterTest {
       assertThat(result).isPresent();
       assertThat(result.get().ocid()).isEqualTo("i-1234567890abcdef0");
       assertThat(result.get().shape()).isEqualTo("t3.medium");
-      assertThat(result.get().availabilityDomain()).isEqualTo("us-east-1a");
+      assertThat(result.get().availabilityDomain()).isEqualTo("us-west-2a");
     }
 
     @Test

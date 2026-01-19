@@ -96,7 +96,7 @@ The application supports both **AWS** and **OCI (Oracle Cloud Infrastructure)** 
 cloud:
   provider: aws
   aws:
-    region: us-east-1
+    region: us-west-2
     storage:
       bucket: your-runbook-bucket-name
 ```
@@ -109,7 +109,7 @@ The application uses the [AWS Default Credential Provider Chain](https://docs.aw
    ```bash
    export AWS_ACCESS_KEY_ID=your-access-key
    export AWS_SECRET_ACCESS_KEY=your-secret-key
-   export AWS_REGION=us-east-1
+   export AWS_REGION=us-west-2
    ```
 
 2. **AWS Credentials File** (recommended for local development):

@@ -61,7 +61,7 @@ cloud:
   provider: aws  # or "oci"
   
   aws:
-    region: us-east-1
+    region: us-west-2
     storage:
       bucket: runbook-synthesizer-runbooks
     # Uses AWS default credential chain

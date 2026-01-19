@@ -20,7 +20,7 @@ import java.util.Objects;
  *   <li>Web identity token (EKS IRSA)
  * </ol>
  *
- * @param region the AWS region identifier (required, e.g., "us-east-1")
+ * @param region the AWS region identifier (required, e.g., "us-west-2")
  * @param bucket the S3 bucket name for runbook storage (required)
  * @param accessKeyId the AWS access key ID (optional, uses default chain if null)
  * @param secretAccessKey the AWS secret access key (optional, uses default chain if null)

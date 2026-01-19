@@ -33,3 +33,10 @@ output/
 # Skill package outputs
 *.skill
 dist/
+
+# CDK Infrastructure
+infra/node_modules/
+infra/cdk.out/
+infra/dist/
+infra/*.js
+infra/*.d.ts

@@ -6,10 +6,10 @@
 - `npm run cdk:synth` produces valid CloudFormation template
 
 **Tasks:**
-- [ ] 1.1 Create `infra/` directory with `package.json` and `cdk.json`
-- [ ] 1.2 Create `tsconfig.json` for TypeScript compilation
-- [ ] 1.3 Create CDK app entry point (`bin/e2e-infra.ts`)
-- [ ] 1.4 Create main stack (`lib/e2e-test-stack.ts`)
+- [X] 1.1 Create `infra/` directory with `package.json` and `cdk.json`
+- [X] 1.2 Create `tsconfig.json` for TypeScript compilation
+- [X] 1.3 Create CDK app entry point (`bin/e2e-infra.ts`)
+- [X] 1.4 Create main stack (`lib/e2e-test-stack.ts`)
 
 **Verification:**
 ```powershell
@@ -30,10 +30,10 @@ npm run cdk:synth
 - All resources tagged with `ManagedBy=runbook-synthesizer-e2e`
 
 **Tasks:**
-- [ ] 2.1 Create `S3Construct` for runbook bucket provisioning
-- [ ] 2.2 Create `CloudWatchLogsConstruct` for log group provisioning
-- [ ] 2.3 Create `CloudWatchMetricsConstruct` (placeholder for future alarms/dashboards)
-- [ ] 2.4 Add CDK outputs for resource identifiers (bucket name, log group ARN)
+- [X] 2.1 Create `S3Construct` for runbook bucket provisioning
+- [X] 2.2 Create `CloudWatchLogsConstruct` for log group provisioning
+- [X] 2.3 Create `CloudWatchMetricsConstruct` (placeholder for future alarms/dashboards)
+- [X] 2.4 Add CDK outputs for resource identifiers (bucket name, log group ARN)
 
 **Verification:**
 ```powershell
@@ -107,13 +107,13 @@ $env:AWS_E2E_ENABLED = "true"
 - All environment variables documented with defaults
 
 **Tasks:**
-- [ ] 5.1 Update `AWS_FREE_TIER_TESTING_GUIDE.md` with CDK automation section
-- [ ] 5.2 Document CDK deploy/destroy commands
-- [ ] 5.3 Document environment variable requirements
+- [X] 5.1 Update `AWS_FREE_TIER_TESTING_GUIDE.md` with CDK automation section
+- [X] 5.2 Document CDK deploy/destroy commands
+- [X] 5.3 Document environment variable requirements
 
 **Verification:**
-- [ ] Manual review: Guide contains complete CDK workflow
-- [ ] Manual review: Commands are copy-pasteable and work
+- [X] Manual review: Guide contains complete CDK workflow
+- [X] Manual review: Commands are copy-pasteable and work
 
 ---
 

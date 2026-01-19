@@ -24,8 +24,77 @@ This guide walks you through manually testing the Runbook-Synthesizer applicatio
 - Java 25+ installed locally
 - Maven 3.9+ installed locally
 - Git (to clone the repo)
+- **Node.js 18+** (for CDK automation)
 
 ---
+
+## Automated E2E Testing (CDK)
+
+> [!TIP]
+> **Recommended Approach**: Use AWS CDK to automatically provision and manage all required AWS resources. This eliminates manual setup errors and ensures consistent, repeatable deployments.
+
+### Benefits of CDK Automation
+
+| Feature | Manual Setup | CDK Automation |
+|---------|--------------|----------------|
+| **Consistency** | Error-prone | Repeatable |
+| **Cleanup** | Manual tracking | One command |
+| **Idempotency** | N/A | Built-in |
+| **Documentation** | Separate | Code as docs |
+
+### Quick Start
+
+```powershell
+# 1. Navigate to infra directory
+cd infra
+
+# 2. Install dependencies
+npm install
+
+# 3. Deploy all resources
+npm run cdk:deploy
+
+# 4. Run E2E tests
+cd ..
+.\mvnw.cmd verify -Pe2e-aws-real
+
+# 5. Cleanup when done (manual, for cost control)
+cd infra
+npm run cdk:destroy
+```
+
+### CDK Commands Reference
+
+| Command | Description |
+|---------|-------------|
+| `npm run cdk:synth` | Preview CloudFormation template (no deployment) |
+| `npm run cdk:deploy` | Deploy all resources to AWS |
+| `npm run cdk:diff` | Show changes between local and deployed |
+| `npm run cdk:destroy` | Remove all deployed resources |
+
+### Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AWS_E2E_ENABLED` | `false` | Set to `true` to enable real AWS tests |
+| `AWS_REGION` | `us-west-2` | AWS region for resources |
+| `AWS_E2E_BUCKET_NAME` | Auto-generated | Override bucket name if needed |
+
+### CDK-Provisioned Resources
+
+The CDK stack creates:
+
+1. **S3 Bucket**: `runbook-synthesizer-e2e-{accountId}`
+   - Used for runbook storage testing
+   - Auto-delete on stack destroy
+
+2. **CloudWatch Log Group**: `/runbook-synthesizer/e2e`
+   - 1-day retention (cost optimization)
+   - Used for log adapter testing
+
+All resources are tagged with:
+- `ManagedBy=runbook-synthesizer-e2e`
+- `Environment=test`
 
 ## Step 1: Install and Configure AWS CLI
 
@@ -69,7 +138,7 @@ aws --version
 aws configure
 # AWS Access Key ID: <paste-access-key-id>
 # AWS Secret Access Key: <paste-secret-access-key>
-# Default region name: us-east-1
+# Default region name: us-west-2
 # Default output format: json
 ```
 
@@ -88,10 +157,10 @@ aws sts get-caller-identity
 
 ```powershell
 # Use a globally unique bucket name
-aws s3 mb s3://runbook-synthesizer-<your-account-id>-test --region us-east-1
+aws s3 mb s3://runbook-synthesizer-<your-account-id>-test --region us-west-2
 
 # Example:
-aws s3 mb s3://runbook-synthesizer-123456789012-test --region us-east-1
+aws s3 mb s3://runbook-synthesizer-123456789012-test --region us-west-2
 ```
 
 ### 2.2 Upload Sample Runbooks
@@ -112,13 +181,13 @@ aws s3 ls s3://runbook-synthesizer-<your-account-id>-test/runbooks/
 ## Step 3: Create CloudWatch Log Group
 
 ```powershell
-aws logs create-log-group --log-group-name /runbook-synthesizer/test --region us-east-1
+aws logs create-log-group --log-group-name /runbook-synthesizer/test --region us-west-2
 
 # Create a log stream
 aws logs create-log-stream \
   --log-group-name /runbook-synthesizer/test \
   --log-stream-name application \
-  --region us-east-1
+  --region us-west-2
 ```
 
 ---
@@ -133,7 +202,7 @@ Create or update `src/main/resources/application-aws.yaml`:
 cloud:
   provider: aws
   aws:
-    region: us-east-1
+    region: us-west-2
     storage:
       bucket: runbook-synthesizer-<your-account-id>-test
 
@@ -154,7 +223,7 @@ server:
 
 ```powershell
 # Set AWS credentials (if not using aws configure)
-$env:AWS_REGION = "us-east-1"
+$env:AWS_REGION = "us-west-2"
 $env:AWS_ACCESS_KEY_ID = "<your-access-key>"
 $env:AWS_SECRET_ACCESS_KEY = "<your-secret-key>"
 
@@ -227,13 +296,13 @@ aws logs put-log-events `
   --log-group-name /runbook-synthesizer/test `
   --log-stream-name application `
   --log-events "timestamp=$(([DateTimeOffset]::Now.ToUnixTimeMilliseconds())),message='Test log event'" `
-  --region us-east-1
+  --region us-west-2
 
 # Read logs
 aws logs get-log-events `
   --log-group-name /runbook-synthesizer/test `
   --log-stream-name application `
-  --region us-east-1
+  --region us-west-2
 ```
 
 ### 6.4 Test RAG Pipeline (with Stub LLM)
@@ -268,7 +337,7 @@ aws s3 rb s3://runbook-synthesizer-<your-account-id>-test
 ### 7.2 Delete CloudWatch Log Group
 
 ```powershell
-aws logs delete-log-group --log-group-name /runbook-synthesizer/test --region us-east-1
+aws logs delete-log-group --log-group-name /runbook-synthesizer/test --region us-west-2
 ```
 
 ### 7.3 Delete IAM User (Optional)
@@ -338,8 +407,8 @@ aws cloudwatch put-metric-alarm `
   --comparison-operator GreaterThanThreshold `
   --dimensions Name=Currency,Value=USD `
   --evaluation-periods 1 `
-  --alarm-actions arn:aws:sns:us-east-1:<account-id>:billing-alerts `
-  --region us-east-1
+  --alarm-actions arn:aws:sns:us-west-2:<account-id>:billing-alerts `
+  --region us-west-2
 ```
 
 Or set this up in the **AWS Console** → **Billing** → **Billing Preferences** → **Alert preferences**.

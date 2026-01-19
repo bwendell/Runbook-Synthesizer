@@ -191,7 +191,7 @@ class AwsRagPipelineIT extends LocalStackContainerBase {
             "Memory utilization exceeded 90% on i-1234567890abcdef0",
             AlertSeverity.WARNING,
             "aws-cloudwatch",
-            Map.of("InstanceId", "i-1234567890abcdef0", "Region", "us-east-1"),
+            Map.of("InstanceId", "i-1234567890abcdef0", "Region", "us-west-2"),
             Map.of("AlarmName", "HighMemoryAlarm"),
             Instant.now(),
             "{}");
@@ -400,7 +400,7 @@ class AwsRagPipelineIT extends LocalStackContainerBase {
               "prod-server-01",
               "default",
               "t3.large",
-              "us-east-1a",
+              "us-west-2a",
               Map.of("environment", "production", "cloud", "aws"),
               Map.of());
 

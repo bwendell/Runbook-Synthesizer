@@ -145,7 +145,7 @@ The `CloudAdapterFactory` reads this configuration and instantiates the appropri
 cloud:
   provider: aws
   aws:
-    region: us-east-1
+    region: us-west-2
     storage:
       bucket: runbook-synthesizer-runbooks
 ```

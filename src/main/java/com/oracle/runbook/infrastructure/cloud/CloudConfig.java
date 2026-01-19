@@ -24,7 +24,7 @@ public interface CloudConfig {
   /**
    * Returns the cloud region identifier.
    *
-   * <p>Examples: "us-ashburn-1" (OCI), "us-east-1" (AWS)
+   * <p>Examples: "us-ashburn-1" (OCI), "us-west-2" (AWS)
    *
    * @return the region identifier, may be null if not configured
    */
