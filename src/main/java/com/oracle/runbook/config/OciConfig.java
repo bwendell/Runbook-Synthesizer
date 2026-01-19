@@ -1,5 +1,6 @@
 package com.oracle.runbook.config;
 
+import com.oracle.runbook.infrastructure.cloud.CloudConfig;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -36,8 +37,8 @@ public record OciConfig(
     String tenancyId,
     String fingerprint,
     String privateKeyContent,
-    String privateKeyFilePath) {
-
+    String privateKeyFilePath)
+    implements CloudConfig {
   /** Environment variable names for OCI authentication. */
   public static final String ENV_USER_ID = "OCI_USER_ID";
 
@@ -51,6 +52,16 @@ public record OciConfig(
   /** Compact constructor with validation. */
   public OciConfig {
     Objects.requireNonNull(compartmentId, "OciConfig compartmentId cannot be null");
+  }
+
+  /**
+   * Returns the cloud provider identifier.
+   *
+   * @return "oci" always
+   */
+  @Override
+  public String provider() {
+    return "oci";
   }
 
   /**

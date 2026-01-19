@@ -3,6 +3,7 @@ package com.oracle.runbook.config;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.oracle.runbook.infrastructure.cloud.CloudConfig;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -12,6 +13,53 @@ import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link OciConfig} configuration record. */
 class OciConfigTest {
+
+  // --- CloudConfig Interface Implementation Tests ---
+
+  @Nested
+  @DisplayName("CloudConfig interface implementation")
+  class CloudConfigImplementationTests {
+
+    @Test
+    @DisplayName("OciConfig should implement CloudConfig interface")
+    void shouldImplementCloudConfig() {
+      OciConfig config = OciConfig.withDefaults("ocid1.compartment.oc1..abc");
+
+      assertThat(config)
+          .as("OciConfig must implement CloudConfig for polymorphic cloud configuration")
+          .isInstanceOf(CloudConfig.class);
+    }
+
+    @Test
+    @DisplayName("provider() should return 'oci'")
+    void providerShouldReturnOci() {
+      OciConfig config = OciConfig.withDefaults("ocid1.compartment.oc1..abc");
+
+      assertThat(config.provider())
+          .as("provider() must return 'oci' for OCI configuration")
+          .isEqualTo("oci");
+    }
+
+    @Test
+    @DisplayName("region() should return configured region")
+    void regionShouldReturnConfiguredRegion() {
+      OciConfig config =
+          new OciConfig(
+              "ocid1.compartment.oc1..abc",
+              "us-ashburn-1",
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null);
+
+      assertThat(config.region())
+          .as("region() must return the configured region")
+          .isEqualTo("us-ashburn-1");
+    }
+  }
 
   // --- Environment Variable Parsing Tests (Task 1.1) ---
 
