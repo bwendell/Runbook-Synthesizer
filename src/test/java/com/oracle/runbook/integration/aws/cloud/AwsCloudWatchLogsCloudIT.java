@@ -4,7 +4,9 @@
  */
 package com.oracle.runbook.integration.aws.cloud;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import com.oracle.runbook.domain.LogEntry;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsCloudWatchLogsAdapter;
@@ -112,8 +114,33 @@ class AwsCloudWatchLogsCloudIT extends CloudAwsTestBase {
         .get();
     System.out.printf("[AwsCloudWatchLogsCloudIT] Published %d test log events%n", 3);
 
-    // Small delay to ensure logs are indexed
-    Thread.sleep(2000);
+    // Wait for CloudWatch eventual consistency using condition-based polling
+    // instead of arbitrary fixed delay
+    System.out.println(
+        "[AwsCloudWatchLogsCloudIT] Waiting for logs to be indexed (CloudWatch eventual consistency)...");
+    await()
+        .atMost(30, SECONDS)
+        .pollInterval(2, SECONDS)
+        .pollDelay(2, SECONDS)
+        .until(
+            () -> {
+              var response =
+                  logsClient
+                      .filterLogEvents(
+                          software.amazon.awssdk.services.cloudwatchlogs.model
+                              .FilterLogEventsRequest.builder()
+                              .logGroupName(getLogGroupName())
+                              .filterPattern(TEST_RUN_ID)
+                              .build())
+                      .get();
+              boolean logsAvailable = response.events() != null && !response.events().isEmpty();
+              if (logsAvailable) {
+                System.out.printf(
+                    "[AwsCloudWatchLogsCloudIT] Logs indexed: found %d events%n",
+                    response.events().size());
+              }
+              return logsAvailable;
+            });
   }
 
   @AfterAll

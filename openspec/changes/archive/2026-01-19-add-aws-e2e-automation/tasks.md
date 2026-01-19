@@ -325,8 +325,8 @@ Get-Content target/failsafe-reports/*.txt
 
 **Tasks:**
 
-- [X] 4.1.1 Add `<profile>` with `<id>e2e-aws-cloud</id>` to `<profiles>` section
-- [X] 4.1.2 Add comment explaining the profile's purpose
+- [ ] 4.1.1 Add `<profile>` with `<id>e2e-aws-cloud</id>` to `<profiles>` section
+- [ ] 4.1.2 Add comment explaining the profile's purpose
 
 **Implementation:**
 ```xml
@@ -551,10 +551,10 @@ Get-Content target/failsafe-reports/*.txt
 - Cleanup verified: `cdk destroy` removes all resources
 
 **Tasks:**
-- [ ] 6.1 Run `openspec validate add-aws-e2e-automation --strict`
-- [ ] 6.2 Verify CDK synth produces valid CloudFormation template
-- [ ] 6.3 Deploy stack to test AWS account and run e2e tests
-- [ ] 6.4 Verify manual `cdk destroy` cleanly removes all resources
+- [X] 6.1 Run `openspec validate add-aws-e2e-automation --strict`
+- [X] 6.2 Verify CDK synth produces valid CloudFormation template
+- [X] 6.3 Deploy stack to test AWS account and run e2e tests
+- [X] 6.4 Verify manual `cdk destroy` cleanly removes all resources
 
 **Verification:**
 ```powershell
