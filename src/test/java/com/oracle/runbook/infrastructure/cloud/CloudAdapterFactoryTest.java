@@ -10,9 +10,12 @@ import com.oracle.runbook.enrichment.OciMonitoringAdapter;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsBedrockLlmProvider;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsCloudWatchLogsAdapter;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsCloudWatchMetricsAdapter;
+import com.oracle.runbook.infrastructure.cloud.aws.AwsOpenSearchVectorStoreRepository;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsS3StorageAdapter;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsSnsAlertSourceAdapter;
+import com.oracle.runbook.infrastructure.cloud.local.InMemoryVectorStoreRepository;
 import com.oracle.runbook.infrastructure.cloud.oci.OciObjectStorageAdapter;
+import com.oracle.runbook.infrastructure.cloud.oci.OciVectorStoreRepository;
 import com.oracle.runbook.ingestion.AlertSourceAdapter;
 import com.oracle.runbook.rag.LlmProvider;
 import io.helidon.config.Config;
@@ -315,6 +318,101 @@ class CloudAdapterFactoryTest {
       assertThatThrownBy(() -> new CloudAdapterFactory(null))
           .isInstanceOf(NullPointerException.class)
           .hasMessageContaining("config");
+    }
+  }
+
+  @Nested
+  @DisplayName("Vector store adapter creation")
+  class VectorStoreAdapterTests {
+
+    @Test
+    @DisplayName(
+        "Should return InMemoryVectorStoreRepository.class when vectorStore.provider=local")
+    void shouldReturnLocalVectorStoreForLocal() {
+      Config config =
+          Config.builder()
+              .sources(ConfigSources.create(Map.of("vectorStore.provider", "local")))
+              .build();
+
+      CloudAdapterFactory factory = new CloudAdapterFactory(config);
+
+      assertThat(factory.getVectorStoreClass())
+          .as("Vector store class should be InMemoryVectorStoreRepository for local provider")
+          .isEqualTo(InMemoryVectorStoreRepository.class);
+    }
+
+    @Test
+    @DisplayName("Should return OciVectorStoreRepository.class when vectorStore.provider=oci")
+    void shouldReturnOciVectorStoreForOci() {
+      Config config =
+          Config.builder()
+              .sources(ConfigSources.create(Map.of("vectorStore.provider", "oci")))
+              .build();
+
+      CloudAdapterFactory factory = new CloudAdapterFactory(config);
+
+      assertThat(factory.getVectorStoreClass())
+          .as("Vector store class should be OciVectorStoreRepository for oci provider")
+          .isEqualTo(OciVectorStoreRepository.class);
+    }
+
+    @Test
+    @DisplayName(
+        "Should return AwsOpenSearchVectorStoreRepository.class when vectorStore.provider=aws")
+    void shouldReturnAwsVectorStoreForAws() {
+      Config config =
+          Config.builder()
+              .sources(ConfigSources.create(Map.of("vectorStore.provider", "aws")))
+              .build();
+
+      CloudAdapterFactory factory = new CloudAdapterFactory(config);
+
+      assertThat(factory.getVectorStoreClass())
+          .as("Vector store class should be AwsOpenSearchVectorStoreRepository for aws provider")
+          .isEqualTo(AwsOpenSearchVectorStoreRepository.class);
+    }
+
+    @Test
+    @DisplayName("Should default to local when vectorStore.provider is not set")
+    void shouldDefaultToLocalWhenNotConfigured() {
+      Config config = Config.builder().sources(ConfigSources.create(Map.of())).build();
+
+      CloudAdapterFactory factory = new CloudAdapterFactory(config);
+
+      assertThat(factory.getVectorStoreClass())
+          .as("Vector store should default to InMemoryVectorStoreRepository when not configured")
+          .isEqualTo(InMemoryVectorStoreRepository.class);
+    }
+
+    @Test
+    @DisplayName("Should return class implementing VectorStoreRepository interface")
+    void shouldReturnVectorStoreRepositoryImplementation() {
+      Config config =
+          Config.builder()
+              .sources(ConfigSources.create(Map.of("vectorStore.provider", "local")))
+              .build();
+
+      CloudAdapterFactory factory = new CloudAdapterFactory(config);
+
+      assertThat(VectorStoreRepository.class.isAssignableFrom(factory.getVectorStoreClass()))
+          .as("Returned class should implement VectorStoreRepository")
+          .isTrue();
+    }
+
+    @Test
+    @DisplayName("Should throw IllegalArgumentException for unsupported vector store provider")
+    void shouldThrowForUnsupportedVectorStoreProvider() {
+      Config config =
+          Config.builder()
+              .sources(ConfigSources.create(Map.of("vectorStore.provider", "unknown")))
+              .build();
+
+      CloudAdapterFactory factory = new CloudAdapterFactory(config);
+
+      assertThatThrownBy(factory::getVectorStoreClass)
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessageContaining("unknown")
+          .hasMessageContaining("Unsupported vector store provider");
     }
   }
 }

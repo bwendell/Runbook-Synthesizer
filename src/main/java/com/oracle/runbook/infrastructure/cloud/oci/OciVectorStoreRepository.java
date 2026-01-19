@@ -1,6 +1,8 @@
-package com.oracle.runbook.rag;
+package com.oracle.runbook.infrastructure.cloud.oci;
 
 import com.oracle.runbook.domain.RunbookChunk;
+import com.oracle.runbook.infrastructure.cloud.VectorStoreRepository;
+import com.oracle.runbook.rag.ScoredChunk;
 import dev.langchain4j.data.document.Metadata;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
@@ -23,7 +25,7 @@ import java.util.Objects;
  * @see VectorStoreRepository
  * @see EmbeddingStore
  */
-public class OracleVectorStoreRepository implements VectorStoreRepository {
+public class OciVectorStoreRepository implements VectorStoreRepository {
 
   private static final String METADATA_ID = "id";
   private static final String METADATA_RUNBOOK_PATH = "runbookPath";
@@ -34,13 +36,18 @@ public class OracleVectorStoreRepository implements VectorStoreRepository {
   private final EmbeddingStore<TextSegment> embeddingStore;
 
   /**
-   * Creates a new OracleVectorStoreRepository with the given embedding store.
+   * Creates a new OciVectorStoreRepository with the given embedding store.
    *
    * @param embeddingStore the LangChain4j embedding store to use
    * @throws NullPointerException if embeddingStore is null
    */
-  public OracleVectorStoreRepository(EmbeddingStore<TextSegment> embeddingStore) {
+  public OciVectorStoreRepository(EmbeddingStore<TextSegment> embeddingStore) {
     this.embeddingStore = Objects.requireNonNull(embeddingStore, "embeddingStore cannot be null");
+  }
+
+  @Override
+  public String providerType() {
+    return "oci";
   }
 
   /** {@inheritDoc} */

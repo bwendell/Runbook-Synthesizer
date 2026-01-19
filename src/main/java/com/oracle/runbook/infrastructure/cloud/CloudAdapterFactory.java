@@ -8,10 +8,13 @@ import com.oracle.runbook.infrastructure.cloud.aws.AwsBedrockLlmProvider;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsCloudWatchLogsAdapter;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsCloudWatchMetricsAdapter;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsEc2MetadataAdapter;
+import com.oracle.runbook.infrastructure.cloud.aws.AwsOpenSearchVectorStoreRepository;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsS3StorageAdapter;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsSnsAlertSourceAdapter;
+import com.oracle.runbook.infrastructure.cloud.local.InMemoryVectorStoreRepository;
 import com.oracle.runbook.infrastructure.cloud.oci.OciComputeMetadataAdapter;
 import com.oracle.runbook.infrastructure.cloud.oci.OciObjectStorageAdapter;
+import com.oracle.runbook.infrastructure.cloud.oci.OciVectorStoreRepository;
 import com.oracle.runbook.ingestion.AlertSourceAdapter;
 import com.oracle.runbook.rag.LlmProvider;
 import io.helidon.config.Config;
@@ -34,8 +37,11 @@ import java.util.Set;
 public class CloudAdapterFactory {
 
   private static final String CONFIG_KEY_PROVIDER = "cloud.provider";
+  private static final String CONFIG_KEY_VECTOR_STORE_PROVIDER = "vectorStore.provider";
   private static final String DEFAULT_PROVIDER = "oci";
+  private static final String DEFAULT_VECTOR_STORE_PROVIDER = "local";
   private static final Set<String> SUPPORTED_PROVIDERS = Set.of("oci", "aws");
+  private static final Set<String> SUPPORTED_VECTOR_STORE_PROVIDERS = Set.of("local", "oci", "aws");
 
   private final String providerType;
   private final Config config;
@@ -159,6 +165,38 @@ public class CloudAdapterFactory {
           throw new IllegalStateException(
               "LLM provider for 'oci' is not supported. Use 'aws' provider.");
       default -> throw new IllegalStateException("Unknown provider: " + providerType);
+    };
+  }
+
+  /**
+   * Returns the class of the vector store repository for the configured provider.
+   *
+   * <p>Vector store provider is configured separately from cloud provider via {@code
+   * vectorStore.provider} config key, defaulting to "local".
+   *
+   * @return the vector store repository class for the configured provider
+   * @throws IllegalArgumentException if the configured vector store provider is not supported
+   */
+  public Class<? extends VectorStoreRepository> getVectorStoreClass() {
+    String vectorStoreProvider =
+        config
+            .get(CONFIG_KEY_VECTOR_STORE_PROVIDER)
+            .asString()
+            .orElse(DEFAULT_VECTOR_STORE_PROVIDER);
+
+    if (!SUPPORTED_VECTOR_STORE_PROVIDERS.contains(vectorStoreProvider)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Unsupported vector store provider: '%s'. Supported providers are: %s",
+              vectorStoreProvider, SUPPORTED_VECTOR_STORE_PROVIDERS));
+    }
+
+    return switch (vectorStoreProvider) {
+      case "local" -> InMemoryVectorStoreRepository.class;
+      case "oci" -> OciVectorStoreRepository.class;
+      case "aws" -> AwsOpenSearchVectorStoreRepository.class;
+      default ->
+          throw new IllegalStateException("Unknown vector store provider: " + vectorStoreProvider);
     };
   }
 }

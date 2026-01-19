@@ -5,25 +5,25 @@
 **Description:** Create `InMemoryVectorStoreRepository` and `VectorStoreFactory` to enable vector store switching.
 
 ### Subtasks
-- [ ] 1.1 Move `VectorStoreRepository.java` interface to `infrastructure/cloud/`
+- [X] 1.1 Move `VectorStoreRepository.java` interface to `infrastructure/cloud/`
   - Follows same pattern as `CloudStorageAdapter`
   - Add `providerType()` method for consistency
-- [ ] 1.2 Create `InMemoryVectorStoreRepository.java` in `infrastructure/cloud/local/`
+- [X] 1.2 Create `InMemoryVectorStoreRepository.java` in `infrastructure/cloud/local/`
   - Implements `VectorStoreRepository` interface
   - Uses `ConcurrentHashMap` for thread-safe storage
   - Implements cosine similarity search with manual calculation
   - Returns `providerType()` as `"local"`
-- [ ] 1.3 Move `OracleVectorStoreRepository.java` to `infrastructure/cloud/oci/`
+- [X] 1.3 Move `OracleVectorStoreRepository.java` to `infrastructure/cloud/oci/`
   - Update package and imports
   - Returns `providerType()` as `"oci"`
-- [ ] 1.4 Create `AwsOpenSearchVectorStoreRepository.java` stub in `infrastructure/cloud/aws/`
+- [X] 1.4 Create `AwsOpenSearchVectorStoreRepository.java` stub in `infrastructure/cloud/aws/`
   - Returns `providerType()` as `"aws"`
   - Implementation deferred (throws `UnsupportedOperationException`)
-- [ ] 1.5 Update `CloudAdapterFactory.java` to add `getVectorStoreClass()` method
+- [X] 1.5 Update `CloudAdapterFactory.java` to add `getVectorStoreClass()` method
   - Supports `local`, `oci`, `aws` providers
   - Returns appropriate `VectorStoreRepository` implementation class
-- [ ] 1.6 Create unit tests `InMemoryVectorStoreRepositoryTest.java`
-- [ ] 1.7 Update `CloudAdapterFactoryTest.java` with vector store tests
+- [X] 1.6 Create unit tests `InMemoryVectorStoreRepositoryTest.java`
+- [X] 1.7 Update `CloudAdapterFactoryTest.java` with vector store tests
 
 ### Verification Steps
 ```bash
@@ -49,11 +49,11 @@ mvn test -Dtest=CloudAdapterFactoryTest -q
 **Description:** Create production implementation of `ContextEnrichmentService` that orchestrates AWS adapters.
 
 ### Subtasks
-- [ ] 2.1 Create `DefaultContextEnrichmentService.java` in `enrichment/`
+- [X] 2.1 Create `DefaultContextEnrichmentService.java` in `enrichment/`
   - Inject `ComputeMetadataAdapter`, `MetricsSourceAdapter`, `LogSourceAdapter`
   - Implement `enrich()` using `CompletableFuture.allOf()` for parallelization
   - Handle partial failures gracefully (if metrics fail, still return logs)
-- [ ] 2.2 Create unit tests `DefaultContextEnrichmentServiceTest.java`
+- [X] 2.2 Create unit tests `DefaultContextEnrichmentServiceTest.java`
   - Test parallel execution
   - Test partial failure handling
   - Test with mock adapters
@@ -66,11 +66,11 @@ mvn test -Dtest=DefaultContextEnrichmentServiceTest -q
 **Expected:** All unit tests pass.
 
 ### Acceptance Criteria
-- [ ] `DefaultContextEnrichmentService` implements `ContextEnrichmentService` interface
-- [ ] Fetches EC2 metadata, CloudWatch metrics, and logs in parallel
-- [ ] Returns `EnrichedContext` with all available data
-- [ ] Gracefully handles adapter failures (logs error, continues with partial data)
-- [ ] Unit tests cover: success case, partial failure, complete failure
+- [X] `DefaultContextEnrichmentService` implements `ContextEnrichmentService` interface
+- [X] Fetches EC2 metadata, CloudWatch metrics, and logs in parallel
+- [X] Returns `EnrichedContext` with all available data
+- [X] Gracefully handles adapter failures (logs error, continues with partial data)
+- [X] Unit tests cover: success case, partial failure, complete failure
 
 ---
 

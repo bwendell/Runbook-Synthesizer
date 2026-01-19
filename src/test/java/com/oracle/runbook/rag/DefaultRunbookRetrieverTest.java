@@ -3,6 +3,7 @@ package com.oracle.runbook.rag;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
+import com.oracle.runbook.infrastructure.cloud.VectorStoreRepository;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -153,6 +154,11 @@ class DefaultRunbookRetrieverTest {
 
     void setSearchResults(List<ScoredChunk> r) {
       this.results = r;
+    }
+
+    @Override
+    public String providerType() {
+      return "test";
     }
 
     @Override

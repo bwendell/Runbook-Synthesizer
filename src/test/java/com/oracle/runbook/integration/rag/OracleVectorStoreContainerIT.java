@@ -3,9 +3,9 @@ package com.oracle.runbook.integration.rag;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.RunbookChunk;
+import com.oracle.runbook.infrastructure.cloud.oci.OciVectorStoreRepository;
 import com.oracle.runbook.integration.OracleContainerBase;
 import com.oracle.runbook.integration.containers.E2EDataFactory;
-import com.oracle.runbook.rag.OracleVectorStoreRepository;
 import com.oracle.runbook.rag.ScoredChunk;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingStore;
@@ -33,7 +33,7 @@ class OracleVectorStoreContainerIT extends OracleContainerBase {
 
   private static final String TABLE_NAME = "VECTOR_STORE_TEST";
   private static EmbeddingStore<TextSegment> embeddingStore;
-  private static OracleVectorStoreRepository vectorStore;
+  private static OciVectorStoreRepository vectorStore;
 
   @BeforeAll
   static void setUpVectorStore() throws Exception {
@@ -51,7 +51,7 @@ class OracleVectorStoreContainerIT extends OracleContainerBase {
             .embeddingTable(TABLE_NAME, CreateOption.CREATE_OR_REPLACE)
             .build();
 
-    vectorStore = new OracleVectorStoreRepository(embeddingStore);
+    vectorStore = new OciVectorStoreRepository(embeddingStore);
   }
 
   @BeforeEach

@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
+import com.oracle.runbook.infrastructure.cloud.VectorStoreRepository;
 import com.oracle.runbook.integration.IntegrationTestBase;
 import com.oracle.runbook.rag.*;
 import io.helidon.webserver.WebServer;
@@ -402,6 +403,11 @@ class ChecklistGenerationIT extends IntegrationTestBase {
   /** In-memory vector store for testing. */
   private static class InMemoryVectorStore implements VectorStoreRepository {
     private final Map<String, RunbookChunk> chunks = new HashMap<>();
+
+    @Override
+    public String providerType() {
+      return "test-inmemory";
+    }
 
     @Override
     public void store(RunbookChunk chunk) {

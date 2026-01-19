@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
 import com.oracle.runbook.enrichment.ContextEnrichmentService;
+import com.oracle.runbook.infrastructure.cloud.VectorStoreRepository;
 import com.oracle.runbook.integration.IntegrationTestBase;
 import com.oracle.runbook.output.*;
 import com.oracle.runbook.output.adapters.GenericWebhookDestination;
@@ -378,6 +379,11 @@ class AlertToChecklistIT extends IntegrationTestBase {
 
   private static class InMemoryVectorStore implements VectorStoreRepository {
     private final Map<String, RunbookChunk> chunks = new HashMap<>();
+
+    @Override
+    public String providerType() {
+      return "test-inmemory";
+    }
 
     @Override
     public void store(RunbookChunk chunk) {

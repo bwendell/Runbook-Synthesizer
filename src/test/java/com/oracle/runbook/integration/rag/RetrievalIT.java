@@ -3,10 +3,10 @@ package com.oracle.runbook.integration.rag;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
+import com.oracle.runbook.infrastructure.cloud.VectorStoreRepository;
 import com.oracle.runbook.integration.IntegrationTestBase;
 import com.oracle.runbook.rag.RunbookRetriever;
 import com.oracle.runbook.rag.ScoredChunk;
-import com.oracle.runbook.rag.VectorStoreRepository;
 import io.helidon.webserver.WebServer;
 import io.helidon.webserver.WebServerConfig;
 import io.helidon.webserver.testing.junit5.SetUpServer;
@@ -147,6 +147,11 @@ class RetrievalIT extends IntegrationTestBase {
   /** In-memory vector store for testing. */
   private static class InMemoryVectorStore implements VectorStoreRepository {
     private final Map<String, RunbookChunk> chunks = new HashMap<>();
+
+    @Override
+    public String providerType() {
+      return "test";
+    }
 
     @Override
     public void store(RunbookChunk chunk) {

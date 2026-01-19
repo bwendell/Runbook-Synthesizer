@@ -1,7 +1,7 @@
 package com.oracle.runbook.integration.containers;
 
 import com.oracle.runbook.domain.RunbookChunk;
-import com.oracle.runbook.rag.VectorStoreRepository;
+import com.oracle.runbook.infrastructure.cloud.VectorStoreRepository;
 import java.util.List;
 
 /**

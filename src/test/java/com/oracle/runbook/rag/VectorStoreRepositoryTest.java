@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.oracle.runbook.domain.RunbookChunk;
+import com.oracle.runbook.infrastructure.cloud.VectorStoreRepository;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -73,6 +74,11 @@ class VectorStoreRepositoryTest {
 
   /** Test implementation of VectorStoreRepository for verifying interface contract. */
   private static class TestVectorStoreRepository implements VectorStoreRepository {
+    @Override
+    public String providerType() {
+      return "test";
+    }
+
     @Override
     public void store(RunbookChunk chunk) {
       // No-op for test

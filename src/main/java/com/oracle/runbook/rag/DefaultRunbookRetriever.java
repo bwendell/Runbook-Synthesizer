@@ -3,6 +3,7 @@ package com.oracle.runbook.rag;
 import com.oracle.runbook.domain.EnrichedContext;
 import com.oracle.runbook.domain.RetrievedChunk;
 import com.oracle.runbook.domain.RunbookChunk;
+import com.oracle.runbook.infrastructure.cloud.VectorStoreRepository;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;

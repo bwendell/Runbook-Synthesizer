@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oracle.runbook.domain.RunbookChunk;
+import com.oracle.runbook.infrastructure.cloud.oci.OciVectorStoreRepository;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.store.embedding.EmbeddingMatch;
@@ -14,16 +15,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/** Tests for OracleVectorStoreRepository implementation. */
+/** Tests for OciVectorStoreRepository implementation. */
 class OracleVectorStoreRepositoryTest {
 
-  private OracleVectorStoreRepository repository;
+  private OciVectorStoreRepository repository;
   private RecordingEmbeddingStore stubEmbeddingStore;
 
   @BeforeEach
   void setUp() {
     stubEmbeddingStore = new RecordingEmbeddingStore();
-    repository = new OracleVectorStoreRepository(stubEmbeddingStore);
+    repository = new OciVectorStoreRepository(stubEmbeddingStore);
   }
 
   @Test
@@ -101,7 +102,7 @@ class OracleVectorStoreRepositoryTest {
   @DisplayName("constructor throws NullPointerException for null store")
   void constructor_withNullStore_throwsNullPointerException() {
     // Act & Assert
-    assertThatThrownBy(() -> new OracleVectorStoreRepository(null))
+    assertThatThrownBy(() -> new OciVectorStoreRepository(null))
         .isInstanceOf(NullPointerException.class);
   }
 
