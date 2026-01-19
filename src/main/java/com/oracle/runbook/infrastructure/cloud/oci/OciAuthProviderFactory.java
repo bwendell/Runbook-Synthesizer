@@ -1,4 +1,4 @@
-package com.oracle.runbook.config;
+package com.oracle.runbook.infrastructure.cloud.oci;
 
 import com.oracle.bmc.Region;
 import com.oracle.bmc.auth.AuthenticationDetailsProvider;

@@ -85,12 +85,12 @@
 ---
 
 ### 2.2 Refactor OciObjectStorageClient to OciObjectStorageAdapter
-- [ ] Rename `OciObjectStorageClient` to `OciObjectStorageAdapter`
-- [ ] Move to `infrastructure.cloud.oci` package
-- [ ] Implement `CloudStorageAdapter` interface
-- [ ] Adapt method signatures to match interface
-- [ ] Add `providerType()` returning `"oci"`
-- [ ] Update all references throughout codebase
+- [x] Rename `OciObjectStorageClient` to `OciObjectStorageAdapter`
+- [x] Move to `infrastructure.cloud.oci` package
+- [x] Implement `CloudStorageAdapter` interface
+- [x] Adapt method signatures to match interface
+- [x] Add `providerType()` returning `"oci"`
+- [x] Update all references throughout codebase
 
 **Acceptance Criteria:**
 - Class renamed and implements `CloudStorageAdapter`
@@ -105,11 +105,11 @@
 ---
 
 ### 2.3 Refactor OciComputeClient to OciComputeMetadataAdapter
-- [ ] Rename `OciComputeClient` to `OciComputeMetadataAdapter`
-- [ ] Move to `infrastructure.cloud.oci` package
-- [ ] Implement `ComputeMetadataAdapter` interface
-- [ ] Add `providerType()` returning `"oci"`
-- [ ] Update all references throughout codebase
+- [x] Rename `OciComputeClient` to `OciComputeMetadataAdapter`
+- [x] Move to `infrastructure.cloud.oci` package
+- [x] Implement `ComputeMetadataAdapter` interface
+- [x] Add `providerType()` returning `"oci"`
+- [x] Update all references throughout codebase
 
 **Acceptance Criteria:**
 - Class renamed and implements `ComputeMetadataAdapter`
@@ -124,10 +124,10 @@
 ---
 
 ### 2.4 Move OCI Config Classes to New Package
-- [ ] Move `OciConfig` to `infrastructure.cloud.oci` package
-- [ ] Move `OciAuthProviderFactory` to `infrastructure.cloud.oci` package
-- [ ] Update all import statements throughout codebase
-- [ ] Ensure no circular dependencies
+- [x] Move `OciConfig` to `infrastructure.cloud.oci` package
+- [x] Move `OciAuthProviderFactory` to `infrastructure.cloud.oci` package
+- [x] Update all import statements throughout codebase
+- [x] Ensure no circular dependencies
 
 **Acceptance Criteria:**
 - Classes relocated to new package
@@ -199,10 +199,10 @@
 ---
 
 ### 4.3 Create AwsEc2MetadataAdapter
-- [ ] Create `AwsEc2MetadataAdapter` implementing `ComputeMetadataAdapter`
-- [ ] Implement `getInstance()` using EC2 describeInstances
-- [ ] Map EC2 instance data to `ResourceMetadata` domain model
-- [ ] Handle missing instances by returning `Optional.empty()`
+- [x] Create `AwsEc2MetadataAdapter` implementing `ComputeMetadataAdapter`
+- [x] Implement `getInstance()` using EC2 describeInstances
+- [x] Map EC2 instance data to `ResourceMetadata` domain model
+- [x] Handle missing instances by returning `Optional.empty()`
 
 **Acceptance Criteria:**
 - Class implements `ComputeMetadataAdapter`
@@ -216,10 +216,10 @@
 ---
 
 ### 4.4 Create AwsCloudWatchMetricsAdapter
-- [ ] Create `AwsCloudWatchMetricsAdapter` implementing `MetricsSourceAdapter`
-- [ ] Implement `fetchMetrics()` using CloudWatch getMetricData
-- [ ] Map CloudWatch metrics to `MetricSnapshot` domain model
-- [ ] Support configurable namespace and dimension mapping
+- [x] Create `AwsCloudWatchMetricsAdapter` implementing `MetricsSourceAdapter`
+- [x] Implement `fetchMetrics()` using CloudWatch getMetricData
+- [x] Map CloudWatch metrics to `MetricSnapshot` domain model
+- [x] Support configurable namespace and dimension mapping
 
 **Acceptance Criteria:**
 - Class implements existing `MetricsSourceAdapter` interface
@@ -233,10 +233,10 @@
 ---
 
 ### 4.5 Create AwsCloudWatchLogsAdapter
-- [ ] Create `AwsCloudWatchLogsAdapter` implementing `LogSourceAdapter`
-- [ ] Implement `fetchLogs()` using CloudWatch Logs filterLogEvents
-- [ ] Map CloudWatch log events to `LogEntry` domain model
-- [ ] Support CloudWatch Insights query syntax
+- [x] Create `AwsCloudWatchLogsAdapter` implementing `LogSourceAdapter`
+- [x] Implement `fetchLogs()` using CloudWatch Logs filterLogEvents
+- [x] Map CloudWatch log events to `LogEntry` domain model
+- [x] Support CloudWatch Insights query syntax
 
 **Acceptance Criteria:**
 - Class implements existing `LogSourceAdapter` interface
@@ -252,10 +252,10 @@
 ## 5. Add Configuration Support
 
 ### 5.1 Update application.yaml Schema
-- [ ] Add `cloud.provider` configuration property
-- [ ] Add `cloud.aws` section with S3 bucket, region settings
-- [ ] Document configuration in code comments
-- [ ] Add example values in commented section
+- [x] Add `cloud.provider` configuration property
+- [x] Add `cloud.aws` section with S3 bucket, region settings
+- [x] Document configuration in code comments
+- [x] Add example values in commented section
 
 **Acceptance Criteria:**
 - Configuration schema supports both AWS and OCI
@@ -269,11 +269,11 @@
 ---
 
 ### 5.2 Create CloudAdapterFactory
-- [ ] Create factory class to instantiate correct adapters based on config
-- [ ] Read `cloud.provider` from configuration
-- [ ] Create OCI adapters when provider is `"oci"`
-- [ ] Create AWS adapters when provider is `"aws"`
-- [ ] Throw clear exception for unknown providers
+- [x] Create factory class to instantiate correct adapters based on config
+- [x] Read `cloud.provider` from configuration
+- [x] Create OCI adapters when provider is `"oci"`
+- [x] Create AWS adapters when provider is `"aws"`
+- [x] Throw clear exception for unknown providers
 
 **Acceptance Criteria:**
 - Factory correctly instantiates adapters based on configuration

@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 
 import com.oracle.bmc.loggingsearch.LogSearchClient;
-import com.oracle.runbook.config.OciConfig;
+import com.oracle.runbook.infrastructure.cloud.oci.OciConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

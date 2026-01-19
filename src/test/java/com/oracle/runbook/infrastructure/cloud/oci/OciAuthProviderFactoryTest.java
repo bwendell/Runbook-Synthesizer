@@ -1,4 +1,4 @@
-package com.oracle.runbook.config;
+package com.oracle.runbook.infrastructure.cloud.oci;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;

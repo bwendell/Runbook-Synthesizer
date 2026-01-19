@@ -15,6 +15,28 @@ server.features:
 # Logging Configuration
 logging:
   level: INFO
+
+# --------------------------------------------------------
+# Cloud Provider Configuration
+# --------------------------------------------------------
+# Selects which cloud provider's adapters to use for storage,
+# compute metadata, metrics, and logging operations.
+
+cloud:
+  provider: oci # 'oci' (default) or 'aws'
+
+  # AWS Configuration (used when provider: aws)
+  # aws:
+  #   region: us-east-1
+  #   storage:
+  #     bucket: runbook-synthesizer-runbooks
+  #   # Uses AWS default credential chain:
+  #   # 1. Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
+  #   # 2. AWS credentials file (~/.aws/credentials)
+  #   # 3. ECS container credentials
+  #   # 4. EC2 instance profile / IAM role
+  #   # 5. Web identity token (EKS IRSA)
+
 # --------------------------------------------------------
 # Future Configuration Sections (Placeholder)
 # --------------------------------------------------------
