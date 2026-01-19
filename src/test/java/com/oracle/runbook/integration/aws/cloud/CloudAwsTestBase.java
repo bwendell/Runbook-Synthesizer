@@ -2,7 +2,7 @@
  * Copyright (c) 2026 Oracle and/or its affiliates.
  * Licensed under the Universal Permissive License v 1.0.
  */
-package com.oracle.runbook.integration.aws.e2e;
+package com.oracle.runbook.integration.aws.cloud;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,18 +14,18 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sts.StsClient;
 
 /**
- * Base class for E2E tests that run against real AWS services.
+ * Base class for E2E tests that run against real AWS cloud services.
  *
  * <p>This class provides:
  *
  * <ul>
  *   <li>AWS credential validation before any tests run
- *   <li>Conditional test execution via {@code aws.e2e.enabled} system property
+ *   <li>Conditional test execution via {@code aws.cloud.enabled} system property
  *   <li>Helper methods for creating AWS service clients
  *   <li>Access to CDK-provisioned resource identifiers
  * </ul>
  *
- * <p>Tests extending this class will only run when the {@code -Pe2e-aws-real} Maven profile is
+ * <p>Tests extending this class will only run when the {@code -Pe2e-aws-cloud} Maven profile is
  * active, which sets the required system property.
  *
  * <p><strong>Prerequisites:</strong>
@@ -36,8 +36,8 @@ import software.amazon.awssdk.services.sts.StsClient;
  *   <li>Docker Desktop running (for future containerized test support)
  * </ul>
  */
-@EnabledIfSystemProperty(named = "aws.e2e.enabled", matches = "true")
-public abstract class RealAwsTestBase {
+@EnabledIfSystemProperty(named = "aws.cloud.enabled", matches = "true")
+public abstract class CloudAwsTestBase {
 
   /** The AWS region to use for all tests. Defaults to us-east-1 for free tier compatibility. */
   protected static final Region AWS_REGION = Region.US_EAST_1;
@@ -61,7 +61,7 @@ public abstract class RealAwsTestBase {
     try (StsClient stsClient = StsClient.builder().region(AWS_REGION).build()) {
       var identity = stsClient.getCallerIdentity();
       assertThat(identity.account()).as("AWS account should not be null").isNotNull();
-      System.out.printf("[RealAwsTestBase] ✓ Authenticated: %s%n", identity.arn());
+      System.out.printf("[CloudAwsTestBase] ✓ Authenticated: %s%n", identity.arn());
 
       // Set resource names based on account (matching CDK construct naming)
       bucketName = "runbook-e2e-" + identity.account() + "-" + AWS_REGION.id();
@@ -94,10 +94,10 @@ public abstract class RealAwsTestBase {
         ║       - AWS credentials file: ~/.aws/credentials                             ║
         ║       - AWS SSO: aws sso login --profile <profile>                           ║
         ║    2. Verify credentials work: aws sts get-caller-identity                   ║
-        ║    3. Re-run the tests with -Pe2e-aws-real profile                           ║
+        ║    3. Re-run the tests with -Pe2e-aws-cloud profile                          ║
         ║                                                                              ║
         ║  To skip these tests:                                                        ║
-        ║    Run without -Pe2e-aws-real or -Daws.e2e.enabled=true                      ║
+        ║    Run without -Pe2e-aws-cloud or -Daws.cloud.enabled=true                   ║
         ║                                                                              ║
         ╚══════════════════════════════════════════════════════════════════════════════╝
 

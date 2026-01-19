@@ -1,8 +1,13 @@
-package com.oracle.runbook.integration;
+/*
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ * Licensed under the Universal Permissive License v 1.0.
+ */
+package com.oracle.runbook.integration.aws.local;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.infrastructure.cloud.aws.AwsS3StorageAdapter;
+import com.oracle.runbook.integration.LocalStackContainerBase;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,9 +23,11 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 /**
  * Integration tests for {@link AwsS3StorageAdapter} using LocalStack.
  *
- * <p>These tests verify S3 storage operations against a real S3-compatible service.
+ * <p>These tests verify S3 storage operations against a local S3-compatible service (LocalStack).
+ * No AWS credentials or cloud resources are required.
  */
-class AwsS3StorageAdapterIT extends LocalStackContainerBase {
+@DisplayName("AWS S3 Local (LocalStack) Integration Tests")
+class AwsS3StorageLocalIT extends LocalStackContainerBase {
 
   private static final String TEST_BUCKET = "test-runbook-bucket";
 

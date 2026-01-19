@@ -1,9 +1,14 @@
-package com.oracle.runbook.integration;
+/*
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ * Licensed under the Universal Permissive License v 1.0.
+ */
+package com.oracle.runbook.integration.aws.local;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.LogEntry;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsCloudWatchLogsAdapter;
+import com.oracle.runbook.integration.LocalStackContainerBase;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -19,10 +24,11 @@ import software.amazon.awssdk.services.cloudwatchlogs.model.PutLogEventsRequest;
 /**
  * Integration tests for {@link AwsCloudWatchLogsAdapter} using LocalStack.
  *
- * <p>These tests verify CloudWatch Logs operations against a real CloudWatch Logs-compatible
- * service.
+ * <p>These tests verify CloudWatch Logs operations against a local CloudWatch Logs-compatible
+ * service (LocalStack). No AWS credentials or cloud resources are required.
  */
-class AwsCloudWatchLogsAdapterIT extends LocalStackContainerBase {
+@DisplayName("AWS CloudWatch Logs Local (LocalStack) Integration Tests")
+class AwsCloudWatchLogsLocalIT extends LocalStackContainerBase {
 
   private static final String TEST_LOG_GROUP = "/aws/test/runbook-synthesizer";
   private static final String TEST_LOG_STREAM = "test-stream";

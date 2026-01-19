@@ -1,9 +1,14 @@
-package com.oracle.runbook.integration;
+/*
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ * Licensed under the Universal Permissive License v 1.0.
+ */
+package com.oracle.runbook.integration.aws.local;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.MetricSnapshot;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsCloudWatchMetricsAdapter;
+import com.oracle.runbook.integration.LocalStackContainerBase;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -19,9 +24,11 @@ import software.amazon.awssdk.services.cloudwatch.model.StandardUnit;
 /**
  * Integration tests for {@link AwsCloudWatchMetricsAdapter} using LocalStack.
  *
- * <p>These tests verify CloudWatch metrics operations against a real CloudWatch-compatible service.
+ * <p>These tests verify CloudWatch metrics operations against a local CloudWatch-compatible service
+ * (LocalStack). No AWS credentials or cloud resources are required.
  */
-class AwsCloudWatchMetricsAdapterIT extends LocalStackContainerBase {
+@DisplayName("AWS CloudWatch Metrics Local (LocalStack) Integration Tests")
+class AwsCloudWatchMetricsLocalIT extends LocalStackContainerBase {
 
   private static final String TEST_INSTANCE_ID = "i-test12345";
   private static final String TEST_NAMESPACE = "AWS/EC2";

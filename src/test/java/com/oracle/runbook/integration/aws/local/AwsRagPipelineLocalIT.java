@@ -1,10 +1,15 @@
-package com.oracle.runbook.integration;
+/*
+ * Copyright (c) 2026 Oracle and/or its affiliates.
+ * Licensed under the Universal Permissive License v 1.0.
+ */
+package com.oracle.runbook.integration.aws.local;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.oracle.runbook.domain.*;
 import com.oracle.runbook.enrichment.ContextEnrichmentService;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsS3StorageAdapter;
+import com.oracle.runbook.integration.LocalStackContainerBase;
 import com.oracle.runbook.rag.*;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -25,8 +30,10 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
  * Integration tests for AWS-backed RAG pipeline using LocalStack.
  *
  * <p>Verifies that the RAG pipeline correctly retrieves runbooks from S3 and generates checklists.
+ * Uses LocalStack for local AWS service emulation.
  */
-class AwsRagPipelineIT extends LocalStackContainerBase {
+@DisplayName("AWS RAG Pipeline Local (LocalStack) Integration Tests")
+class AwsRagPipelineLocalIT extends LocalStackContainerBase {
 
   private static final String TEST_BUCKET = "runbook-pipeline-test";
   private static S3AsyncClient s3Client;

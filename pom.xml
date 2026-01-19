@@ -513,5 +513,54 @@
                 </plugins>
             </build>
         </profile>
+        
+        <!-- E2E Real AWS Cloud Profile - Runs tests against real AWS cloud services -->
+        <profile>
+            <id>e2e-aws-cloud</id>
+            <build>
+                <plugins>
+                    <!-- Skip unit tests - only run Failsafe integration tests -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>3.5.4</version>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                    <!-- Failsafe for Real AWS E2E Tests -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>3.5.4</version>
+                        <configuration>
+                            <argLine>--enable-preview --enable-native-access=ALL-UNNAMED</argLine>
+                            <!-- Include only real AWS cloud tests -->
+                            <includes>
+                                <include>**/aws/cloud/*IT.java</include>
+                            </includes>
+                            <!-- CRITICAL: Use systemPropertyVariables, NOT environmentVariables -->
+                            <systemPropertyVariables>
+                                <aws.cloud.enabled>true</aws.cloud.enabled>
+                            </systemPropertyVariables>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>integration-test</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>verify</id>
+                                <goals>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>

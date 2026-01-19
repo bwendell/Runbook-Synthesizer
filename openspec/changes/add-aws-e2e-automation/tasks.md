@@ -181,12 +181,12 @@ Get-Content target/failsafe-reports/*.xml | Select-String "aws.e2e.enabled"
 **Purpose:** Integration tests for S3 operations against real AWS.
 
 **Tasks:**
-- [ ] 3.3.1 Create `src/test/java/com/oracle/runbook/integration/aws/e2e/RealAwsS3StorageIT.java`
-- [ ] 3.3.2 Add `@EnabledIfSystemProperty` annotation (MUST be on concrete class, not just inherited)
-- [ ] 3.3.3 Implement `@BeforeAll` to upload test files to S3 bucket
-- [ ] 3.3.4 Test `listRunbooks()` returns expected markdown files
-- [ ] 3.3.5 Test `getRunbookContent()` returns file content
-- [ ] 3.3.6 Test `getRunbookContent()` returns empty for non-existent key
+- [X] 3.3.1 Create `src/test/java/com/oracle/runbook/integration/aws/e2e/RealAwsS3StorageIT.java`
+- [X] 3.3.2 Add `@EnabledIfSystemProperty` annotation (MUST be on concrete class, not just inherited)
+- [X] 3.3.3 Implement `@BeforeAll` to upload test files to S3 bucket
+- [X] 3.3.4 Test `listRunbooks()` returns expected markdown files
+- [X] 3.3.5 Test `getRunbookContent()` returns file content
+- [X] 3.3.6 Test `getRunbookContent()` returns empty for non-existent key
 
 **Verification:**
 ```powershell
@@ -310,8 +310,8 @@ Get-Content target/failsafe-reports/*.txt
 
 **Tasks:**
 
-- [ ] 4.1.1 Add `<profile>` with `<id>e2e-aws-real</id>` to `<profiles>` section
-- [ ] 4.1.2 Add comment explaining the profile's purpose
+- [X] 4.1.1 Add `<profile>` with `<id>e2e-aws-real</id>` to `<profiles>` section
+- [X] 4.1.2 Add comment explaining the profile's purpose
 
 **Implementation:**
 ```xml
@@ -344,8 +344,8 @@ Get-Content target/failsafe-reports/*.txt
 
 **Tasks:**
 
-- [ ] 4.2.1 Add Surefire plugin configuration inside the profile
-- [ ] 4.2.2 Set `<skipTests>true</skipTests>` to skip all unit tests
+- [X] 4.2.1 Add Surefire plugin configuration inside the profile
+- [X] 4.2.2 Set `<skipTests>true</skipTests>` to skip all unit tests
 
 **Implementation:**
 ```xml
@@ -384,10 +384,10 @@ Get-Content target/failsafe-reports/*.txt
 
 **Tasks:**
 
-- [ ] 4.3.1 Add Failsafe plugin configuration inside the profile
-- [ ] 4.3.2 Set `<includes>` to `**/aws/e2e/*IT.java`
-- [ ] 4.3.3 Add `<systemPropertyVariables>` with `<aws.e2e.enabled>true</aws.e2e.enabled>`
-- [ ] 4.3.4 Add JVM args for preview features: `--enable-preview --enable-native-access=ALL-UNNAMED`
+- [X] 4.3.1 Add Failsafe plugin configuration inside the profile
+- [X] 4.3.2 Set `<includes>` to `**/aws/e2e/*IT.java`
+- [X] 4.3.3 Add `<systemPropertyVariables>` with `<aws.e2e.enabled>true</aws.e2e.enabled>`
+- [X] 4.3.4 Add JVM args for preview features: `--enable-preview --enable-native-access=ALL-UNNAMED`
 
 **Implementation:**
 ```xml
