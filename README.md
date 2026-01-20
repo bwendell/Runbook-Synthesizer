@@ -21,7 +21,6 @@ An open-source Java tool that transforms static runbooks into intelligent, conte
 
 - Java 25+
 - Maven 3.9+
-- OCI Account (for full functionality)
 
 ### Build and Run
 
@@ -48,7 +47,7 @@ curl http://localhost:8080/health
 # Expected: {"status":"UP"}
 ```
 
-### Testing
+
 
 ```powershell
 # Run unit tests only
@@ -61,17 +60,29 @@ curl http://localhost:8080/health
 .\mvnw.cmd verify -Dtest.use.containers=true --batch-mode
 ```
 
-See [E2E Testing Guidelines](docs/E2E_TESTING_GUIDELINES.md) for detailed testing documentation.
+### E2E Testing
+
+For full pipeline validation:
+
+```powershell
+# Local E2E (Uses LocalStack + Ollama containers)
+.\mvnw.cmd verify -Dtest=LocalStackE2EPipelineIT
+
+# Real AWS E2E (Requires AWS Credentials)
+.\mvnw.cmd verify -Pe2e-aws-cloud
+```
+
+See [E2E Testing Guidelines](docs/E2E_TESTING_GUIDELINES.md) and [Full Testing Guide](docs/TESTING.md) for detailed documentation.
 
 ## Tech Stack
 
-| Component | Technology |
-|-----------|------------|
-| Framework | Helidon SE 4.x |
-| Language | Java 25 |
-| Build | Maven |
-| Vector Store | Oracle Database 23ai |
-| LLM | Pluggable (Ollama, AWS Bedrock, OCI GenAI) |
+| Component    | Technology                                 |
+| :----------- | :----------------------------------------- |
+| Framework    | Helidon SE 4.x                             |
+| Language     | Java 25                                    |
+| Build        | Maven                                      |
+| Vector Store | Oracle Database 23ai                       |
+| LLM          | Pluggable (Ollama, AWS Bedrock, OCI GenAI) |
 
 ## Documentation
 

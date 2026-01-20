@@ -48,7 +48,7 @@ public final class OllamaContainerSupport {
    *
    * <ul>
    *   <li>ollama/ollama:latest image
-   *   <li>Port 11434 exposed
+   *   <li>Port 11434 exposed and bound to host port 11434 (fixed port for demo stability)
    *   <li>Health check via /api/tags endpoint
    *   <li>Network alias "ollama" for container-to-container communication
    * </ul>
@@ -61,6 +61,17 @@ public final class OllamaContainerSupport {
         .withNetwork(network)
         .withNetworkAliases("ollama")
         .withExposedPorts(OLLAMA_PORT)
+        .withCreateContainerCmdModifier(
+            cmd -> {
+              var hostConfig = cmd.getHostConfig();
+              if (hostConfig != null) {
+                cmd.withHostConfig(
+                    hostConfig.withPortBindings(
+                        new com.github.dockerjava.api.model.PortBinding(
+                            com.github.dockerjava.api.model.Ports.Binding.bindPort(OLLAMA_PORT),
+                            new com.github.dockerjava.api.model.ExposedPort(OLLAMA_PORT))));
+              }
+            })
         .waitingFor(Wait.forHttp("/api/tags").forPort(OLLAMA_PORT))
         .withStartupTimeout(STARTUP_TIMEOUT);
   }
@@ -84,5 +95,23 @@ public final class OllamaContainerSupport {
    */
   public static String getInternalOllamaUrl() {
     return "http://ollama:" + OLLAMA_PORT;
+  }
+
+  /**
+   * Pulls a model into the Ollama container.
+   *
+   * @param ollama the running Ollama container
+   * @param modelName the name of the model to pull (e.g., "llama3.2:1b")
+   * @throws java.io.IOException if the execution fails
+   * @throws InterruptedException if the execution is interrupted
+   */
+  public static void pullModel(GenericContainer<?> ollama, String modelName)
+      throws java.io.IOException, InterruptedException {
+    org.testcontainers.containers.Container.ExecResult result =
+        ollama.execInContainer("ollama", "pull", modelName);
+    if (result.getExitCode() != 0) {
+      throw new java.io.IOException(
+          "Failed to pull model " + modelName + ": " + result.getStderr() + result.getStdout());
+    }
   }
 }

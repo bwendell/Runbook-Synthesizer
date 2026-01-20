@@ -55,7 +55,7 @@ public abstract class LocalStackContainerBase {
    * @throws AssertionError if Docker is not available
    */
   @BeforeAll
-  static void startLocalStackContainer() {
+  protected static void startLocalStackContainer() {
     DockerSupport.ensureDockerAvailable();
 
     localstack =

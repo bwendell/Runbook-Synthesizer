@@ -23,7 +23,7 @@ logging:
 # Set stub-mode to false to enable real pipeline processing.
 
 app:
-  stub-mode: ${APP_STUB_MODE:true}
+  stub-mode: false
 
 # --------------------------------------------------------
 # Vector Store Configuration
@@ -45,7 +45,8 @@ cloud:
 
   # AWS Configuration (used when provider: aws)
   aws:
-    region: ${AWS_REGION:us-west-2}
+    region: us-west-2
+    endpoint: http://localhost:9732
     storage:
       bucket: ${AWS_S3_BUCKET:runbook-synthesizer-runbooks}
     # Uses AWS default credential chain:
@@ -63,14 +64,14 @@ cloud:
 
 llm:
   # LLM provider: 'ollama' (MVP default) or 'aws-bedrock' (production)
-  provider: ${LLM_PROVIDER:ollama}
+  provider: ollama
 
   # Ollama Configuration (MVP/Local Development)
   # Run 'ollama serve' and pull required models before use
   ollama:
-    baseUrl: ${OLLAMA_BASE_URL:http://localhost:11434}
-    textModel: ${OLLAMA_TEXT_MODEL:llama3.2:3b}
-    embeddingModel: ${OLLAMA_EMBEDDING_MODEL:nomic-embed-text}
+    baseUrl: http://localhost:11434
+    textModel: llama3.2:1b
+    embeddingModel: nomic-embed-text
 
   # AWS Bedrock Configuration (Production)
   # Requires AWS credentials with bedrock:InvokeModel permission
@@ -97,10 +98,10 @@ output:
     # Example Generic Webhook (disabled by default)
     - name: example-generic
       type: generic
-      url: ${WEBHOOK_URL:http://localhost:8888/webhook}
+      url: http://localhost:8888/webhook
       enabled: false
       headers:
-        Authorization: Bearer ${WEBHOOK_TOKEN:example-token}
+        Authorization: Bearer example-token
 
     # Slack Webhook (v1.1 - stub only)
     # - name: slack-oncall

@@ -91,6 +91,7 @@ public class RunbookSynthesizerApp {
       } catch (Exception e) {
         LOGGER.warning(
             "Failed to initialize real mode, falling back to stub mode: " + e.getMessage());
+        LOGGER.log(java.util.logging.Level.WARNING, "Full exception:", e);
         routing.register("/api/v1/alerts", new AlertResource());
       }
     }

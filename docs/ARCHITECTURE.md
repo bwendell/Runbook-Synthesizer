@@ -180,6 +180,75 @@ cloud:
 
 ---
 
+## Vector Store Abstraction
+
+The system uses a pluggable vector store architecture to support different environments (local testing vs production) and cloud providers.
+
+### Architecture
+
+```mermaid
+flowchart LR
+    subgraph Factory["🏭 Factory"]
+        CloudAdapterFactory
+    end
+
+    subgraph Interface["📋 Interface"]
+        VectorStoreRepository
+    end
+
+    subgraph Impls["Implementation"]
+        InMemory["InMemoryVectorStoreRepository (Local)"]
+        Oracle["OciVectorStoreRepository (OCI 23ai)"]
+        Aws["AwsOpenSearchVectorStoreRepository (AWS)"]
+    end
+
+    CloudAdapterFactory -->|creates| VectorStoreRepository
+    VectorStoreRepository <|.. InMemory
+    VectorStoreRepository <|.. Oracle
+    VectorStoreRepository <|.. Aws
+```
+
+### Implementations
+
+1. **Local (`local`)**: `InMemoryVectorStoreRepository`
+   - Uses `ConcurrentHashMap` for storage
+   - Implements cosine similarity search in Java
+   - Best for unit tests, E2E validation, and local development
+   - No external dependencies required
+
+2. **OCI (`oci`)**: `OciVectorStoreRepository`
+   - Uses Oracle Database 23ai AI Vector Search
+   - High-performance, scalable vector operations
+   - Requires JDBC connection to Oracle DB
+
+3. **AWS (`aws`)**: `AwsOpenSearchVectorStoreRepository`
+   - Uses AWS OpenSearch Service (Provisioned or Serverless)
+   - k-NN search capabilities
+   - *Note: Currently implemented as stub for future expansion*
+
+### Configuration
+
+The vector store provider is configured independently of the main cloud provider, allowing for flexible testing configurations (e.g., using AWS for storage but local memory for vectors).
+
+```yaml
+# application.yaml
+vectorStore:
+  provider: local  # "local", "oci", or "aws"
+```
+
+To configure in `application.yaml`:
+
+```yaml
+vectorStore:
+  provider: oci
+  oci:
+    url: jdbc:oracle:thin:@...
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+```
+
+---
+
 ## Key Design Decisions
 
 1. **Helidon SE 4.x** - Oracle's native microframework with virtual threads
