@@ -110,18 +110,18 @@ mvn test -Dtest=FileOutputAdapterTest -q
 **Description:** Create service to ingest runbooks from S3, chunk them, and store in vector store.
 
 ### Subtasks
-- [ ] 4.1 Create `RunbookChunker.java` in `rag/`
+- [X] 4.1 Create `RunbookChunker.java` in `rag/`
   - Parse YAML frontmatter for metadata
   - Split by H2/H3 headers
   - Preserve code blocks as atomic units
   - Min/max chunk size constraints
-- [ ] 4.2 Create `RunbookIngestionService.java` in `rag/`
+- [X] 4.2 Create `RunbookIngestionService.java` in `rag/`
   - Fetch runbook content via `CloudStorageAdapter`
   - Use `RunbookChunker` to create chunks
   - Generate embeddings via `EmbeddingService`
   - Store chunks in `VectorStoreRepository`
-- [ ] 4.3 Create unit tests `RunbookChunkerTest.java`
-- [ ] 4.4 Create unit tests `RunbookIngestionServiceTest.java`
+- [X] 4.3 Create unit tests `RunbookChunkerTest.java`
+- [X] 4.4 Create unit tests `RunbookIngestionServiceTest.java`
 
 ### Verification Steps
 ```bash
@@ -132,12 +132,12 @@ mvn test -Dtest=RunbookIngestionServiceTest -q
 **Expected:** All unit tests pass.
 
 ### Acceptance Criteria
-- [ ] `RunbookChunker` extracts YAML frontmatter (title, tags, applicable_shapes)
-- [ ] `RunbookChunker` splits content into semantic chunks preserving headers
-- [ ] `RunbookChunker` respects min/max chunk size constraints
-- [ ] `RunbookIngestionService.ingest(path)` fetches from S3 and stores chunks
-- [ ] `RunbookIngestionService.ingestAll()` processes all `.md` files in bucket
-- [ ] Unit tests cover: frontmatter parsing, chunking, embedding, storage
+- [X] `RunbookChunker` extracts YAML frontmatter (title, tags, applicable_shapes)
+- [X] `RunbookChunker` splits content into semantic chunks preserving headers
+- [X] `RunbookChunker` respects min/max chunk size constraints
+- [X] `RunbookIngestionService.ingest(path)` fetches from S3 and stores chunks
+- [X] `RunbookIngestionService.ingestAll()` processes all `.md` files in bucket
+- [X] Unit tests cover: frontmatter parsing, chunking, embedding, storage
 
 ---
 

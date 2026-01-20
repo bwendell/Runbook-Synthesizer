@@ -32,7 +32,7 @@ Thumbs.db
 
 # Skill package outputs
 *.skill
-dist/
+/dist/
 
 # CDK Infrastructure
 infra/node_modules/
