@@ -186,12 +186,12 @@ mvn test -q
 
 ### Subtask 6A: LocalStack E2E Test
 
-- [ ] 6A.1 Create `LocalStackE2EPipelineIT.java` in `integration/e2e/`
+- [X] 6A.1 Create `LocalStackE2EPipelineIT.java` in `integration/e2e/`
   - Uses LocalStack for AWS services (S3, CloudWatch Logs, CloudWatch Metrics)
   - Uses Ollama container for LLM
   - Seeds runbook chunks in in-memory vector store
   - Sends test alert and verifies file output
-- [ ] 6A.2 Create test fixtures:
+- [X] 6A.2 Create test fixtures:
   - Sample runbooks in `src/test/resources/sample-runbooks/`
   - Sample CloudWatch alarm JSON
 
@@ -206,12 +206,12 @@ mvn test -Dtest=LocalStackE2EPipelineIT -q
 **Expected:** E2E test passes with LocalStack containers, checklist file is created.
 
 **Acceptance Criteria (LocalStack):**
-- [ ] E2E test starts LocalStack container with S3 and CloudWatch
-- [ ] E2E test starts Ollama container with required models
-- [ ] E2E test ingests sample runbooks from S3
-- [ ] E2E test sends CloudWatch alarm and receives checklist
-- [ ] File output contains valid `DynamicChecklist` JSON
-- [ ] Generated checklist references seeded runbook content
+- [X] E2E test starts LocalStack container with S3 and CloudWatch
+- [X] E2E test starts Ollama container with required models
+- [X] E2E test ingests sample runbooks from S3
+- [X] E2E test sends CloudWatch alarm and receives checklist
+- [X] File output contains valid `DynamicChecklist` JSON
+- [X] Generated checklist references seeded runbook content
 
 ---
 
