@@ -146,19 +146,19 @@ mvn test -Dtest=RunbookIngestionServiceTest -q
 **Description:** Replace stub mode with real pipeline in `RunbookSynthesizerApp`.
 
 ### Subtasks
-- [ ] 5.1 Create `ServiceFactory.java` in `config/`
+- [X] 5.1 Create `ServiceFactory.java` in `config/`
   - Factory to create all production services
   - Reads configuration and instantiates appropriate adapters
   - Wires dependencies correctly
-- [ ] 5.2 Update `RunbookSynthesizerApp.java`
+- [X] 5.2 Update `RunbookSynthesizerApp.java`
   - Remove stub mode fallback for real mode
   - Use `ServiceFactory` to create `RagPipelineService`
   - Wire `AlertResource` with real `RagPipelineService` and `WebhookDispatcher`
-- [ ] 5.3 Update `application.yaml` with new configuration options
+- [X] 5.3 Update `application.yaml` with new configuration options
   - Add `vectorStore.provider: local`
   - Add `output.file.enabled: true`
-  - Add `app.real-mode: true` flag
-- [ ] 5.4 Create integration test `ProductionWiringIT.java`
+  - Add `app.stub-mode: true` flag (defaults to stub, set to false for real mode)
+- [X] 5.4 Create integration test `ProductionWiringIT.java`
 
 ### Verification Steps
 ```bash
@@ -172,11 +172,11 @@ mvn test -q
 **Expected:** All tests pass.
 
 ### Acceptance Criteria
-- [ ] `ServiceFactory` correctly instantiates all required services
-- [ ] `RunbookSynthesizerApp` starts in real mode when configured
-- [ ] Alert endpoint processes alerts through real `RagPipelineService`
-- [ ] Checklists are dispatched to configured webhooks (including file output)
-- [ ] Existing tests continue to pass (no regressions)
+- [X] `ServiceFactory` correctly instantiates all required services
+- [X] `RunbookSynthesizerApp` starts in real mode when configured
+- [X] Alert endpoint processes alerts through real `RagPipelineService`
+- [X] Checklists are dispatched to configured webhooks (including file output)
+- [X] Existing tests continue to pass (no regressions)
 
 ---
 

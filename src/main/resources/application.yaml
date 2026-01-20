@@ -17,6 +17,24 @@ logging:
   level: INFO
 
 # --------------------------------------------------------
+# Application Mode Configuration
+# --------------------------------------------------------
+# Controls whether the app uses stub mode or real RAG pipeline.
+# Set stub-mode to false to enable real pipeline processing.
+
+app:
+  stub-mode: ${APP_STUB_MODE:true}
+
+# --------------------------------------------------------
+# Vector Store Configuration
+# --------------------------------------------------------
+# Configures which vector store provider to use for chunk storage.
+# Supports 'local' (in-memory), 'oci', or 'aws'.
+
+vectorStore:
+  provider: ${VECTOR_STORE_PROVIDER:local}
+
+# --------------------------------------------------------
 # Cloud Provider Configuration
 # --------------------------------------------------------
 # Selects which cloud provider's adapters to use for storage,

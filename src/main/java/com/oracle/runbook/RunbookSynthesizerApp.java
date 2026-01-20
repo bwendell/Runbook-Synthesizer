@@ -4,6 +4,9 @@ import com.oracle.runbook.api.AlertResource;
 import com.oracle.runbook.api.HealthResource;
 import com.oracle.runbook.api.RunbookResource;
 import com.oracle.runbook.api.WebhookResource;
+import com.oracle.runbook.config.ServiceFactory;
+import com.oracle.runbook.output.WebhookDispatcher;
+import com.oracle.runbook.rag.RagPipelineService;
 import io.helidon.config.Config;
 import io.helidon.webserver.WebServer;
 import io.helidon.webserver.http.HttpRouting;
@@ -76,12 +79,20 @@ public class RunbookSynthesizerApp {
       // Use no-arg constructor for stub mode (existing tests/simple deployment)
       routing.register("/api/v1/alerts", new AlertResource());
     } else {
-      // TODO: Wire real RagPipelineService and WebhookDispatcher when dependencies
-      // are ready
-      // For now, fall back to stub mode even if config says real mode
-      LOGGER.warning(
-          "Real mode requested but dependencies not yet wired. Using stub mode instead.");
-      routing.register("/api/v1/alerts", new AlertResource());
+      // Real mode: use ServiceFactory to create RagPipelineService and WebhookDispatcher
+      try {
+        ServiceFactory serviceFactory = new ServiceFactory(config);
+        RagPipelineService ragPipeline = serviceFactory.createRagPipelineService();
+        WebhookDispatcher webhookDispatcher = serviceFactory.createWebhookDispatcher();
+
+        LOGGER.info("Real mode enabled - using RagPipelineService with LLM provider");
+        routing.register(
+            "/api/v1/alerts", new AlertResource(ragPipeline, webhookDispatcher, false));
+      } catch (Exception e) {
+        LOGGER.warning(
+            "Failed to initialize real mode, falling back to stub mode: " + e.getMessage());
+        routing.register("/api/v1/alerts", new AlertResource());
+      }
     }
 
     routing.register("/api/v1/webhooks", new WebhookResource());
