@@ -101,3 +101,13 @@ output:
     #     X-Routing-Key: ${PD_ROUTING_KEY}
     #   filter:
     #     severities: [CRITICAL]
+
+  # --------------------------------------------------------
+  # File Output Configuration
+  # --------------------------------------------------------
+  # Writes generated checklists as JSON files to local directory.
+  # Useful for MVP validation and local testing.
+  file:
+    enabled: ${FILE_OUTPUT_ENABLED:true}
+    outputDirectory: ${FILE_OUTPUT_DIR:./output}
+    name: file-output

@@ -22,7 +22,7 @@ target/
 Thumbs.db
 
 # Runtime/Test outputs
-output/
+/output/
 *.txt
 *.log
 

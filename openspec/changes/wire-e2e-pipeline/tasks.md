@@ -79,14 +79,14 @@ mvn test -Dtest=DefaultContextEnrichmentServiceTest -q
 **Description:** Create file-based output adapter for MVP validation.
 
 ### Subtasks
-- [ ] 3.1 Create `FileOutputAdapter.java` in `output/adapters/`
+- [X] 3.1 Create `FileOutputAdapter.java` in `output/adapters/`
   - Implements `WebhookDestination` interface
   - Outputs JSON format by default
   - Configurable output directory
   - Filename format: `checklist-{alertId}-{timestamp}.json`
-- [ ] 3.2 Create `FileOutputConfig.java` record
-- [ ] 3.3 Update `application.yaml` with file output configuration
-- [ ] 3.4 Create unit tests `FileOutputAdapterTest.java`
+- [X] 3.2 Create `FileOutputConfig.java` record
+- [X] 3.3 Update `application.yaml` with file output configuration
+- [X] 3.4 Create unit tests `FileOutputAdapterTest.java`
 
 ### Verification Steps
 ```bash
@@ -96,12 +96,12 @@ mvn test -Dtest=FileOutputAdapterTest -q
 **Expected:** All unit tests pass.
 
 ### Acceptance Criteria
-- [ ] `FileOutputAdapter` implements `WebhookDestination` interface
-- [ ] Writes `DynamicChecklist` as JSON to configured directory
-- [ ] Creates directory if it doesn't exist
-- [ ] `send()` returns `WebhookResult.success()` on successful write
-- [ ] `send()` returns `WebhookResult.failure()` on IO error
-- [ ] Unit tests cover: success write, directory creation, error handling
+- [X] `FileOutputAdapter` implements `WebhookDestination` interface
+- [X] Writes `DynamicChecklist` as JSON to configured directory
+- [X] Creates directory if it doesn't exist
+- [X] `send()` returns `WebhookResult.success()` on successful write
+- [X] `send()` returns `WebhookResult.failure()` on IO error
+- [X] Unit tests cover: success write, directory creation, error handling
 
 ---
 
