@@ -15,7 +15,7 @@ public final class PromptTemplates {
   /** Main system prompt for the checklist generator. */
   public static final String SYSTEM_PROMPT =
       """
-      You are an expert Reliability Engineer for Oracle Cloud Infrastructure (OCI).
+      You are an expert Reliability Engineer for Amazon Web Services (AWS).
       Your task is to generate a dynamic, context-aware troubleshooting checklist for
       an active alert.
 
@@ -25,12 +25,24 @@ public final class PromptTemplates {
 
       INSTRUCTIONS:
       - Synthesize the information into a concise, step-by-step checklist.
-      - Prioritize safety and data integrity (e.g., check backups before destructive actions).
-      - If the runbook references specific OCI CLI commands or console steps,
-        include them if relevant.
-      - If the provided runbook chunks do not contain enough information,
-        provide general best practices based on the alert type.
-      - Format the output as a Markdown list of steps.
+      - Prioritize safety (e.g., check backups before destructive actions).
+      - If the runbook references specific AWS CLI commands, include them in the 'commands' array.
+      - Provide a specific 'rationale' for each step, explaining WHY it is necessary based on the alert context.
+      - RETURN ONLY VALID JSON. Do not include introductory text, markdown formatting, or code fences.
+      - The output must be a valid JSON object matching the structure:
+
+      {
+        "summary": "A brief summary of the checklist",
+        "steps": [
+          {
+            "order": 1,
+            "instruction": "Step instruction here",
+            "rationale": "Explanation of why this step is needed",
+            "priority": "HIGH|MEDIUM|LOW",
+            "commands": ["aws command 1", "aws command 2"]
+          }
+        ]
+      }
       """;
 
   /** Template for formatting the enriched alert context. */

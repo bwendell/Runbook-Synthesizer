@@ -1,5 +1,6 @@
 package com.oracle.runbook.rag;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oracle.runbook.domain.ChecklistStep;
 import com.oracle.runbook.domain.DynamicChecklist;
 import com.oracle.runbook.domain.EnrichedContext;
@@ -27,6 +28,12 @@ public class DefaultChecklistGenerator implements ChecklistGenerator {
     this.llmProvider = Objects.requireNonNull(llmProvider, "llmProvider cannot be null");
   }
 
+  private static final ObjectMapper MAPPER =
+      com.fasterxml.jackson.databind.json.JsonMapper.builder()
+          .enable(com.fasterxml.jackson.core.json.JsonReadFeature.ALLOW_JAVA_COMMENTS)
+          .enable(com.fasterxml.jackson.core.json.JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES)
+          .build();
+
   /** {@inheritDoc} */
   @Override
   public DynamicChecklist generate(EnrichedContext context, List<RetrievedChunk> relevantChunks) {
@@ -40,19 +47,89 @@ public class DefaultChecklistGenerator implements ChecklistGenerator {
     GenerationConfig config = new GenerationConfig(0.7, 1000, java.util.Optional.empty());
     String response = llmProvider.generateText(prompt, config).join();
 
-    // 3. Parse Markdown checklist
-    List<ChecklistStep> steps = parseMarkdownChecklist(response);
-    String summary = response.split("\n")[0]; // Simple first line as summary
-    if (summary.length() > 200) {
-      summary = summary.substring(0, 197) + "...";
-    }
+    System.out.println("DEBUG: Raw LLM Response: [" + response + "]");
 
+    // 3. Parse Checklist (JSON first, fallback to Markdown)
+    return parseChecklistResponse(response, context, relevantChunks);
+  }
+
+  private DynamicChecklist parseChecklistResponse(
+      String response, EnrichedContext context, List<RetrievedChunk> relevantChunks) {
     List<String> sourceRunbooks =
         relevantChunks.stream().map(rc -> rc.chunk().runbookPath()).distinct().toList();
 
+    try {
+      String cleanedJson = extractJson(response);
+      LlmResponse jsonResponse = MAPPER.readValue(cleanedJson, LlmResponse.class);
+      return mapJsonToDomain(jsonResponse, context, sourceRunbooks);
+    } catch (Exception e) {
+      // Fallback to Markdown parsing
+      System.err.println("JSON parsing failed, falling back to Markdown: " + e.getMessage());
+      List<ChecklistStep> steps = parseMarkdownChecklist(response);
+      String summary = response.split("\n")[0]; // Simple first line as summary
+      if (summary.length() > 200) {
+        summary = summary.substring(0, 197) + "...";
+      }
+
+      return new DynamicChecklist(
+          context.alert().id(),
+          summary,
+          steps,
+          sourceRunbooks,
+          Instant.now(),
+          llmProvider.providerId());
+    }
+  }
+
+  private String extractJson(String response) {
+    // 1. Try to find content within ```json ... ``` code blocks
+    Pattern codeBlockPattern =
+        Pattern.compile("```(?:json)?\\s*(\\{.*?\\})\\s*```", Pattern.DOTALL);
+    Matcher matcher = codeBlockPattern.matcher(response);
+    if (matcher.find()) {
+      return matcher.group(1);
+    }
+
+    // 2. If no code block, try to find the first { and last }
+    int firstBrace = response.indexOf('{');
+    int lastBrace = response.lastIndexOf('}');
+    if (firstBrace >= 0 && lastBrace > firstBrace) {
+      return response.substring(firstBrace, lastBrace + 1);
+    }
+
+    // 3. Fallback: return original (trimmed)
+    return response.trim();
+  }
+
+  private DynamicChecklist mapJsonToDomain(
+      LlmResponse jsonResponse, EnrichedContext context, List<String> sourceRunbooks) {
+    List<ChecklistStep> steps = new ArrayList<>();
+    if (jsonResponse.steps != null) {
+      for (LlmStep step : jsonResponse.steps) {
+        StepPriority priority = StepPriority.MEDIUM;
+        if (step.priority != null) {
+          try {
+            priority = StepPriority.valueOf(step.priority.toUpperCase());
+          } catch (IllegalArgumentException e) {
+            // Default to MEDIUM
+          }
+        }
+
+        steps.add(
+            new ChecklistStep(
+                step.order,
+                step.instruction,
+                step.rationale != null ? step.rationale : "Generated based on alert context",
+                null,
+                null,
+                priority,
+                step.commands != null ? step.commands : List.of()));
+      }
+    }
+
     return new DynamicChecklist(
         context.alert().id(),
-        summary,
+        jsonResponse.summary != null ? jsonResponse.summary : "Generated Checklist",
         steps,
         sourceRunbooks,
         Instant.now(),
@@ -130,5 +207,19 @@ public class DefaultChecklistGenerator implements ChecklistGenerator {
     }
 
     return steps;
+  }
+
+  // DTO classes for JSON parsing
+  private static class LlmResponse {
+    public String summary;
+    public List<LlmStep> steps;
+  }
+
+  private static class LlmStep {
+    public int order;
+    public String instruction;
+    public String rationale;
+    public String priority;
+    public List<String> commands;
   }
 }

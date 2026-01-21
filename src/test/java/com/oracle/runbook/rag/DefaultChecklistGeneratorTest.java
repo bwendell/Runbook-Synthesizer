@@ -24,19 +24,42 @@ class DefaultChecklistGeneratorTest {
   }
 
   @Test
-  @DisplayName("generate formats prompt and parses Markdown checklist")
+  @DisplayName("generate formats prompt and parses JSON checklist")
   void generate_formatsPromptAndParsesChecklist() {
     // Arrange
     EnrichedContext context = createTestContext();
     List<RetrievedChunk> chunks = List.of(createRetrievedChunk("c1", "Restart the service"));
 
-    String markdownResponse =
+    String jsonResponse =
         """
-				Step 1: Check logs
-				Step 2: Restart the service if logs are clean
-				Step 3: Verify service is up
-				""";
-    llmProvider.setNextResponse(markdownResponse);
+        {
+          "summary": "Check logs and restart service",
+          "steps": [
+            {
+              "order": 1,
+              "instruction": "Check logs",
+              "rationale": "To identify the root cause",
+              "priority": "HIGH",
+              "commands": ["tail -f /var/log/syslog"]
+            },
+            {
+              "order": 2,
+              "instruction": "Restart the service if logs are clean",
+              "rationale": "To recover the service",
+              "priority": "MEDIUM",
+              "commands": ["systemctl restart service"]
+            },
+            {
+              "order": 3,
+              "instruction": "Verify service is up",
+              "rationale": "To ensure stability",
+              "priority": "LOW",
+              "commands": []
+            }
+          ]
+        }
+        """;
+    llmProvider.setNextResponse(jsonResponse);
 
     // Act
     DynamicChecklist checklist = generator.generate(context, chunks);
@@ -44,8 +67,15 @@ class DefaultChecklistGeneratorTest {
     // Assert
     assertThat(checklist).isNotNull();
     assertThat(checklist.alertId()).isEqualTo("a1");
+    assertThat(checklist.summary()).isEqualTo("Check logs and restart service");
     assertThat(checklist.steps()).hasSize(3);
-    assertThat(checklist.steps().get(0).instruction()).isEqualTo("Check logs");
+
+    ChecklistStep step1 = checklist.steps().get(0);
+    assertThat(step1.instruction()).isEqualTo("Check logs");
+    assertThat(step1.rationale()).isEqualTo("To identify the root cause");
+    assertThat(step1.priority()).isEqualTo(StepPriority.HIGH);
+    assertThat(step1.commands()).containsExactly("tail -f /var/log/syslog");
+
     assertThat(checklist.steps().get(2).instruction()).isEqualTo("Verify service is up");
     assertThat(llmProvider.lastPrompt).contains("High CPU"); // Verify context was in prompt
     assertThat(llmProvider.lastPrompt)
@@ -65,6 +95,62 @@ class DefaultChecklistGeneratorTest {
     // Assert
     assertThat(checklist).isNotNull();
     assertThat(checklist.steps()).isEmpty();
+  }
+
+  @Test
+  @DisplayName("generate falls back to Markdown parsing on invalid JSON")
+  void generate_fallsBackToMarkdownOnInvalidJson() {
+    // Arrange
+    EnrichedContext context = createTestContext();
+    List<RetrievedChunk> chunks = List.of(createRetrievedChunk("c1", "Restart"));
+    // Invalid JSON but valid Markdown
+    String response =
+        """
+        This is not JSON but it is a checklist:
+        Step 1: Check logs
+        Step 2: Fix it
+        """;
+    llmProvider.setNextResponse(response);
+
+    // Act
+    DynamicChecklist checklist = generator.generate(context, chunks);
+
+    // Assert
+    assertThat(checklist).isNotNull();
+    assertThat(checklist.steps()).hasSize(2);
+    assertThat(checklist.steps().get(0).instruction()).isEqualTo("Check logs");
+  }
+
+  @Test
+  @DisplayName("generate handles JSON with code fences")
+  void generate_handlesJsonWithCodeFences() {
+    // Arrange
+    EnrichedContext context = createTestContext();
+    List<RetrievedChunk> chunks = List.of(createRetrievedChunk("c1", "Restart"));
+    String response =
+        """
+         ```json
+         {
+           "summary": "Summary",
+           "steps": [
+             {
+               "order": 1,
+               "instruction": "Do simple thing",
+               "priority": "LOW",
+               "commands": []
+             }
+           ]
+         }
+         ```
+         """;
+    llmProvider.setNextResponse(response);
+
+    // Act
+    DynamicChecklist checklist = generator.generate(context, chunks);
+
+    // Assert
+    assertThat(checklist.steps()).hasSize(1);
+    assertThat(checklist.steps().get(0).instruction()).isEqualTo("Do simple thing");
   }
 
   private EnrichedContext createTestContext() {

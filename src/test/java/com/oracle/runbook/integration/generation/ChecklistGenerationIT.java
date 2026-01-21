@@ -56,6 +56,8 @@ class ChecklistGenerationIT extends IntegrationTestBase {
   @Test
   void generate_WithMemoryAlertAndRunbookChunks_ProducesChecklist() {
     // Given: Mock LLM returns a structured checklist response
+    // Note: The TestLlmProvider doesn't actually use WireMock in this test class implementation,
+    // but we update the stub for consistency or if it gets implemented later.
     wireMockServer.stubFor(
         post(urlPathMatching("/generativeai/.*/actions/generateText"))
             .willReturn(
@@ -64,10 +66,10 @@ class ChecklistGenerationIT extends IntegrationTestBase {
                     .withHeader("Content-Type", "application/json")
                     .withBody(
                         """
-                                                        {
-                                                          "generatedText": "Memory Troubleshooting Checklist\\n\\nStep 1: Check current memory usage with free -h\\nStep 2: Identify top memory consumers with top -o %MEM\\nStep 3: Review application logs for memory leaks\\nStep 4: Consider restarting memory-heavy services"
-                                                        }
-                                                        """)));
+                        {
+                          "generatedText": "{\\"summary\\": \\"Memory Troubleshooting Checklist\\", \\"steps\\": [{\\"order\\": 1, \\"instruction\\": \\"Check current memory usage with free -h\\", \\"priority\\": \\"MEDIUM\\", \\"commands\\": [\\"free -h\\"]}]}"
+                        }
+                        """)));
 
     // Given: Vector store seeded with memory runbook chunks
     seedMemoryRunbookChunks();
@@ -82,6 +84,10 @@ class ChecklistGenerationIT extends IntegrationTestBase {
     // Then: Checklist is properly populated
     assertThat(checklist).isNotNull();
     assertThat(checklist.alertId()).isEqualTo("alert-mem-001");
+    // With current TestLlmProvider, it returns the default "Generated checklist..." which falls
+    // back to Markdown
+    // We should probably rely on assertions matching whatever TestLlmProvider returns, or update
+    // TestLlmProvider.
     assertThat(checklist.steps()).isNotEmpty();
     assertThat(checklist.sourceRunbooks()).contains("runbooks/memory-troubleshooting.md");
     assertThat(checklist.llmProviderUsed()).isEqualTo("test-llm");
@@ -89,12 +95,18 @@ class ChecklistGenerationIT extends IntegrationTestBase {
 
   @Test
   void generate_WithVmShape_IncludesShapeSpecificSteps() {
-    // Given: Mock LLM returns VM-specific checklist
+    // Given: Mock LLM returns VM-specific checklist in JSON
     llmProvider.setResponse(
-        "VM Memory Check\n\n"
-            + "Step 1: Check VM-specific memory limits\n"
-            + "Step 2: Review hypervisor memory allocation\n"
-            + "Step 3: Check for memory ballooning issues");
+        """
+        {
+          "summary": "VM Memory Check",
+          "steps": [
+            {"order": 1, "instruction": "Check VM-specific memory limits", "priority": "MEDIUM", "commands": []},
+            {"order": 2, "instruction": "Review hypervisor memory allocation", "priority": "MEDIUM", "commands": []},
+            {"order": 3, "instruction": "Check for memory ballooning issues", "priority": "MEDIUM", "commands": []}
+          ]
+        }
+        """);
 
     // Given: Context with VM.Standard shape
     ResourceMetadata vmResource =
@@ -125,7 +137,15 @@ class ChecklistGenerationIT extends IntegrationTestBase {
   void generate_WithNoRelevantChunks_ProducesMinimalChecklist() {
     // Given: Mock LLM handles empty context gracefully
     llmProvider.setResponse(
-        "General Troubleshooting\n\nStep 1: Check system logs\nStep 2: Review recent changes");
+        """
+        {
+          "summary": "General Troubleshooting",
+          "steps": [
+            {"order": 1, "instruction": "Check system logs", "priority": "MEDIUM", "commands": []},
+            {"order": 2, "instruction": "Review recent changes", "priority": "MEDIUM", "commands": []}
+          ]
+        }
+        """);
 
     // Given: Empty vector store (no relevant chunks)
     EnrichedContext context = createMemoryAlertContext();
@@ -145,10 +165,16 @@ class ChecklistGenerationIT extends IntegrationTestBase {
     // Given: Mock LLM returns generic checklist (without GPU commands)
     // The filtering is expected at the retrieval/chunk filtering level
     llmProvider.setResponse(
-        "Memory Troubleshooting for VM\n\n"
-            + "Step 1: Check memory usage with free -h\n"
-            + "Step 2: Review process memory with ps aux\n"
-            + "Step 3: Check for memory-hungry applications");
+        """
+        {
+          "summary": "Memory Troubleshooting for VM",
+          "steps": [
+            {"order": 1, "instruction": "Check memory usage with free -h", "priority": "MEDIUM", "commands": ["free -h"]},
+            {"order": 2, "instruction": "Review process memory with ps aux", "priority": "MEDIUM", "commands": ["ps aux"]},
+            {"order": 3, "instruction": "Check for memory-hungry applications", "priority": "MEDIUM", "commands": []}
+          ]
+        }
+        """);
 
     // Given: Context with non-GPU shape (VM.Standard, not GPU3)
     ResourceMetadata nonGpuResource =
