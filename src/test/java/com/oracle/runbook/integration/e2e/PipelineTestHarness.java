@@ -2,6 +2,8 @@ package com.oracle.runbook.integration.e2e;
 
 import com.oracle.runbook.domain.*;
 import com.oracle.runbook.enrichment.ContextEnrichmentService;
+import com.oracle.runbook.infrastructure.cloud.CloudStorageAdapter;
+import com.oracle.runbook.infrastructure.cloud.aws.AwsS3StorageAdapter;
 import com.oracle.runbook.infrastructure.cloud.local.InMemoryVectorStoreRepository;
 import com.oracle.runbook.output.WebhookDestination;
 import com.oracle.runbook.output.WebhookDispatcher;
@@ -52,6 +54,8 @@ public final class PipelineTestHarness {
   private final Path outputDirectory;
   private final List<WebhookDestination> destinations;
   private final long timeoutSeconds;
+  private final CloudStorageAdapter storageAdapter;
+  private final RunbookIngestionService ingestionService;
 
   private PipelineTestHarness(Builder builder) {
     this.vectorStore = builder.vectorStore;
@@ -61,6 +65,16 @@ public final class PipelineTestHarness {
     this.outputDirectory = builder.outputDirectory;
     this.destinations = List.copyOf(builder.destinations);
     this.timeoutSeconds = builder.timeoutSeconds;
+    this.storageAdapter = builder.storageAdapter;
+    // Build ingestion service if storage adapter is available
+    if (builder.storageAdapter != null) {
+      RunbookChunker chunker = new RunbookChunker();
+      this.ingestionService =
+          new RunbookIngestionService(
+              builder.storageAdapter, chunker, builder.embeddingService, builder.vectorStore);
+    } else {
+      this.ingestionService = null;
+    }
   }
 
   /**
@@ -224,6 +238,25 @@ public final class PipelineTestHarness {
     return outputDirectory;
   }
 
+  /**
+   * Ingests runbooks from S3 bucket into the vector store.
+   *
+   * <p>This method uses the real {@link RunbookIngestionService#ingestAll(String)} to fetch
+   * runbooks from S3, chunk them, generate embeddings, and store in the vector store.
+   *
+   * @param bucket the S3 bucket containing runbooks
+   * @return the number of chunks ingested
+   * @throws IllegalStateException if harness was not configured with S3 support
+   */
+  public int ingestRunbooksFromS3(String bucket) throws Exception {
+    Objects.requireNonNull(bucket, "bucket cannot be null");
+    if (ingestionService == null) {
+      throw new IllegalStateException(
+          "Harness was not configured with S3 support. Use .withLocalStackS3() to enable S3 ingestion.");
+    }
+    return ingestionService.ingestAll(bucket).get(timeoutSeconds, TimeUnit.SECONDS);
+  }
+
   // ========== Builder ==========
 
   /** Builder for PipelineTestHarness. */
@@ -236,6 +269,7 @@ public final class PipelineTestHarness {
     private final List<WebhookDestination> destinations = new ArrayList<>();
     private long timeoutSeconds = 60;
     private boolean isTestMode = false;
+    private CloudStorageAdapter storageAdapter;
 
     Builder withLocalStack(LocalStackContainer localStack) {
       // Configure for LocalStack - uses test implementations by default
@@ -250,6 +284,18 @@ public final class PipelineTestHarness {
 
     Builder withTestMode() {
       this.isTestMode = true;
+      return this;
+    }
+
+    /**
+     * Configures the harness to use LocalStack S3 for runbook ingestion.
+     *
+     * @param s3Client the S3 client configured for LocalStack
+     * @return this builder
+     */
+    public Builder withLocalStackS3(S3AsyncClient s3Client) {
+      Objects.requireNonNull(s3Client, "s3Client cannot be null");
+      this.storageAdapter = new AwsS3StorageAdapter(s3Client);
       return this;
     }
 

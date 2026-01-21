@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oracle.runbook.enrichment.ContextEnrichmentService;
 import com.oracle.runbook.enrichment.DefaultContextEnrichmentService;
+import com.oracle.runbook.infrastructure.cloud.CloudStorageAdapter;
 import com.oracle.runbook.infrastructure.cloud.VectorStoreRepository;
+import com.oracle.runbook.infrastructure.cloud.aws.AwsS3StorageAdapter;
 import com.oracle.runbook.infrastructure.cloud.local.InMemoryVectorStoreRepository;
 import com.oracle.runbook.output.WebhookDispatcher;
 import com.oracle.runbook.rag.ChecklistGenerator;
@@ -13,6 +15,8 @@ import com.oracle.runbook.rag.DefaultChecklistGenerator;
 import com.oracle.runbook.rag.DefaultRunbookRetriever;
 import com.oracle.runbook.rag.LlmProvider;
 import com.oracle.runbook.rag.RagPipelineService;
+import com.oracle.runbook.rag.RunbookChunker;
+import com.oracle.runbook.rag.RunbookIngestionService;
 import com.oracle.runbook.rag.RunbookRetriever;
 import io.helidon.config.Config;
 import io.helidon.config.ConfigSources;
@@ -104,6 +108,88 @@ class ServiceFactoryTest {
 
       assertThat(generator).isNotNull();
       assertThat(generator).isInstanceOf(DefaultChecklistGenerator.class);
+    }
+
+    // ========== Task 2 Tests: Ingestion Support ==========
+
+    @Test
+    @DisplayName("Should create CloudStorageAdapter when configured")
+    void shouldCreateCloudStorageAdapter_WhenConfigured() {
+      Config config = createValidConfig();
+      ServiceFactory factory = new ServiceFactory(config);
+
+      CloudStorageAdapter adapter = factory.createCloudStorageAdapter();
+
+      assertThat(adapter).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should create AwsS3StorageAdapter when provider is AWS")
+    void shouldCreateAwsS3StorageAdapter_WhenProviderIsAws() {
+      Config config = createValidConfig();
+      ServiceFactory factory = new ServiceFactory(config);
+
+      CloudStorageAdapter adapter = factory.createCloudStorageAdapter();
+
+      assertThat(adapter).isInstanceOf(AwsS3StorageAdapter.class);
+    }
+
+    @Test
+    @DisplayName("Should cache CloudStorageAdapter on subsequent calls")
+    void shouldCacheCloudStorageAdapter_OnSubsequentCalls() {
+      Config config = createValidConfig();
+      ServiceFactory factory = new ServiceFactory(config);
+
+      CloudStorageAdapter adapter1 = factory.createCloudStorageAdapter();
+      CloudStorageAdapter adapter2 = factory.createCloudStorageAdapter();
+
+      assertThat(adapter1).isSameAs(adapter2);
+    }
+
+    @Test
+    @DisplayName("Should create RunbookChunker when called")
+    void shouldCreateRunbookChunker_WhenCalled() {
+      Config config = createValidConfig();
+      ServiceFactory factory = new ServiceFactory(config);
+
+      RunbookChunker chunker = factory.createRunbookChunker();
+
+      assertThat(chunker).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should create RunbookIngestionService when called")
+    void shouldCreateRunbookIngestionService_WhenCalled() {
+      Config config = createValidConfig();
+      ServiceFactory factory = new ServiceFactory(config);
+
+      RunbookIngestionService service = factory.createRunbookIngestionService();
+
+      assertThat(service).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should cache RunbookIngestionService on subsequent calls")
+    void shouldCacheRunbookIngestionService_OnSubsequentCalls() {
+      Config config = createValidConfig();
+      ServiceFactory factory = new ServiceFactory(config);
+
+      RunbookIngestionService service1 = factory.createRunbookIngestionService();
+      RunbookIngestionService service2 = factory.createRunbookIngestionService();
+
+      assertThat(service1).isSameAs(service2);
+    }
+
+    @Test
+    @DisplayName("Should create RunbookConfig when called")
+    void shouldCreateRunbookConfig_WhenCalled() {
+      Config config = createValidConfig();
+      ServiceFactory factory = new ServiceFactory(config);
+
+      RunbookConfig runbookConfig = factory.createRunbookConfig();
+
+      assertThat(runbookConfig).isNotNull();
+      assertThat(runbookConfig.bucket()).isEqualTo("runbook-synthesizer-runbooks");
     }
   }
 

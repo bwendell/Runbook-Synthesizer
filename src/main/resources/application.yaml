@@ -35,6 +35,17 @@ vectorStore:
   provider: ${VECTOR_STORE_PROVIDER:local}
 
 # --------------------------------------------------------
+# Runbook Ingestion Configuration
+# --------------------------------------------------------
+# Configures automatic runbook ingestion from S3 at startup.
+
+runbooks:
+  # S3 bucket containing runbook markdown files
+  bucket: runbook-synthesizer-runbooks
+  # Whether to automatically ingest runbooks when the app starts
+  ingestOnStartup: true
+
+# --------------------------------------------------------
 # Cloud Provider Configuration
 # --------------------------------------------------------
 # Selects which cloud provider's adapters to use for storage,
@@ -46,9 +57,9 @@ cloud:
   # AWS Configuration (used when provider: aws)
   aws:
     region: us-west-2
-    endpoint: http://localhost:9732
+    # endpoint: http://localhost:9732  # Uncomment for LocalStack testing
     storage:
-      bucket: ${AWS_S3_BUCKET:runbook-synthesizer-runbooks}
+      bucket: runbook-synthesizer-runbooks
     # Uses AWS default credential chain:
     # 1. Environment variables (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY)
     # 2. AWS credentials file (~/.aws/credentials)

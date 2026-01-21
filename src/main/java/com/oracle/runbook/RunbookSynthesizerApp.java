@@ -4,12 +4,15 @@ import com.oracle.runbook.api.AlertResource;
 import com.oracle.runbook.api.HealthResource;
 import com.oracle.runbook.api.RunbookResource;
 import com.oracle.runbook.api.WebhookResource;
+import com.oracle.runbook.config.RunbookConfig;
 import com.oracle.runbook.config.ServiceFactory;
 import com.oracle.runbook.output.WebhookDispatcher;
 import com.oracle.runbook.rag.RagPipelineService;
+import com.oracle.runbook.rag.RunbookIngestionService;
 import io.helidon.config.Config;
 import io.helidon.webserver.WebServer;
 import io.helidon.webserver.http.HttpRouting;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -82,6 +85,10 @@ public class RunbookSynthesizerApp {
       // Real mode: use ServiceFactory to create RagPipelineService and WebhookDispatcher
       try {
         ServiceFactory serviceFactory = new ServiceFactory(config);
+
+        // Check if runbook ingestion at startup is enabled
+        performStartupIngestion(serviceFactory);
+
         RagPipelineService ragPipeline = serviceFactory.createRagPipelineService();
         WebhookDispatcher webhookDispatcher = serviceFactory.createWebhookDispatcher();
 
@@ -98,5 +105,38 @@ public class RunbookSynthesizerApp {
 
     routing.register("/api/v1/webhooks", new WebhookResource());
     routing.register("/api/v1/runbooks", new RunbookResource());
+  }
+
+  /**
+   * Performs runbook ingestion at application startup if configured.
+   *
+   * <p>Checks the {@code runbooks.ingestOnStartup} configuration. If true, fetches runbooks from
+   * the configured S3 bucket, chunks them, generates embeddings, and stores them in the vector
+   * store.
+   *
+   * <p>Errors during ingestion are logged but do not prevent the application from starting.
+   *
+   * @param serviceFactory the service factory to use for creating ingestion service
+   */
+  static void performStartupIngestion(ServiceFactory serviceFactory) {
+    RunbookConfig runbookConfig = serviceFactory.createRunbookConfig();
+
+    if (!runbookConfig.ingestOnStartup()) {
+      LOGGER.info("Runbook ingestion at startup is disabled");
+      return;
+    }
+
+    String bucket = runbookConfig.bucket();
+    LOGGER.info("Ingesting runbooks from S3 bucket: " + bucket);
+
+    try {
+      RunbookIngestionService ingestionService = serviceFactory.createRunbookIngestionService();
+      int chunkCount = ingestionService.ingestAll(bucket).get(120, TimeUnit.SECONDS);
+      LOGGER.info("Runbook ingestion complete: " + chunkCount + " chunks stored");
+    } catch (Exception e) {
+      LOGGER.warning(
+          "Runbook ingestion failed, continuing without runbook data: " + e.getMessage());
+      LOGGER.log(java.util.logging.Level.WARNING, "Full exception:", e);
+    }
   }
 }

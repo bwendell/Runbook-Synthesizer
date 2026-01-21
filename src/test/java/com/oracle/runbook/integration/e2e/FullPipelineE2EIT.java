@@ -4,8 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.oracle.runbook.domain.*;
+import com.oracle.runbook.integration.DockerSupport;
+import com.oracle.runbook.integration.LocalStackContainerBase;
 import com.oracle.runbook.output.WebhookDestination;
 import com.oracle.runbook.output.WebhookResult;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -13,8 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.junit.jupiter.api.*;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 /**
  * Full pipeline end-to-end integration tests.
@@ -24,24 +33,64 @@ import org.junit.jupiter.api.*;
  * <ol>
  *   <li>Alert Ingestion
  *   <li>Context Enrichment (metrics, logs)
- *   <li>RAG Pipeline (runbook retrieval)
+ *   <li>RAG Pipeline (runbook retrieval from S3)
  *   <li>Checklist Generation (LLM)
  *   <li>Output Dispatch (file, webhooks)
  * </ol>
+ *
+ * <p>This test uses true S3 ingestion via LocalStack instead of manual runbook seeding.
  */
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-class FullPipelineE2EIT {
+class FullPipelineE2EIT extends LocalStackContainerBase {
+
+  private static final String TEST_BUCKET = "full-pipeline-runbooks";
 
   private static Path outputDir;
+  private static S3AsyncClient s3Client;
   private PipelineTestHarness harness;
 
   @BeforeAll
-  static void setupOutputDirectory() throws Exception {
+  static void setupS3AndRunbooks() throws Exception {
+    DockerSupport.ensureDockerAvailable();
+
+    // Create output directory
     outputDir = Files.createTempDirectory("full-pipeline-e2e");
+
+    // Create S3 client pointing to LocalStack
+    s3Client = createS3Client();
+
+    // Create test bucket
+    s3Client
+        .createBucket(CreateBucketRequest.builder().bucket(TEST_BUCKET).build())
+        .get(30, TimeUnit.SECONDS);
+
+    // Upload sample runbooks to S3
+    uploadRunbook("memory-troubleshooting.md", "sample-runbooks/memory-troubleshooting.md");
+    uploadRunbook("cpu-troubleshooting.md", "sample-runbooks/cpu-troubleshooting.md");
+    uploadRunbook("disk-troubleshooting.md", "sample-runbooks/disk-troubleshooting.md");
+    uploadRunbook("network-troubleshooting.md", "sample-runbooks/network-troubleshooting.md");
+  }
+
+  private static void uploadRunbook(String s3Key, String resourcePath) throws Exception {
+    try (InputStream is =
+        FullPipelineE2EIT.class.getClassLoader().getResourceAsStream(resourcePath)) {
+      if (is == null) {
+        throw new IllegalArgumentException("Runbook not found: " + resourcePath);
+      }
+      String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
+      s3Client
+          .putObject(
+              PutObjectRequest.builder().bucket(TEST_BUCKET).key(s3Key).build(),
+              AsyncRequestBody.fromString(content))
+          .get(30, TimeUnit.SECONDS);
+    }
   }
 
   @AfterAll
-  static void cleanupOutputDirectory() throws Exception {
+  static void cleanup() throws Exception {
+    if (s3Client != null) {
+      s3Client.close();
+    }
     if (outputDir != null) {
       Files.walk(outputDir)
           .sorted((a, b) -> -a.compareTo(b))
@@ -57,14 +106,15 @@ class FullPipelineE2EIT {
 
   @BeforeEach
   void setupHarness() throws Exception {
-    harness = PipelineTestHarness.testMode().withOutputDirectory(outputDir).withTimeout(30).build();
+    harness =
+        PipelineTestHarness.localStack(localstack)
+            .withLocalStackS3(s3Client)
+            .withOutputDirectory(outputDir)
+            .withTimeout(30)
+            .build();
 
-    // Seed test runbooks
-    harness.seedRunbooks(
-        "sample-runbooks/memory-troubleshooting.md",
-        "sample-runbooks/cpu-troubleshooting.md",
-        "sample-runbooks/disk-troubleshooting.md",
-        "sample-runbooks/network-troubleshooting.md");
+    // Ingest runbooks from S3 instead of manual seeding
+    harness.ingestRunbooksFromS3(TEST_BUCKET);
   }
 
   // ========== Memory Alert Tests ==========
@@ -307,13 +357,14 @@ class FullPipelineE2EIT {
     TestWebhookDestination webhook2 = new TestWebhookDestination("webhook2", capturedResults);
 
     PipelineTestHarness multiDestHarness =
-        PipelineTestHarness.testMode()
+        PipelineTestHarness.localStack(localstack)
+            .withLocalStackS3(s3Client)
             .withDestination(webhook1)
             .withDestination(webhook2)
             .withTimeout(30)
             .build();
 
-    multiDestHarness.seedRunbook("sample-runbooks/memory-troubleshooting.md");
+    multiDestHarness.ingestRunbooksFromS3(TEST_BUCKET);
 
     Alert alert =
         new Alert(
@@ -384,12 +435,13 @@ class FullPipelineE2EIT {
         new PipelineTestHarness.TestEnrichmentService().withPartialMetricsFailure();
 
     PipelineTestHarness failingHarness =
-        PipelineTestHarness.testMode()
+        PipelineTestHarness.localStack(localstack)
+            .withLocalStackS3(s3Client)
             .withEnrichmentService(failingEnrichment)
             .withTimeout(30)
             .build();
 
-    failingHarness.seedRunbook("sample-runbooks/memory-troubleshooting.md");
+    failingHarness.ingestRunbooksFromS3(TEST_BUCKET);
 
     Alert alert =
         new Alert(
@@ -421,7 +473,8 @@ class FullPipelineE2EIT {
         new PipelineTestHarness.TimeoutEnrichmentService(10000); // 10 second delay
 
     PipelineTestHarness slowHarness =
-        PipelineTestHarness.testMode()
+        PipelineTestHarness.localStack(localstack)
+            .withLocalStackS3(s3Client)
             .withEnrichmentService(slowEnrichment)
             .withTimeout(1) // 1 second timeout
             .build();

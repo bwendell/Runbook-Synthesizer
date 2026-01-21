@@ -43,6 +43,8 @@ public class DefaultChecklistGenerator implements ChecklistGenerator {
     // 1. Construct prompt
     String prompt = buildPrompt(context, relevantChunks);
 
+    System.out.println("DEBUG: Prompt sent to LLM:\n" + prompt);
+
     // 2. Call LLM (synchronous for simplicity in this port)
     GenerationConfig config = new GenerationConfig(0.7, 1000, java.util.Optional.empty());
     String response = llmProvider.generateText(prompt, config).join();

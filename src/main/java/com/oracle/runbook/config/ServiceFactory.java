@@ -5,11 +5,13 @@ import com.oracle.runbook.enrichment.DefaultContextEnrichmentService;
 import com.oracle.runbook.enrichment.LogSourceAdapter;
 import com.oracle.runbook.enrichment.MetricsSourceAdapter;
 import com.oracle.runbook.infrastructure.cloud.CloudAdapterFactory;
+import com.oracle.runbook.infrastructure.cloud.CloudStorageAdapter;
 import com.oracle.runbook.infrastructure.cloud.ComputeMetadataAdapter;
 import com.oracle.runbook.infrastructure.cloud.VectorStoreRepository;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsCloudWatchLogsAdapter;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsCloudWatchMetricsAdapter;
 import com.oracle.runbook.infrastructure.cloud.aws.AwsEc2MetadataAdapter;
+import com.oracle.runbook.infrastructure.cloud.aws.AwsS3StorageAdapter;
 import com.oracle.runbook.infrastructure.cloud.local.InMemoryVectorStoreRepository;
 import com.oracle.runbook.infrastructure.llm.OllamaConfig;
 import com.oracle.runbook.infrastructure.llm.OllamaLlmProvider;
@@ -26,12 +28,16 @@ import com.oracle.runbook.rag.DefaultRunbookRetriever;
 import com.oracle.runbook.rag.EmbeddingService;
 import com.oracle.runbook.rag.LlmProvider;
 import com.oracle.runbook.rag.RagPipelineService;
+import com.oracle.runbook.rag.RunbookChunker;
+import com.oracle.runbook.rag.RunbookIngestionService;
 import com.oracle.runbook.rag.RunbookRetriever;
 import io.helidon.config.Config;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 
 /**
  * Factory for creating and wiring production services from Helidon Config.
@@ -59,6 +65,9 @@ public class ServiceFactory {
   private ContextEnrichmentService cachedEnrichmentService;
   private RunbookRetriever cachedRetriever;
   private ChecklistGenerator cachedGenerator;
+  private CloudStorageAdapter cachedStorageAdapter;
+  private RunbookIngestionService cachedIngestionService;
+  private RunbookConfig cachedRunbookConfig;
 
   /**
    * Creates a new ServiceFactory with the given configuration.
@@ -227,6 +236,85 @@ public class ServiceFactory {
     cachedGenerator = new DefaultChecklistGenerator(createLlmProvider());
     LOGGER.info("Created DefaultChecklistGenerator");
     return cachedGenerator;
+  }
+
+  /**
+   * Creates the cloud storage adapter based on configuration.
+   *
+   * <p>Currently only supports AWS S3 storage adapter.
+   *
+   * @return the configured CloudStorageAdapter
+   * @throws IllegalStateException if unsupported cloud provider
+   */
+  public CloudStorageAdapter createCloudStorageAdapter() {
+    if (cachedStorageAdapter != null) {
+      return cachedStorageAdapter;
+    }
+
+    String provider = cloudAdapterFactory.getProviderType();
+    if ("aws".equals(provider)) {
+      S3AsyncClient s3Client = S3AsyncClient.builder().region(Region.of(getAwsRegion())).build();
+      cachedStorageAdapter = new AwsS3StorageAdapter(s3Client);
+    } else {
+      throw new IllegalStateException("Unsupported cloud provider for storage: " + provider);
+    }
+
+    LOGGER.info("Created CloudStorageAdapter: " + provider);
+    return cachedStorageAdapter;
+  }
+
+  /**
+   * Creates a new RunbookChunker instance.
+   *
+   * <p>RunbookChunker is stateless, so no caching is needed.
+   *
+   * @return a new RunbookChunker
+   */
+  public RunbookChunker createRunbookChunker() {
+    return new RunbookChunker();
+  }
+
+  /**
+   * Creates the runbook ingestion service with all required dependencies.
+   *
+   * <p>The service is cached for reuse.
+   *
+   * @return the configured RunbookIngestionService
+   */
+  public RunbookIngestionService createRunbookIngestionService() {
+    if (cachedIngestionService != null) {
+      return cachedIngestionService;
+    }
+
+    cachedIngestionService =
+        new RunbookIngestionService(
+            createCloudStorageAdapter(),
+            createRunbookChunker(),
+            createEmbeddingService(),
+            createVectorStoreRepository());
+    LOGGER.info("Created RunbookIngestionService");
+    return cachedIngestionService;
+  }
+
+  /**
+   * Creates the runbook configuration from Helidon Config.
+   *
+   * <p>The configuration is cached for reuse.
+   *
+   * @return the configured RunbookConfig
+   */
+  public RunbookConfig createRunbookConfig() {
+    if (cachedRunbookConfig != null) {
+      return cachedRunbookConfig;
+    }
+
+    cachedRunbookConfig = new RunbookConfig(config);
+    LOGGER.info(
+        "Created RunbookConfig: bucket="
+            + cachedRunbookConfig.bucket()
+            + ", ingestOnStartup="
+            + cachedRunbookConfig.ingestOnStartup());
+    return cachedRunbookConfig;
   }
 
   // ========== Private Helper Methods ==========
